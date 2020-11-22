@@ -5,6 +5,10 @@ namespace GeneratedMapper.Attributes
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
     public class MapFromAttribute : Attribute
     {
+        /// <summary>
+        /// Adds a mapping extension method to the target type to map to this class.
+        /// </summary>
+        /// <param name="mapFromType"></param>
         public MapFromAttribute(Type mapFromType)
         {
             MapFromType = mapFromType;

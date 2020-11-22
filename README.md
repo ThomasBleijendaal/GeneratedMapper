@@ -1,6 +1,10 @@
 # GeneratedMapper
 Compile-time object-to-object mapper generator which generates extension methods for each of the mappings.
 
+```
+Install-Package GeneratedMapper
+```
+
 ## Bad informercial
 
 How often do you have a certain model like..
@@ -65,3 +69,7 @@ public class SourceDTO
 ```
 
 Don't delay, generate your object-to-object mappers at compile-time today!
+
+## More information
+
+Please review the Example project to find more examples.
