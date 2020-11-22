@@ -10,6 +10,8 @@ namespace GeneratedMapper
 {
     internal sealed class MappingBuilder
     {
+        private const string SourceInstanceName = "self";
+
         public MappingBuilder(MappingInformation information, ConfigurationValues configurationValues)
         {
             Text = Build(information, configurationValues);
@@ -56,33 +58,38 @@ namespace GeneratedMapper
             indentWriter.WriteLine("{");
             indentWriter.Indent++;
 
-            indentWriter.WriteLine($"public static {information.DestinationType.Name} MapTo{information.DestinationType.Name}(this {information.SourceType.Name} self) =>");
+            indentWriter.WriteLine($"public static {information.DestinationType.Name} MapTo{information.DestinationType.Name}(this {information.SourceType.Name} {SourceInstanceName})");
+            indentWriter.WriteLine("{");
             indentWriter.Indent++;
 
             if (!information.SourceType.IsValueType)
             {
-                indentWriter.WriteLine("self is null ? throw new ArgumentNullException(nameof(self)) :");
+                indentWriter.WriteLine($"if ({SourceInstanceName} is null)");
+                indentWriter.WriteLine("{");
                 indentWriter.Indent++;
+                indentWriter.WriteLine("throw new ArgumentNullException(nameof(self));");
+                indentWriter.Indent--;
+                indentWriter.WriteLine("}");
+                indentWriter.WriteLine("");
             }
 
-            indentWriter.WriteLine($"new {information.DestinationType.Name}");
+            indentWriter.WriteLine($"return new {information.DestinationType.Name}");
             indentWriter.WriteLine("{");
             indentWriter.Indent++;
 
-            foreach (var map in information.Maps)
+            foreach (var map in information.Mappings)
             {
-                indentWriter.WriteLine(map);
+                var initializerString = map.InitializerString(SourceInstanceName);
+                if (initializerString != null)
+                {
+                    indentWriter.WriteLine(initializerString);
+                }
             }
 
             indentWriter.Indent--;
             indentWriter.WriteLine("};");
-
-            if (!information.SourceType.IsValueType)
-            {
-                indentWriter.Indent--;
-            }
-
             indentWriter.Indent--;
+            indentWriter.WriteLine("}");
             indentWriter.Indent--;
             indentWriter.WriteLine("}");
 

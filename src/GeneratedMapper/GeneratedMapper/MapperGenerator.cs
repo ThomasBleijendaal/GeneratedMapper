@@ -1,12 +1,13 @@
 ﻿using GeneratedMapper.Configurations;
-using GeneratedMapper.Helpers;
 using GeneratedMapper.SyntaxReceivers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("GeneratedMapper.Tests")]
 namespace GeneratedMapper
 {
     [Generator]
@@ -33,7 +34,7 @@ namespace GeneratedMapper
                         foreach (var mappingAttribute in attributes)
                         {
                             var configurationValues = new ConfigurationValues(context, candidateTypeNode.SyntaxTree);
-                            var (diagnostics, name, text) = GenerateMapping(candidateTypeSymbol, mappingAttribute, configurationValues);
+                            var (diagnostics, name, text) = GenerateMapping(context, candidateTypeSymbol, mappingAttribute, configurationValues);
 
                             foreach (var diagnostic in diagnostics)
                             {
@@ -64,9 +65,9 @@ namespace GeneratedMapper
         }
 
         private static (IEnumerable<Diagnostic> diagnostics, string? name, SourceText? text) GenerateMapping(
-            ITypeSymbol attributedType, AttributeData attributeData, ConfigurationValues configurationValues)
+            GeneratorExecutionContext context, ITypeSymbol attributedType, AttributeData attributeData, ConfigurationValues configurationValues)
         {
-            var information = new MappingInformation(attributedType, attributeData);
+            var information = new MappingInformation(context, attributedType, attributeData);
 
             if (information.Diagnostics.All(x => x.Severity != DiagnosticSeverity.Error) &&
                 information.SourceType != null &&

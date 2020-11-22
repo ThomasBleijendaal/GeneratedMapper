@@ -1,4 +1,6 @@
-﻿using GeneratedMapper.Helpers;
+﻿using GeneratedMapper.Abstractions;
+using GeneratedMapper.Helpers;
+using GeneratedMapper.Mappings;
 using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
@@ -8,20 +10,21 @@ namespace GeneratedMapper
 {
     internal sealed class MappingInformation
     {
-        public MappingInformation(ITypeSymbol attributedType, AttributeData attributeData)
+        public MappingInformation(GeneratorExecutionContext context, ITypeSymbol attributedType, AttributeData attributeData)
         {
             var diagnostics = new List<Diagnostic>();
 
             try
             {
-                var isMapFromAttribute = attributeData.AttributeClass!.Name.Contains("From");
+                // TODO: this method still assumes this is always false, but source can in the case of MapFrom be the non-attributed class
+                var isMapFromAttribute = attributeData.AttributeClass!.Name.Contains("MapFrom");
 
-                var targetType = attributeData.ConstructorArguments[0].Value;
+                var targetType = attributeData.ConstructorArguments[0].Value as INamedTypeSymbol;
 
-                var sourceType = (isMapFromAttribute ? targetType : attributedType) as INamedTypeSymbol;
+                // var sourceType =  as INamedTypeSymbol;
                 var destinationType = (isMapFromAttribute ? attributedType : targetType) as INamedTypeSymbol;
 
-                if (sourceType == null || destinationType == null)
+                if (targetType == null || attributedType == null || destinationType == null)
                 {
                     diagnostics.Add(DiagnosticsHelper.UnrecognizedTypes(attributeData));
                     return;
@@ -33,47 +36,72 @@ namespace GeneratedMapper
                     return;
                 }
 
-                var maps = new List<string>();
+                var mappings = new List<IMapping>();
 
-                var destinationProperties = destinationType.GetMembers().OfType<IPropertySymbol>()
-                    .Where(_ => _.SetMethod is not null && _.SetMethod.DeclaredAccessibility == Accessibility.Public).ToList();
+                var destinationPropertyExclusions = TargetPropertiesToIgnore(attributedType);
 
-                foreach (var sourceProperty in sourceType.GetMembers().OfType<IPropertySymbol>()
-                    .Where(_ => _.GetMethod is not null && _.GetMethod.DeclaredAccessibility == Accessibility.Public))
+                var targetProperties = targetType.GetMembers().OfType<IPropertySymbol>()
+                    .Where(x => x.SetMethod is not null && x.SetMethod.DeclaredAccessibility == Accessibility.Public)
+                    .Where(x => !destinationPropertyExclusions.Contains(x.Name))
+                    .ToList();
+
+                foreach (var property in attributedType.GetMembers().OfType<IPropertySymbol>()
+                    .Where(x => x.GetMethod is not null && x.GetMethod.DeclaredAccessibility == Accessibility.Public)
+                    .Where(x => !ShouldIgnoreProperty(x)))
                 {
-                    var destinationProperty = destinationProperties.FirstOrDefault(
-                        _ => _.Name == sourceProperty.Name &&
-                            _.Type.Equals(sourceProperty.Type, SymbolEqualityComparer.Default) &&
-                            (sourceProperty.NullableAnnotation != NullableAnnotation.Annotated ||
-                                sourceProperty.NullableAnnotation == NullableAnnotation.Annotated && _.NullableAnnotation == NullableAnnotation.Annotated));
+                    // the default
+                    var targetPropertyToFind = property.Name;
+                    var propertyMethodCall = default(string);
 
-                    if (destinationProperty is not null)
+                    // override with [MapWith] attribute on attributed class property
+                    var mapWithAttribute = property.GetAttributes().FirstOrDefault(x => x.AttributeClass?.Name.Contains("MapWith") ?? false);
+                    if (mapWithAttribute?.ConstructorArguments.ElementAtOrDefault(0).Value is string propertyName)
                     {
-                        maps.Add($"{destinationProperty.Name} = self.{sourceProperty.Name},");
-                        destinationProperties.Remove(destinationProperty);
+                        targetPropertyToFind = propertyName;
+                    }
+                    if (mapWithAttribute?.ConstructorArguments.ElementAtOrDefault(1).Value is string methodName)
+                    {
+                        propertyMethodCall = methodName;
+                    }
+
+                    var targetProperty = targetProperties.FirstOrDefault(
+                        property =>
+                            property.Name == targetPropertyToFind &&
+                            property.Type.Equals(property.Type, SymbolEqualityComparer.Default));
+
+                    var sourceProperty = isMapFromAttribute ? targetProperty : property;
+                    var destinationProperty = isMapFromAttribute ? property : targetProperty;
+
+                    if (targetProperty is not null && HasCorrectNullability(destinationProperty, sourceProperty))
+                    {
+                        if (propertyMethodCall is null)
+                        {
+                            mappings.Add(new PropertyToPropertyMapping(sourceProperty.Name, destinationProperty.Name));
+                        }
+                        else
+                        {
+                            // TODO: the method can be outside the namespace of the extention method
+                            mappings.Add(new PropertyToPropertyWithMethodInvocationMapping(sourceProperty.Name, destinationProperty.Name, propertyMethodCall));
+                        }
+
+                        targetProperties.Remove(targetProperty);
+                    }
+                    else if (targetProperty is not null && !HasCorrectNullability(destinationProperty, sourceProperty))
+                    {
+                        diagnostics.Add(DiagnosticsHelper.IncorrectNullability(attributeData, attributedType.Name, property.Name, targetType.Name, targetProperty.Name));
                     }
                     else
                     {
-                        //diagnostics.Add(Diagnostic.Create(new DiagnosticDescriptor(
-                        //	NoMatchDescriptorConstants.Id, NoMatchDescriptorConstants.Title,
-                        //	string.Format(CultureInfo.CurrentCulture, NoMatchDescriptorConstants.Message, sourceProperty.Name, "source", sourceType.Name),
-                        //	DescriptorConstants.Usage, DiagnosticSeverity.Info, true,
-                        //	helpLinkUri: HelpUrlBuilder.Build(
-                        //		NoMatchDescriptorConstants.Id, NoMatchDescriptorConstants.Title)), null));
+                        diagnostics.Add(DiagnosticsHelper.UnmappableProperty(attributeData, attributedType.Name, property.Name, targetType.Name));
                     }
                 }
 
-                foreach (var remainingDestinationProperty in destinationProperties)
+                foreach (var remainingTargetProperty in targetProperties)
                 {
-                    //diagnostics.Add(Diagnostic.Create(new DiagnosticDescriptor(
-                    //	NoMatchDescriptorConstants.Id, NoMatchDescriptorConstants.Title,
-                    //	string.Format(CultureInfo.CurrentCulture, NoMatchDescriptorConstants.Message, remainingDestinationProperty.Name, "destination", destinationType.Name),
-                    //	DescriptorConstants.Usage, DiagnosticSeverity.Info, true,
-                    //	helpLinkUri: HelpUrlBuilder.Build(
-                    //		NoMatchDescriptorConstants.Id, NoMatchDescriptorConstants.Title)), null));
+                    diagnostics.Add(DiagnosticsHelper.LeftOverProperty(attributeData, targetType.Name, remainingTargetProperty.Name, attributedType.Name));
                 }
 
-                if (maps.Count == 0)
+                if (mappings.Count == 0)
                 {
                     //diagnostics.Add(Diagnostic.Create(new DiagnosticDescriptor(
                     //	NoPropertyMapsFoundDescriptorConstants.Id, NoPropertyMapsFoundDescriptorConstants.Title,
@@ -83,8 +111,10 @@ namespace GeneratedMapper
                     //	attributeData.ApplicationSyntaxReference!.GetSyntax().GetLocation()));
                 }
 
-                (SourceType, DestinationType, Maps) =
-                    (sourceType, destinationType, maps);
+                var sourceType = (isMapFromAttribute ? targetType : attributedType);
+
+                (SourceType, DestinationType, Mappings) =
+                    (sourceType, destinationType, mappings);
             }
             catch (Exception ex)
             {
@@ -96,9 +126,35 @@ namespace GeneratedMapper
             }
         }
 
+        private static bool HasCorrectNullability(IPropertySymbol destinationProperty, IPropertySymbol sourceProperty)
+        {
+            return sourceProperty.NullableAnnotation != NullableAnnotation.Annotated ||
+                sourceProperty.NullableAnnotation == NullableAnnotation.Annotated && destinationProperty.NullableAnnotation == NullableAnnotation.Annotated;
+        }
+
+        private static bool ShouldIgnoreProperty(IPropertySymbol property)
+        {
+            return property.GetAttributes().Any(x => x.AttributeClass?.Name.Contains("Ignore") ?? false);
+        }
+
+        private static IEnumerable<string> TargetPropertiesToIgnore(ITypeSymbol attributedType)
+        {
+            var attribute = attributedType.GetAttributes().FirstOrDefault(x => x.AttributeClass?.Name.Contains("IgnoreInTarget") ?? false);
+
+            return (attribute?.ConstructorArguments[0].Values.Where(x => x.Value is string).Select(x => (string)x.Value!)!) ?? Enumerable.Empty<string>();
+        }
+
+        public MappingInformation(ITypeSymbol destinationType, IEnumerable<Diagnostic> diagnostics, IEnumerable<IMapping> mappings, ITypeSymbol sourceType)
+        {
+            DestinationType = destinationType ?? throw new ArgumentNullException(nameof(destinationType));
+            Diagnostics = diagnostics ?? throw new ArgumentNullException(nameof(diagnostics));
+            Mappings = mappings ?? throw new ArgumentNullException(nameof(mappings));
+            SourceType = sourceType ?? throw new ArgumentNullException(nameof(sourceType));
+        }
+
         public ITypeSymbol DestinationType { get; private set; } = default!;
         public IEnumerable<Diagnostic> Diagnostics { get; private set; } = default!;
-        public IEnumerable<string> Maps { get; private set; } = default!;
+        public IEnumerable<IMapping> Mappings { get; private set; } = default!;
         public ITypeSymbol SourceType { get; private set; } = default!;
     }
 }

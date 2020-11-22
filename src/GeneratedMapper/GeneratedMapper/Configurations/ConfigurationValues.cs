@@ -10,6 +10,12 @@ namespace GeneratedMapper.Configurations
         private const string IndentStyleKey = "indent_style";
         private const IndentStyle IndentStyleDefaultValue = IndentStyle.Space;
 
+        internal ConfigurationValues(IndentStyle indentStyle, uint indentSize)
+        {
+            IndentStyle = indentStyle;
+            IndentSize = indentSize;
+        }
+
         public ConfigurationValues(GeneratorExecutionContext context, SyntaxTree tree)
         {
             var options = context.AnalyzerConfigOptions.GetOptions(tree);
