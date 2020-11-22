@@ -1,5 +1,8 @@
 ﻿using GeneratedMapper.Attributes;
 using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 
 namespace Example
 {
@@ -38,64 +41,54 @@ namespace Example
             var destination3 = source3.MapToDestination3();
 
             Console.WriteLine(destination3.Count);
+
+            var source4 = new Source4
+            {
+                Name = "Awesome"
+            };
+
+            var destination4 = source4.MapToDestination4(CultureInfo.CurrentCulture);
+
+            Console.WriteLine(destination4.Name3Times);
+
+            var source5 = new Source5
+            {
+                NestedNames = new List<NestedSource5Class>()
+                {
+                    new NestedSource5Class
+                    {
+                        Name = "Hi"
+                    }
+                }.ToArray()
+            };
+
+            var destination5 = source5.MapToDestination5();
+
+            Console.WriteLine(destination5.NestedNames.First().Name);
         }
     }
 
-    [MapTo(typeof(Destination))]
-    [IgnoreInTarget(nameof(Destination.SomeProperty))]
-    public class Source
+    [MapTo(typeof(Destination5))]
+    public class Source5
     {
-        public string Name { get; set; }
+        public NestedSource5Class[]? NestedNames { get; set; }
 
-        [Ignore]
-        public string SomeProp { get; set; }
+        
     }
 
-    public class Destination
+    [MapTo(typeof(NestedDestination5Class))]
+    public class NestedSource5Class
     {
-        public string Name { get; set; }
-
-        public string SomeProperty { get; set; }
-    }
-
-    public class Source2
-    {
-        public string Name { get; set; }
-
-        public string SomeProp { get; set; }
-    }
-
-    [MapFrom(typeof(Source2))]
-    [IgnoreInTarget(nameof(Source2.Name))]
-    public class Destination2
-    {
-        public string SomeProp { get; set; }
-    }
-
-    [MapTo(typeof(Destination3))]
-    public class Source3
-    {
-        [MapWith(nameof(Destination3.Count), nameof(int.ToString))]
-        public int Count { get; set; }
-
-        [MapWith(nameof(Destination3.Greeting), nameof(StringExtensions.ConvertToGreeting))]
         public string Name { get; set; }
     }
 
-    public class Destination3
+    public class Destination5
     {
-        public string Count { get; set; }
-        public string Greeting { get; set; }
-    }
-//}
+        public NestedDestination5Class[] NestedNames { get; set; }
 
-//namespace Random
-//{
-    public static class StringExtensions
+    }
+    public class NestedDestination5Class
     {
-        public static string ConvertToGreeting(this string someString)
-        {
-            return $"Hi {someString};";
-        }
+        public string Name { get; set; }
     }
 }

@@ -1,9 +1,11 @@
-﻿using GeneratedMapper.Configurations;
+﻿using GeneratedMapper.Abstractions;
+using GeneratedMapper.Configurations;
 using Microsoft.CodeAnalysis.Text;
 using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace GeneratedMapper
@@ -11,6 +13,7 @@ namespace GeneratedMapper
     internal sealed class MappingBuilder
     {
         private const string SourceInstanceName = "self";
+        private const string TargetInstanceName = "target";
 
         public MappingBuilder(MappingInformation information, ConfigurationValues configurationValues)
         {
@@ -23,13 +26,14 @@ namespace GeneratedMapper
             using var indentWriter = new IndentedTextWriter(writer,
                 configurationValues.IndentStyle == IndentStyle.Tab ? "\t" : new string(' ', (int)configurationValues.IndentSize));
 
-            var usingStatements = new SortedSet<string>();
+            var usingStatements = new List<string>();
 
             if (!information.SourceType.IsValueType)
             {
                 usingStatements.Add("using System;");
             };
 
+            // TODO: do we need those smarts? or just output always all related namespaces
             if (!information.DestinationType.ContainingNamespace.IsGlobalNamespace &&
                 !information.SourceType.ContainingNamespace.ToDisplayString().StartsWith(
                     information.DestinationType.ContainingNamespace.ToDisplayString(), StringComparison.InvariantCulture))
@@ -37,7 +41,11 @@ namespace GeneratedMapper
                 usingStatements.Add($"using {information.DestinationType.ContainingNamespace.ToDisplayString()};");
             }
 
-            foreach (var usingStatement in usingStatements)
+            usingStatements.AddRange(information.Mappings
+                .SelectMany(map => map.NamespacesUsed())
+                .Select(@namespace => $"using {@namespace};"));
+
+            foreach (var usingStatement in usingStatements.Distinct())
             {
                 indentWriter.WriteLine(usingStatement);
             }
@@ -58,7 +66,10 @@ namespace GeneratedMapper
             indentWriter.WriteLine("{");
             indentWriter.Indent++;
 
-            indentWriter.WriteLine($"public static {information.DestinationType.Name} MapTo{information.DestinationType.Name}(this {information.SourceType.Name} {SourceInstanceName})");
+            var mapArguments = new[] { $"this {information.SourceType.Name} {SourceInstanceName}" }
+                .Union(information.Mappings.SelectMany(x => x.MapArgumentsRequired()));
+
+            indentWriter.WriteLine($"public static {information.DestinationType.Name} MapTo{information.DestinationType.Name}({string.Join(", ", mapArguments)})");
             indentWriter.WriteLine("{");
             indentWriter.Indent++;
 
@@ -70,24 +81,21 @@ namespace GeneratedMapper
                 indentWriter.WriteLine("throw new ArgumentNullException(nameof(self));");
                 indentWriter.Indent--;
                 indentWriter.WriteLine("}");
-                indentWriter.WriteLine("");
+                indentWriter.WriteLine();
             }
 
-            indentWriter.WriteLine($"return new {information.DestinationType.Name}");
+            WriteMappingCode(information, indentWriter, map => map.PreConstructionInitializations(), true);
+
+            indentWriter.WriteLine($"var {TargetInstanceName} = new {information.DestinationType.Name}");
             indentWriter.WriteLine("{");
             indentWriter.Indent++;
 
-            foreach (var map in information.Mappings)
-            {
-                var initializerString = map.InitializerString(SourceInstanceName);
-                if (initializerString != null)
-                {
-                    indentWriter.WriteLine(initializerString);
-                }
-            }
+            WriteMappingCode(information, indentWriter, map => map.InitializerString(SourceInstanceName));
 
             indentWriter.Indent--;
             indentWriter.WriteLine("};");
+            indentWriter.WriteLine();
+            indentWriter.WriteLine($"return {TargetInstanceName};");
             indentWriter.Indent--;
             indentWriter.WriteLine("}");
             indentWriter.Indent--;
@@ -100,6 +108,25 @@ namespace GeneratedMapper
             }
 
             return SourceText.From(writer.ToString(), Encoding.UTF8);
+        }
+
+        private static void WriteMappingCode(
+            MappingInformation information,
+            IndentedTextWriter indentWriter,
+            Func<IMapping, string?> mappingFeature,
+            bool includeBlankLine = false)
+        {
+            foreach (var feature in information.Mappings
+                .Select(map => mappingFeature.Invoke(map))
+                .Where(feature => feature is not null))
+            {
+                indentWriter.WriteLine(feature);
+
+                if (includeBlankLine)
+                {
+                    indentWriter.WriteLine();
+                }
+            }
         }
 
         public SourceText Text { get; private set; }

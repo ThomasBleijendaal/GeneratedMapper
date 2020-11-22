@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GeneratedMapper.Attributes"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GeneratedMapper.Tests", "GeneratedMapper.Tests\GeneratedMapper.Tests.csproj", "{D884F1AA-8E2E-4ACF-9F0E-CDF69ADBD374}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeneratedMapper.Abstractions", "GeneratedMapper.Abstractions\GeneratedMapper.Abstractions.csproj", "{E6E1F19B-9441-4B67-9865-6D5683C84BFB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{D884F1AA-8E2E-4ACF-9F0E-CDF69ADBD374}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D884F1AA-8E2E-4ACF-9F0E-CDF69ADBD374}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D884F1AA-8E2E-4ACF-9F0E-CDF69ADBD374}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6E1F19B-9441-4B67-9865-6D5683C84BFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6E1F19B-9441-4B67-9865-6D5683C84BFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6E1F19B-9441-4B67-9865-6D5683C84BFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6E1F19B-9441-4B67-9865-6D5683C84BFB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

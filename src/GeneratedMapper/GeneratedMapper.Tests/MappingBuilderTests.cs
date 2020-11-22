@@ -30,7 +30,7 @@ namespace GeneratedMapper.Tests
         }
 
         [TestCaseSource(nameof(TestCases))]
-        public void MappingSinglePropertyFromSourceToDestination(IMapping[] mappings, string expectedSourceText)
+        public void TestCodeGeneration(IMapping[] mappings, string expectedSourceText)
         {
             var information = new MappingInformation(_destinationType.Object, Enumerable.Empty<Diagnostic>(), mappings, _sourceType.Object);
             var builder = new MappingBuilder(information, _values);
@@ -44,6 +44,10 @@ namespace GeneratedMapper.Tests
             yield return MappingThreePropertiesFromSourceToDestination();
             yield return MappingSinglePropertyWithDifferentNamesFromSourceToDestination();
             yield return MappingPropertyToStringFromSourceToDestination();
+            yield return MappingPropertyUsingResolverFromSourceToDestination();
+            yield return MappingPropertyUsingResolverWithConstructorArgumentsFromSourceToDestination();
+            yield return MappingMultiplePropertiesUsingResolversWithConstructorArgumentsFromSourceToDestination();
+            yield return MappingSingleEnumerablePropertyToListFromSourceToDestination();
         }
 
         private static TestCaseData MappingSinglePropertyFromSourceToDestination()
@@ -65,10 +69,12 @@ namespace Namespace
                 throw new ArgumentNullException(nameof(self));
             }
             
-            return new Destination
+            var target = new Destination
             {
                 Name = self.Name,
             };
+            
+            return target;
         }
     }
 }
@@ -95,12 +101,14 @@ namespace Namespace
                 throw new ArgumentNullException(nameof(self));
             }
             
-            return new Destination
+            var target = new Destination
             {
                 Name = self.Name,
                 Title = self.Title,
                 Content = self.Content,
             };
+            
+            return target;
         }
     }
 }
@@ -125,10 +133,12 @@ namespace Namespace
                 throw new ArgumentNullException(nameof(self));
             }
             
-            return new Destination
+            var target = new Destination
             {
                 Nom = self.Name,
             };
+            
+            return target;
         }
     }
 }
@@ -153,10 +163,204 @@ namespace Namespace
                 throw new ArgumentNullException(nameof(self));
             }
             
-            return new Destination
+            var target = new Destination
             {
                 Count = self.Count.ToString(),
             };
+            
+            return target;
+        }
+    }
+}
+");
+
+        private static TestCaseData MappingPropertyUsingResolverFromSourceToDestination()
+            => new TestCaseData(
+                new[]
+                {
+                    new PropertyResolverMapping("Parameter", "ResolvedParameter", "Resolver", "Namespace.Resolvers", Enumerable.Empty<ConstructorParameter>())
+                },
+                @"using System;
+using Namespace.Resolvers;
+
+namespace Namespace
+{
+    public static partial class SourceMapToExtensions
+    {
+        public static Destination MapToDestination(this Source self)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self));
+            }
+            
+            var resolverResolvedParameter = new Resolver();
+            
+            var target = new Destination
+            {
+                ResolvedParameter = resolverResolvedParameter.Resolve(self.Parameter),
+            };
+            
+            return target;
+        }
+    }
+}
+");
+
+        private static TestCaseData MappingPropertyUsingResolverWithConstructorArgumentsFromSourceToDestination()
+            => new TestCaseData(
+                new[]
+                {
+                    new PropertyResolverMapping(
+                        "Parameter", 
+                        "ResolvedParameter", 
+                        "SomeResolver", 
+                        "Namespace.Resolvers",
+                        new [] {
+                            new ConstructorParameter("randomService", "IRandomService", "Namespace.Services")
+                        })
+                },
+                @"using System;
+using Namespace.Resolvers;
+using Namespace.Services;
+
+namespace Namespace
+{
+    public static partial class SourceMapToExtensions
+    {
+        public static Destination MapToDestination(this Source self, IRandomService someResolverRandomService)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self));
+            }
+            
+            var resolverResolvedParameter = new SomeResolver(someResolverRandomService);
+            
+            var target = new Destination
+            {
+                ResolvedParameter = resolverResolvedParameter.Resolve(self.Parameter),
+            };
+            
+            return target;
+        }
+    }
+}
+");
+
+        private static TestCaseData MappingMultiplePropertiesUsingResolversWithConstructorArgumentsFromSourceToDestination()
+            => new TestCaseData(
+                new[]
+                {
+                    new PropertyResolverMapping(
+                        "Parameter1",
+                        "ResolvedParameter1",
+                        "SomeResolver1",
+                        "Namespace.Resolvers1",
+                        new [] {
+                            new ConstructorParameter("randomService1", "IRandomService1", "Namespace.Services1")
+                        }),
+                    new PropertyResolverMapping(
+                        "Parameter2",
+                        "ResolvedParameter2",
+                        "SomeResolver2",
+                        "Namespace.Resolvers2",
+                        new [] {
+                            new ConstructorParameter("randomService2", "IRandomService2", "Namespace.Services2")
+                        })
+                },
+                @"using System;
+using Namespace.Resolvers1;
+using Namespace.Services1;
+using Namespace.Resolvers2;
+using Namespace.Services2;
+
+namespace Namespace
+{
+    public static partial class SourceMapToExtensions
+    {
+        public static Destination MapToDestination(this Source self, IRandomService1 someResolver1RandomService1, IRandomService2 someResolver2RandomService2)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self));
+            }
+            
+            var resolverResolvedParameter1 = new SomeResolver1(someResolver1RandomService1);
+            
+            var resolverResolvedParameter2 = new SomeResolver2(someResolver2RandomService2);
+            
+            var target = new Destination
+            {
+                ResolvedParameter1 = resolverResolvedParameter1.Resolve(self.Parameter1),
+                ResolvedParameter2 = resolverResolvedParameter2.Resolve(self.Parameter2),
+            };
+            
+            return target;
+        }
+    }
+}
+");
+
+        private static TestCaseData MappingSingleEnumerablePropertyToListFromSourceToDestination()
+            => new TestCaseData(
+                new[]
+                {
+                    new CollectionToCollectionPropertyMapping("Collection", false, "Namespace.Collections", "Collection", true, "CollectionItem", "Namespace.Collections", DestinationCollectionType.List)
+                },
+                @"using System;
+using System.Linq;
+using Namespace.Collections;
+
+namespace Namespace
+{
+    public static partial class SourceMapToExtensions
+    {
+        public static Destination MapToDestination(this Source self)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self));
+            }
+            
+            var target = new Destination
+            {
+                Collection = self.Collection.Select(element => element.MapToCollectionItem()).ToList(),
+            };
+            
+            return target;
+        }
+    }
+}
+");
+
+        private static TestCaseData MappingSingleNullableEnumerablePropertyToArrayFromSourceToDestination()
+            => new TestCaseData(
+                new[]
+                {
+                    new CollectionToCollectionPropertyMapping("Collection", true, "Namespace.Collections", "Collection", false, "CollectionItem", "Namespace.Collections", DestinationCollectionType.Array)
+                },
+                @"using System;
+using System.Linq;
+using Namespace.Collections;
+
+namespace Namespace
+{
+    public static partial class SourceMapToExtensions
+    {
+        public static Destination MapToDestination(this Source self)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self));
+            }
+            
+            var target = new Destination
+            {
+                Collection = self?.Collection.Select(element => element.MapToCollectionItem()).ToArray() ?? Enumerable.Empty<CollectionItem>().ToArray(),
+            };
+            
+            return target;
         }
     }
 }

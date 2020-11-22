@@ -1,5 +1,7 @@
 ﻿using GeneratedMapper.Abstractions;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace GeneratedMapper.Mappings
 {
@@ -16,5 +18,9 @@ namespace GeneratedMapper.Mappings
 
         public string? InitializerString(string sourceInstanceName)
             => $"{DestinationPropertyName} = {sourceInstanceName}.{SourcePropertyName},";
+
+        public string? PreConstructionInitializations() => default;
+        public IEnumerable<string> NamespacesUsed() => Enumerable.Empty<string>();
+        public IEnumerable<string> MapArgumentsRequired() => Enumerable.Empty<string>();
     }
 }
