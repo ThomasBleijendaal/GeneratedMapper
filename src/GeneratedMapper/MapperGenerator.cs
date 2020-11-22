@@ -3,7 +3,6 @@ using GeneratedMapper.SyntaxReceivers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -15,9 +14,6 @@ namespace GeneratedMapper
     {
         public void Execute(GeneratorExecutionContext context)
         {
-            //LoadAttribute(context, "MapToAttribute");
-            //LoadAttribute(context, "MapFromAttribute");
-
             if (context.SyntaxReceiver is MapAttributeReceiver attributeReceiver)
             {
                 foreach (var candidateTypeNode in attributeReceiver.Candidates)
@@ -54,14 +50,6 @@ namespace GeneratedMapper
         public void Initialize(GeneratorInitializationContext context)
         {
             context.RegisterForSyntaxNotifications(() => new MapAttributeReceiver());
-        }
-
-        private static void LoadAttribute(GeneratorExecutionContext context, string attributeName)
-        {
-            using var stream = typeof(MapperGenerator).Assembly.GetManifestResourceStream($"{nameof(GeneratedMapper)}.Attributes.{attributeName}.txt");
-            using var streamReader = new StreamReader(stream);
-
-            context.AddSource(attributeName, streamReader.ReadToEnd());
         }
 
         private static (IEnumerable<Diagnostic> diagnostics, string? name, SourceText? text) GenerateMapping(

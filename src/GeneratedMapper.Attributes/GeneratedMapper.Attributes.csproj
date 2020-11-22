@@ -9,7 +9,7 @@
     <Authors>Thomas Bleijendaal</Authors>
     <Company>Thomas Bleijendaal</Company>
     <Product>Generated Mapper</Product>
-    <Description>This package contains the MapFrom, MapTo and MapWith attributes for the compile-time object-to-object mapper generator.</Description>
+    <Description>This package contains the MapFrom, MapTo, Ignore and MapWith attributes for the compile-time object-to-object mapper generator.</Description>
     <PackageProjectUrl>https://github.com/ThomasBleijendaal/GeneratedMapper</PackageProjectUrl>
     <RepositoryUrl>https://github.com/ThomasBleijendaal/GeneratedMapper</RepositoryUrl>
     <RepositoryType>Github</RepositoryType>

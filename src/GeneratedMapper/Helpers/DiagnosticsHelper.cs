@@ -87,15 +87,7 @@ namespace GeneratedMapper.Helpers
             => GetDiagnostic(_unmappableEnumerableProperty, attributeData, attributedClass, property, targetProperty, targetClass);
 
 
-        public static Diagnostic Debug(Exception ex) => Diagnostic.Create(
-                new DiagnosticDescriptor(
-                    $"GM{Guid.NewGuid().ToString().Substring(0, 10)}",
-                    ex.Message,
-                    $"{ex.Message } -- {ex.StackTrace.Replace("\n", "--").Replace("\r", "")}",
-                    "Usage",
-                    DiagnosticSeverity.Error,
-                    true),
-                default);
+        public static Diagnostic Debug(Exception ex) => Debug($"{ex.Message } -- {ex.StackTrace.Replace("\n", "--").Replace("\r", "")}");
 
         public static Diagnostic Debug(string message) => Diagnostic.Create(
                 new DiagnosticDescriptor(
