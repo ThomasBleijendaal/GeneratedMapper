@@ -1,0 +1,30 @@
+name: .NET Core
+
+on: 
+    push:
+        branches:
+        - main
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '5.0.100'
+    - name: Build Mapper
+      run: dotnet build --configuration Release ./src/GeneratedMapper/GeneratedMapper.csproj
+    - name: Build Abstractions
+      run: dotnet build --configuration Release ./src/GeneratedMapper.Abstractions/GeneratedMapper.Abstractions.csproj
+    - name: Build Attributes
+      run: dotnet build --configuration Release ./src/GeneratedMapper.Attributes/GeneratedMapper.Attributes.csproj
+    - name: Publish Mapper
+      run: dotnet nuget push ./src/GeneratedMapper/bin/Release/*.nupkg -k ${{ secrets.NUGET_APIKEY }} -s https://api.nuget.org/v3/index.json --skip-duplicate
+    - name: Publish Abstractions
+      run: dotnet nuget push ./src/GeneratedMapper.Abstractions/bin/Release/*.nupkg -k ${{ secrets.NUGET_APIKEY }} -s https://api.nuget.org/v3/index.json --skip-duplicate
+    - name: Publish Attributes
+      run: dotnet nuget push ./src/GeneratedMapper.Attributes/bin/Release/*.nupkg -k ${{ secrets.NUGET_APIKEY }} -s https://api.nuget.org/v3/index.json --skip-duplicate

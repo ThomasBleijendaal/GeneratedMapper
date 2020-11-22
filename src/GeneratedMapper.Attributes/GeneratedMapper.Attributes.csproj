@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.1.1-preview</Version>
+    <Authors>Thomas Bleijendaal</Authors>
+    <Company>Thomas Bleijendaal</Company>
+    <Product>Generated Mapper</Product>
+    <Description>This package contains the MapFrom, MapTo and MapWith attributes for the compile-time object-to-object mapper generator.</Description>
+    <PackageProjectUrl>https://github.com/ThomasBleijendaal/GeneratedMapper</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/ThomasBleijendaal/GeneratedMapper</RepositoryUrl>
+    <RepositoryType>Github</RepositoryType>
+    <PackageTags>C# compile-time object-to-object mapper generator</PackageTags>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>
