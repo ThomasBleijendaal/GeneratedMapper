@@ -56,7 +56,7 @@ public static partial class SourceDTOMapToExtensions
 
 ```c#
 [MapTo(typeof(DestinationViewModel))]
-public class Source
+public class SourceDTO
 {
     public string Name { get; set; }
 
