@@ -5,7 +5,7 @@ namespace GeneratedMapper.Helpers
 {
     public static class DiagnosticsHelper
     {
-        private static ConstStruct _noParameterlessConstructor = new()
+        private static DiagStruct _noParameterlessConstructor = new()
         {
             Id = "GM001",
             Title = "Type has no parameterless constructor.",
@@ -13,7 +13,7 @@ namespace GeneratedMapper.Helpers
             Severity = DiagnosticSeverity.Error
         };
 
-        private static ConstStruct _unrecognizedTypes = new()
+        private static DiagStruct _unrecognizedTypes = new()
         {
             Id = "GM002",
             Title = "Source or target type cannot be recognized",
@@ -21,7 +21,7 @@ namespace GeneratedMapper.Helpers
             Severity = DiagnosticSeverity.Error
         };
 
-        private static ConstStruct _unmappableProperty = new()
+        private static DiagStruct _unmappableProperty = new()
         {
             Id = "GM003",
             Title = "Property cannot be mapped",
@@ -29,7 +29,7 @@ namespace GeneratedMapper.Helpers
             Severity = DiagnosticSeverity.Error
         };
 
-        private static ConstStruct _incorrectNullablity = new()
+        private static DiagStruct _incorrectNullablity = new()
         {
             Id = "GM004",
             Title = "Property cannot be mapped",
@@ -37,7 +37,7 @@ namespace GeneratedMapper.Helpers
             Severity = DiagnosticSeverity.Error
         };
 
-        private static ConstStruct _leftOverProperty = new()
+        private static DiagStruct _leftOverProperty = new()
         {
             Id = "GM005",
             Title = "Property cannot be mapped",
@@ -45,7 +45,7 @@ namespace GeneratedMapper.Helpers
             Severity = DiagnosticSeverity.Error
         };
 
-        private static ConstStruct _cannotFindType = new()
+        private static DiagStruct _cannotFindType = new()
         {
             Id = "GM006",
             Title = "Type cannot be found",
@@ -53,7 +53,7 @@ namespace GeneratedMapper.Helpers
             Severity = DiagnosticSeverity.Error
         };
 
-        private static ConstStruct _cannotFindConstructorArgumentType = new()
+        private static DiagStruct _cannotFindConstructorArgumentType = new()
         {
             Id = "GM007",
             Title = "Type cannot be found of constructor parameter",
@@ -61,7 +61,7 @@ namespace GeneratedMapper.Helpers
             Severity = DiagnosticSeverity.Error
         };
 
-        private static ConstStruct _unmappableEnumerableProperty = new()
+        private static DiagStruct _unmappableEnumerableProperty = new()
         {
             Id = "GM008",
             Title = "Property cannot be mapped",
@@ -86,7 +86,6 @@ namespace GeneratedMapper.Helpers
         public static Diagnostic UnmappableEnumerableProperty(AttributeData attributeData, string attributedClass, string property, string targetProperty, string targetClass)
             => GetDiagnostic(_unmappableEnumerableProperty, attributeData, attributedClass, property, targetProperty, targetClass);
 
-
         public static Diagnostic Debug(Exception ex) => Debug($"{ex.Message } -- {ex.StackTrace.Replace("\n", "--").Replace("\r", "")}");
 
         public static Diagnostic Debug(string message) => Diagnostic.Create(
@@ -99,7 +98,7 @@ namespace GeneratedMapper.Helpers
                     true),
                 default);
 
-        private static Diagnostic GetDiagnostic(ConstStruct message, AttributeData attributeData, params string[] replacements)
+        private static Diagnostic GetDiagnostic(DiagStruct message, AttributeData attributeData, params string[] replacements)
             => Diagnostic.Create(
                 new DiagnosticDescriptor(
                     message.Id,
@@ -110,13 +109,12 @@ namespace GeneratedMapper.Helpers
                     true),
                 attributeData.ApplicationSyntaxReference!.GetSyntax().GetLocation());
 
-        private struct ConstStruct
+        private struct DiagStruct
         {
             public string Id { get; set; }
             public string Title { get; set; }
             public string Message { get; set; }
             public DiagnosticSeverity Severity { get; set; }
-
         }
     }
 }

@@ -2,6 +2,7 @@
 {
     public enum IndentStyle
     {
-        Tab, Space
+        Tab, 
+        Space
     }
 }

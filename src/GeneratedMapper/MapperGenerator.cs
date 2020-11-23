@@ -24,8 +24,7 @@ namespace GeneratedMapper
                     if (candidateTypeSymbol is not null)
                     {
                         var attributes = candidateTypeSymbol.GetAttributes()
-                            .Where(x => x.AttributeClass!.Name.Contains("MapFrom") ||
-                                x.AttributeClass!.Name.Contains("MapTo"));
+                            .Where(x => x.AttributeClass!.Name.Contains("MapFrom") || x.AttributeClass!.Name.Contains("MapTo"));
 
                         foreach (var mappingAttribute in attributes)
                         {
