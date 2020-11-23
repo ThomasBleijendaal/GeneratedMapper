@@ -365,5 +365,36 @@ namespace Namespace
     }
 }
 ");
+
+        // TODO: resolver arguments to nested mapper
+//        private static TestCaseData MappingNextedClassPropertyFromSourceToDestination()
+//            => new TestCaseData(
+//                new[]
+//                {
+//                    new PropertyToPropertyWithMethodInvocationMapping("NestedProperty", "NestedProperty", "ToNestedDestination")
+//                },
+//                @"using System;
+
+//namespace Namespace
+//{
+//    public static partial class SourceMapToExtensions
+//    {
+//        public static Destination MapToDestination(this Source self)
+//        {
+//            if (self is null)
+//            {
+//                throw new ArgumentNullException(nameof(self));
+//            }
+            
+//            var target = new Destination
+//            {
+//                NestedProperty = self.NestedProperty.ToNestedDestination(),
+//            };
+            
+//            return target;
+//        }
+//    }
+//}
+//");
     }
 }

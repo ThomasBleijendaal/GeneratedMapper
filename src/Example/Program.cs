@@ -1,5 +1,4 @@
-﻿using GeneratedMapper.Attributes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -65,30 +64,18 @@ namespace Example
             var destination5 = source5.MapToDestination5();
 
             Console.WriteLine(destination5.NestedNames.First().Name);
+
+            var source6 = new Source6
+            {
+                Sub = new SubSource6
+                {
+                    Name = "Hi"
+                }
+            };
+
+            var destination6 = source6.MapToDestination6();
+
+            Console.WriteLine(destination6.Sub.Name);
         }
-    }
-
-    [MapTo(typeof(Destination5))]
-    public class Source5
-    {
-        public NestedSource5Class[]? NestedNames { get; set; }
-
-        
-    }
-
-    [MapTo(typeof(NestedDestination5Class))]
-    public class NestedSource5Class
-    {
-        public string Name { get; set; }
-    }
-
-    public class Destination5
-    {
-        public NestedDestination5Class[] NestedNames { get; set; }
-
-    }
-    public class NestedDestination5Class
-    {
-        public string Name { get; set; }
     }
 }

@@ -6,6 +6,7 @@ using System.Linq;
 namespace GeneratedMapper.Mappings
 {
     // TODO: fix namespace issue if extension method is outside namespace
+    // TODO: fix the nullability of source (include a ? when needed)
     internal class PropertyToPropertyWithMethodInvocationMapping : IMapping
     {
         public PropertyToPropertyWithMethodInvocationMapping(string sourcePropertyName, string destinationPropertyName, string method)

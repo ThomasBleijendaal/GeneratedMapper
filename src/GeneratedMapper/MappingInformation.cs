@@ -60,42 +60,46 @@ namespace GeneratedMapper
                     var propertyMethodCall = default(string);
                     var resolverTypeToUse = default(ITypeSymbol);
                     var collectionTypeToUse = default(ITypeSymbol);
+                    var sourcePropertyHasMapToAttribute = false;
+                    var destinationPropertyHasMapFromAttribute = false;
 
-                    if (!property.Type.Equals(stringType, SymbolEqualityComparer.Default) &&
-                        property.Type.Interfaces.Contains(enumerableType) &&
-                        property.Type is INamedTypeSymbol namedPropertyType &&
-                        namedPropertyType.IsGenericType)
                     {
-                        collectionTypeToUse = namedPropertyType.TypeArguments.FirstOrDefault();
-                    }
-                    else if (property.Type is IArrayTypeSymbol arrayPropertyType)
-                    {
-                        collectionTypeToUse = arrayPropertyType.ElementType;
+                        // collection detection
+                        if (!property.Type.Equals(stringType, SymbolEqualityComparer.Default) &&
+                            property.Type.Interfaces.Contains(enumerableType) &&
+                            property.Type is INamedTypeSymbol namedPropertyType &&
+                            namedPropertyType.IsGenericType)
+                        {
+                            collectionTypeToUse = namedPropertyType.TypeArguments.FirstOrDefault();
+                        }
+                        else if (property.Type is IArrayTypeSymbol arrayPropertyType)
+                        {
+                            collectionTypeToUse = arrayPropertyType.ElementType;
+                        }
                     }
 
-                    // override with [MapWith] attribute on attributed class property
-                    // TODO: fix the way parameters are recognized, this becomes a mess
-                    var mapWithAttribute = property.GetAttributes().FirstOrDefault(x => x.AttributeClass?.Name.Contains("MapWith") ?? false);
-                    if (mapWithAttribute != null)
                     {
-                        if (mapWithAttribute.ConstructorArguments.ElementAtOrDefault(0).Value is string propertyName)
+                        // override detection
+                        // override with [MapWith] attribute on attributed class property
+                        // TODO: fix the way parameters are recognized, this becomes a mess
+                        var mapWithAttribute = property.GetAttributes().FirstOrDefault(x => x.AttributeClass?.Name.Contains("MapWith") ?? false);
+                        if (mapWithAttribute != null)
                         {
-                            targetPropertyToFind = propertyName;
-                        }
-                        if (mapWithAttribute.ConstructorArguments.ElementAtOrDefault(1).Value is string methodName)
-                        {
-                            propertyMethodCall = methodName;
-                        }
-                        {
-                            if (mapWithAttribute.ConstructorArguments.ElementAtOrDefault(0).Value is ITypeSymbol resolverType)
+                            if (mapWithAttribute.ConstructorArguments.ElementAtOrDefault(0).Value is string propertyName)
                             {
-                                resolverTypeToUse = resolverType;
+                                targetPropertyToFind = propertyName;
                             }
-                        }
-                        {
-                            if (mapWithAttribute.ConstructorArguments.ElementAtOrDefault(1).Value is ITypeSymbol resolverType)
+                            if (mapWithAttribute.ConstructorArguments.ElementAtOrDefault(1).Value is string methodName)
                             {
-                                resolverTypeToUse = resolverType;
+                                propertyMethodCall = methodName;
+                            }
+                            if (mapWithAttribute.ConstructorArguments.ElementAtOrDefault(0).Value is ITypeSymbol resolverType0)
+                            {
+                                resolverTypeToUse = resolverType0;
+                            }
+                            if (mapWithAttribute.ConstructorArguments.ElementAtOrDefault(1).Value is ITypeSymbol resolverType1)
+                            {
+                                resolverTypeToUse = resolverType1;
                             }
                         }
                     }
@@ -105,12 +109,45 @@ namespace GeneratedMapper
                             property.Name == targetPropertyToFind &&
                             property.Type.Equals(property.Type, SymbolEqualityComparer.Default));
 
+                    
                     var sourceProperty = isMapFromAttribute ? targetProperty : property;
                     var destinationProperty = isMapFromAttribute ? property : targetProperty;
 
+                    {
+                        // existing MapFrom detection on destination
+                        if (destinationProperty.Type is INamedTypeSymbol namedDestinationPropertyType &&
+                            namedDestinationPropertyType.GetAttributes().FirstOrDefault(x => x.AttributeClass?.Name.Contains("MapFrom") ?? false) is AttributeData destinationPropertyTypeMapFromAttribute)
+                        {
+                            destinationPropertyHasMapFromAttribute = true;
+
+                            // TODO: this should be based on some reuse from the main function + assumes only one MapFrom attribute
+                            var destinationPropertyTargetType = destinationPropertyTypeMapFromAttribute.ConstructorArguments[0].Value as INamedTypeSymbol;
+                            if (!destinationPropertyTargetType?.Equals(sourceProperty.Type, SymbolEqualityComparer.Default) ?? false)
+                            {
+                                diagnostics.Add(DiagnosticsHelper.SubClassHasIncompatibleMapper(attributeData, destinationProperty.Type.Name, destinationProperty.Name, "MapFrom", "from", sourceProperty.Type.Name));
+                                return;
+                            }
+                        }
+
+                        // existing MapTo detection on source
+                        if (sourceProperty.Type is INamedTypeSymbol namedSourcePropertyType &&
+                            namedSourcePropertyType.GetAttributes().FirstOrDefault(x => x.AttributeClass?.Name.Contains("MapTo") ?? false) is AttributeData sourcePropertyTypeMapFromAttribute)
+                        {
+                            destinationPropertyHasMapFromAttribute = true;
+
+                            // TODO: this should be based on some reuse from the main function + assumes only one MapFrom attribute
+                            var sourceTargetPropertyType = sourcePropertyTypeMapFromAttribute.ConstructorArguments[0].Value as INamedTypeSymbol;
+                            if (!sourceTargetPropertyType?.Equals(destinationProperty.Type, SymbolEqualityComparer.Default) ?? false)
+                            {
+                                diagnostics.Add(DiagnosticsHelper.SubClassHasIncompatibleMapper(attributeData, sourceProperty.Type.Name, sourceProperty.Name, "MapTo", "to", destinationProperty.Type.Name));
+                                return;
+                            }
+                        }
+                    }
+
                     if (targetProperty is not null && (HasCorrectNullability(destinationProperty, sourceProperty) || collectionTypeToUse is not null))
                     {
-                        // TODO: refactor these mappings to be more like mixins instead of discrete types
+                        // TODO: refactor these mappings to be more like mixins / traints instead of discrete types
                         if (resolverTypeToUse is INamedTypeSymbol resolverType)
                         {
                             var resolverConstructor = resolverType.Constructors
@@ -162,7 +199,7 @@ namespace GeneratedMapper
 
                                 destinationCollectionItemType = namedDestinationPropertyType.TypeArguments.First();
 
-                                listType = 
+                                listType =
                                     unboundGenericType.Equals(genericListlikeType, SymbolEqualityComparer.Default) ? DestinationCollectionType.List
                                     : unboundGenericType.Equals(genericReadonlyListlikeType, SymbolEqualityComparer.Default) ? DestinationCollectionType.List
                                     : unboundGenericType.Equals(genericEnumerableType, SymbolEqualityComparer.Default) ? DestinationCollectionType.Enumerable
@@ -190,6 +227,11 @@ namespace GeneratedMapper
                         {
                             // TODO: the method can be outside the namespace of the extension method
                             mappings.Add(new PropertyToPropertyWithMethodInvocationMapping(sourceProperty.Name, destinationProperty.Name, propertyMethodCall));
+                        }
+                        else if (destinationPropertyHasMapFromAttribute || sourcePropertyHasMapToAttribute)
+                        {
+                            // TODO: what about arguments for the mapper?
+                            mappings.Add(new PropertyToPropertyWithMethodInvocationMapping(sourceProperty.Name, destinationProperty.Name, $"MapTo{destinationProperty.Type.Name}"));
                         }
                         else
                         {

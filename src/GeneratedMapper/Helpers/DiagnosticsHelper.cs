@@ -69,6 +69,14 @@ namespace GeneratedMapper.Helpers
             Severity = DiagnosticSeverity.Error
         };
 
+        private static DiagStruct _subClassHasIncompatibleMapper = new()
+        {
+            Id = "GM008",
+            Title = "Property cannot be mapped",
+            Message = "The type '{0}' of property '{1}' does not have a compatible [{2}] attribute indicating it can be mapped {3} type '{4}'.",
+            Severity = DiagnosticSeverity.Error
+        };
+
         public static Diagnostic NoParameterlessConstructor(AttributeData attributeData)
             => GetDiagnostic(_noParameterlessConstructor, attributeData);
         public static Diagnostic UnrecognizedTypes(AttributeData attributeData)
@@ -85,6 +93,8 @@ namespace GeneratedMapper.Helpers
             => GetDiagnostic(_cannotFindConstructorArgumentType, attributeData, argumentName, resolverTypeName);
         public static Diagnostic UnmappableEnumerableProperty(AttributeData attributeData, string attributedClass, string property, string targetProperty, string targetClass)
             => GetDiagnostic(_unmappableEnumerableProperty, attributeData, attributedClass, property, targetProperty, targetClass);
+        public static Diagnostic SubClassHasIncompatibleMapper(AttributeData attributeData, string attributedPropertyType, string attributedProperty, string attribute, string toOrFrom, string targetPropertyType)
+            => GetDiagnostic(_subClassHasIncompatibleMapper, attributeData, attributedPropertyType, attributedProperty, attribute, toOrFrom, targetPropertyType);
 
         public static Diagnostic Debug(Exception ex) => Debug($"{ex.Message } -- {ex.StackTrace.Replace("\n", "--").Replace("\r", "")}");
 
