@@ -57,6 +57,8 @@ namespace GeneratedMapper.Tests
                     new PropertyToPropertyMapping("Name", "Name")
                 },
                 @"using System;
+using System.Linq;
+using Namespace;
 
 namespace Namespace
 {
@@ -89,6 +91,8 @@ namespace Namespace
                     new PropertyToPropertyMapping("Content", "Content"),
                 },
                 @"using System;
+using System.Linq;
+using Namespace;
 
 namespace Namespace
 {
@@ -121,6 +125,8 @@ namespace Namespace
                     new PropertyToPropertyMapping("Name", "Nom")
                 },
                 @"using System;
+using System.Linq;
+using Namespace;
 
 namespace Namespace
 {
@@ -151,6 +157,8 @@ namespace Namespace
                     new PropertyToPropertyWithMethodInvocationMapping("Count", "Count", "ToString")
                 },
                 @"using System;
+using System.Linq;
+using Namespace;
 
 namespace Namespace
 {
@@ -181,6 +189,8 @@ namespace Namespace
                     new PropertyResolverMapping("Parameter", "ResolvedParameter", "Resolver", "Namespace.Resolvers", Enumerable.Empty<ConstructorParameter>())
                 },
                 @"using System;
+using System.Linq;
+using Namespace;
 using Namespace.Resolvers;
 
 namespace Namespace
@@ -221,6 +231,8 @@ namespace Namespace
                         })
                 },
                 @"using System;
+using System.Linq;
+using Namespace;
 using Namespace.Resolvers;
 using Namespace.Services;
 
@@ -270,6 +282,8 @@ namespace Namespace
                         })
                 },
                 @"using System;
+using System.Linq;
+using Namespace;
 using Namespace.Resolvers1;
 using Namespace.Services1;
 using Namespace.Resolvers2;
@@ -310,6 +324,7 @@ namespace Namespace
                 },
                 @"using System;
 using System.Linq;
+using Namespace;
 using Namespace.Collections;
 
 namespace Namespace
@@ -342,6 +357,7 @@ namespace Namespace
                 },
                 @"using System;
 using System.Linq;
+using Namespace;
 using Namespace.Collections;
 
 namespace Namespace

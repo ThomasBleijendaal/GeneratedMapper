@@ -104,7 +104,7 @@ namespace GeneratedMapper.Helpers
                     message,
                     message,
                     "Usage",
-                    DiagnosticSeverity.Error,
+                    DiagnosticSeverity.Warning,
                     true),
                 default);
 

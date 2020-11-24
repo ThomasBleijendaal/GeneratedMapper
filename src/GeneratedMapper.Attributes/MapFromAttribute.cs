@@ -15,5 +15,10 @@ namespace GeneratedMapper.Attributes
         }
 
         public Type MapFromType { get; }
+
+        /// <summary>
+        /// Set when using multiple Map attributes on the same class with different configurations.
+        /// </summary>
+        public int Index { get; set; }
     }
 }

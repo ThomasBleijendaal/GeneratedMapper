@@ -26,17 +26,13 @@ namespace GeneratedMapper
             using var indentWriter = new IndentedTextWriter(writer,
                 configurationValues.IndentStyle == IndentStyle.Tab ? "\t" : new string(' ', (int)configurationValues.IndentSize));
 
-            var usingStatements = new List<string>();
-
-            if (!information.SourceType.IsValueType)
+            var usingStatements = new List<string>
             {
-                usingStatements.Add("using System;");
+                "using System;",
+                "using System.Linq;"
             };
 
-            // TODO: do we need those smarts? or just output always all related namespaces
-            if (!information.DestinationType.ContainingNamespace.IsGlobalNamespace &&
-                !information.SourceType.ContainingNamespace.ToDisplayString().StartsWith(
-                    information.DestinationType.ContainingNamespace.ToDisplayString(), StringComparison.InvariantCulture))
+            if (!information.DestinationType.ContainingNamespace.IsGlobalNamespace)
             {
                 usingStatements.Add($"using {information.DestinationType.ContainingNamespace.ToDisplayString()};");
             }

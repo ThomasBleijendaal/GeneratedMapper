@@ -1,7 +1,10 @@
-﻿using GeneratedMapper.Configurations;
+﻿using GeneratedMapper.Attributes;
+using GeneratedMapper.Configurations;
+using GeneratedMapper.Helpers;
 using GeneratedMapper.SyntaxReceivers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -16,6 +19,9 @@ namespace GeneratedMapper
         {
             if (context.SyntaxReceiver is MapAttributeReceiver attributeReceiver)
             {
+                var mapToAttribute = context.Compilation.GetTypeByMetadataName(typeof(MapToAttribute).FullName);
+                var mapFromAttribute = context.Compilation.GetTypeByMetadataName(typeof(MapFromAttribute).FullName);
+
                 foreach (var candidateTypeNode in attributeReceiver.Candidates)
                 {
                     var model = context.Compilation.GetSemanticModel(candidateTypeNode.SyntaxTree);
@@ -24,7 +30,10 @@ namespace GeneratedMapper
                     if (candidateTypeSymbol is not null)
                     {
                         var attributes = candidateTypeSymbol.GetAttributes()
-                            .Where(x => x.AttributeClass!.Name.Contains("MapFrom") || x.AttributeClass!.Name.Contains("MapTo"));
+                            .Where(x =>
+                                x.AttributeClass != null &&
+                                (x.AttributeClass.Equals(mapToAttribute, SymbolEqualityComparer.Default) ||
+                                x.AttributeClass.Equals(mapFromAttribute, SymbolEqualityComparer.Default)));
 
                         foreach (var mappingAttribute in attributes)
                         {

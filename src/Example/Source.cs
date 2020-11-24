@@ -8,7 +8,7 @@ namespace Example
     {
         public string Name { get; set; }
 
-        [Ignore]
+        [IgnoreAttribute]
         public string SomeProp { get; set; }
     }
 }

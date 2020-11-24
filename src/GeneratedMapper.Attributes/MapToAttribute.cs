@@ -2,7 +2,7 @@
 
 namespace GeneratedMapper.Attributes
 {
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
     public class MapToAttribute : Attribute
     {
         /// <summary>
@@ -15,5 +15,10 @@ namespace GeneratedMapper.Attributes
         }
 
         public Type MapToType { get; }
+
+        /// <summary>
+        /// Set when using multiple Map attributes on the same class with different configurations.
+        /// </summary>
+        public int Index { get; set; }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace GeneratedMapper.SyntaxReceivers
 {
@@ -12,15 +13,11 @@ namespace GeneratedMapper.SyntaxReceivers
         {
             if (syntaxNode is TypeDeclarationSyntax typeDeclarationSyntax)
             {
-                foreach (var attributeList in typeDeclarationSyntax.AttributeLists)
+                if (typeDeclarationSyntax.AttributeLists.Any(
+                    x => x.Attributes.Any(
+                        x => x.Name.ToString().Contains("MapTo") || x.Name.ToString().Contains("MapFrom"))))
                 {
-                    foreach (var attribute in attributeList.Attributes)
-                    {
-                        if (attribute.Name.ToString().Contains("MapTo") || attribute.Name.ToString().Contains("MapFrom"))
-                        {
-                            Candidates.Add(typeDeclarationSyntax);
-                        }
-                    }
+                    Candidates.Add(typeDeclarationSyntax);
                 }
             }
         }
