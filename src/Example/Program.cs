@@ -66,69 +66,79 @@ namespace Example
 
             Console.WriteLine(destination5.NestedNames.First().Name);
 
-            var source6 = new Source6
-            {
-                Sub = new SubSource6
-                {
-                    Name = "Hi"
-                }
-            };
+            //var source6 = new Source6
+            //{
+            //    Sub = new SubSource6
+            //    {
+            //        Name = "Hi"
+            //    }
+            //};
 
-            var destination6 = source6.MapToDestination6();
+            //var destination6 = source6.MapToDestination6();
 
-            Console.WriteLine(destination6.Sub.Name);
+            //Console.WriteLine(destination6.Sub.Name);
 
-            var source7a = new Source7a()
-            {
-                Name = "Hi A"
-            };
-            var source7b = new Source7b()
-            {
-                Name = "Hi B"
-            };
+            //var source7a = new Source7a()
+            //{
+            //    Name = "Hi A"
+            //};
+            //var source7b = new Source7b()
+            //{
+            //    Name = "Hi B"
+            //};
 
-            ;
+            //var destination7a = source7a.MapToDestinationSource7().MapToDestination7a();
+            //var destination7b = source7b.MapToDestinationSource7().MapToDestination7b();
 
-            var destination7a = source7a.MapToDestinationSource7().MapToDestination7a();
-            var destination7b = source7b.MapToDestinationSource7().MapToDestination7b();
+            //Console.WriteLine(destination7a.Name);
+            //Console.WriteLine(destination7b.Name);
 
-            Console.WriteLine(destination7a.Name);
-            //Console.WriteLine(destination7a.NameLength);
-            Console.WriteLine(destination7b.Name);
-            //Console.WriteLine(destination7b.NameLength);
+            //var source8 = new Source8
+            //{
+            //    StartDate = DateTime.UtcNow,
+            //    EndDate = default
+            //};
+
+            //;
+
+            //var destination8 = source8.MapToDestination8(CultureInfo.CurrentCulture, "wut");
+
+            //Console.WriteLine(destination8.StartDate);
+            //Console.WriteLine(destination8.EndDate);
+
         }
     }
 
-    public class Source7a
-    {
-        public string Name { get; set; }
-    }
-    public class Source7b
-    {
-        public string Name { get; set; }
-    }
+    //[MapTo(typeof(Destination8))]
+    //public class Source8
+    //{
+    //    [MapWith(typeof(DateResolver))]
+    //    public DateTime? StartDate { get; set; }
 
-    [MapFrom(typeof(Source7a), Index = 1)]
-    [MapFrom(typeof(Source7b), Index = 2)]
-    [MapTo(typeof(Destination7a), Index = 3)]
-    [MapTo(typeof(Destination7b), Index = 3)]
-    public class DestinationSource7
-    {
-        public string Name { get; set; }
+    //    [MapWith(typeof(DateResolver))]
+    //    public DateTime? EndDate { get; set; }
+    //}
 
-        [MapWith("Name", "Count", Index = 1)]
-        [MapWith("Name", "GetHashCode", Index = 2)]
-        [Ignore(Index = 3)]
-        public int NameLength { get; set; }
-    }
+    //public class Destination8
+    //{
+    //    public string StartDate { get; set; }
+    //    public string EndDate { get; set; }
+    //}
 
-    public class Destination7a
-    {
-        public string Name { get; set; }
-    }
+    //public class DateResolver
+    //{
+    //    private readonly CultureInfo _cultureInfo;
+    //    private readonly string? _fallback;
 
-    public class Destination7b
-    {
-        public string Name { get; set; }
-    }
+    //    public DateResolver(CultureInfo cultureInfo, string? fallback = "blaat")
+    //    {
+    //        _cultureInfo = cultureInfo;
+    //        _fallback = fallback;
+    //    }
+
+    //    public string Resolve(DateTime? date)
+    //    {
+    //        return date?.ToString(_cultureInfo.DateTimeFormat) ?? _fallback ?? "-";
+    //    }
+    //}
 }

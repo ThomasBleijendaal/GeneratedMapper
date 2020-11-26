@@ -5,14 +5,14 @@ namespace Example
 {
     public class PropertyResolver : IMapResolver<string, string>
     {
-        private readonly CultureInfo cultureInfo;
+        private readonly CultureInfo _cultureInfo;
 
         public PropertyResolver(CultureInfo cultureInfo)
         {
-            this.cultureInfo = cultureInfo;
+            _cultureInfo = cultureInfo;
         }
 
         public string Resolve(string input)
-            => $"{input}{input}{input}{cultureInfo.Name}";
+            => $"{input}{input}{input}{_cultureInfo.Name}";
     }
 }

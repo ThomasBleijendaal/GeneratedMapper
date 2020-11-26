@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace GeneratedMapper
+namespace GeneratedMapper.Information
 {
     internal sealed class MappingInformation
     {
@@ -26,13 +26,15 @@ namespace GeneratedMapper
 
         private readonly List<Diagnostic> _diagnostics = new List<Diagnostic>();
 
-        public MappingInformation(ITypeSymbol destinationType, IEnumerable<Diagnostic> diagnostics, IEnumerable<IMapping> mappings, ITypeSymbol sourceType)
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+        public MappingInformation(ITypeSymbol destinationType, IEnumerable<Diagnostic> diagnostics, IEnumerable<PropertyMappingInformation> mappings, ITypeSymbol sourceType)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
             _diagnostics.AddRange(diagnostics);
 
-            DestinationType = destinationType ?? throw new ArgumentNullException(nameof(destinationType));
-            Mappings = mappings ?? throw new ArgumentNullException(nameof(mappings));
-            SourceType = sourceType ?? throw new ArgumentNullException(nameof(sourceType));
+            DestinationType = destinationType;
+            Mappings = mappings;
+            SourceType = sourceType;
         }
 
         // TODO: issues: no nested class detection (namespace issue)
@@ -51,14 +53,15 @@ namespace GeneratedMapper
 
             try
             {
+                var hasInvalidMapping = false;
+
                 var isMapFromAttribute = attributeData.AttributeClass!.Name.Contains("MapFrom");
                 var attributeIndex = GetAttributeIndex(attributeData);
 
-                var targetType = attributeData.ConstructorArguments[0].Value as INamedTypeSymbol;
-
-                var destinationType = (isMapFromAttribute ? attributedType : targetType) as INamedTypeSymbol;
-
-                if (targetType == null || attributedType == null || destinationType == null)
+                if (attributedType == null ||
+                    attributeData.ConstructorArguments[0].Value is not INamedTypeSymbol targetType ||
+                    (isMapFromAttribute ? targetType : attributedType) is not INamedTypeSymbol sourceType ||
+                    (isMapFromAttribute ? attributedType : targetType) is not INamedTypeSymbol destinationType)
                 {
                     _diagnostics.Add(DiagnosticsHelper.UnrecognizedTypes(attributeData));
                     return;
@@ -70,7 +73,7 @@ namespace GeneratedMapper
                     return;
                 }
 
-                var mappings = new List<IMapping>();
+                var mappings = new List<PropertyMappingInformation>();
 
                 var destinationPropertyExclusions = TargetPropertiesToIgnore(attributedType);
 
@@ -82,18 +85,10 @@ namespace GeneratedMapper
                 var processedTargetProperties = new List<IPropertySymbol>();
 
                 foreach (var attibutedTypeProperty in attributedType.GetMembers().OfType<IPropertySymbol>()
-                    .Where(x => x.GetMethod is not null && x.GetMethod.DeclaredAccessibility == Accessibility.Public)
+                    .Where(x => x?.GetMethod is not null && x.GetMethod.DeclaredAccessibility == Accessibility.Public)
                     .Where(x => !ShouldIgnoreProperty(x)))
                 {
-                    if (attibutedTypeProperty == null)
-                    {
-                        continue;
-                    }
 
-                    var sourcePropertyHasMapToAttribute = false;
-                    var destinationPropertyHasMapFromAttribute = false;
-
-                    var collectionTypeToUse = GetCollectionTypeToUse(attibutedTypeProperty);
                     var propertyMethodToCall = GetMapWithMethodToCall(attibutedTypeProperty, attributeIndex);
                     var resolverTypeToUse = GetMapWithResolverType(attibutedTypeProperty, attributeIndex);
 
@@ -103,82 +98,70 @@ namespace GeneratedMapper
 
                     var sourceProperty = isMapFromAttribute ? targetTypeProperty : attibutedTypeProperty;
                     var destinationProperty = isMapFromAttribute ? attibutedTypeProperty : targetTypeProperty;
+                    var sourcePropertyIsNullable = sourceProperty.NullableAnnotation == NullableAnnotation.Annotated;
+                    var destinationPropertyIsNullable = destinationProperty.NullableAnnotation == NullableAnnotation.Annotated;
 
-                    // TODO: refactor
+                    var sourcePropertyCollectionType = GetCollectionType(sourceProperty);
+                    var destinationPropertyCollectionType = GetCollectionType(destinationProperty);
+
+                    var destinationPropertyTypeMapFromAttribute = FindAttributeFromType(destinationProperty.Type, _mapFromAttribute, sourceProperty.Type);
+                    var sourcePropertyTypeMapFromAttribute = FindAttributeFromType(sourceProperty.Type, _mapToAttribute, destinationProperty.Type);
+
+                    var destinationPropertyCollectionTypMapFromAttribute = destinationPropertyCollectionType is null || sourcePropertyCollectionType is null 
+                        ? default : FindAttributeFromType(destinationPropertyCollectionType, _mapFromAttribute, sourcePropertyCollectionType);
+
+                    var sourcePropertyCollectionTypMapToAttribute = destinationPropertyCollectionType is null || sourcePropertyCollectionType is null 
+                        ? default : FindAttributeFromType(sourcePropertyCollectionType, _mapToAttribute, destinationPropertyCollectionType);
+
+                    var propertyMapping = new PropertyMappingInformation(sourceType, destinationType);
+                    propertyMapping
+                        .MapFrom(sourceProperty.Name, sourcePropertyIsNullable)
+                        .MapTo(destinationProperty.Name, destinationPropertyIsNullable);
+
+                    // general issues:
+                    // TODO: what if the user wants to resolve something that also has a MapTo / MapFrom?
+
+                    if (resolverTypeToUse is INamedTypeSymbol resolverType)
                     {
-                        // existing MapFrom detection on destination
-                        var destinationPropertyTypeMapFromAttribute = FindAttributeFromPropertyType(destinationProperty, _mapFromAttribute, attributeIndex);
-                        if (destinationPropertyTypeMapFromAttribute != null)
+                        MapPropertyUsingResolver(propertyMapping, attributeData, resolverType);
+                    }
+
+                    // MapTo / MapFrom on nested property type
+                    if (destinationPropertyTypeMapFromAttribute is not null || sourcePropertyTypeMapFromAttribute is not null)
+                    {
+                        propertyMapping.UsingMapper(sourceProperty.Type, destinationProperty.Type);
+                    }
+
+                    // MapTo / MapFrom on collection element type
+                    if (sourcePropertyCollectionType is not null && destinationPropertyCollectionType is not null)
+                    {
+                        // TODO: what about when it cannot find the type (namespace etc)?
+                        MapPropertyAsCollection(propertyMapping, destinationProperty);
+
+                        if (destinationPropertyCollectionTypMapFromAttribute is not null || sourcePropertyCollectionTypMapToAttribute is not null)
                         {
-                            destinationPropertyHasMapFromAttribute = true;
-
-                            // TODO: this should be based on some reuse from the main function + assumes only one MapFrom attribute
-                            var destinationPropertyTargetType = destinationPropertyTypeMapFromAttribute.ConstructorArguments[0].Value as INamedTypeSymbol;
-                            if (!destinationPropertyTargetType?.Equals(sourceProperty.Type, SymbolEqualityComparer.Default) ?? false)
-                            {
-                                _diagnostics.Add(DiagnosticsHelper.SubClassHasIncompatibleMapper(attributeData, destinationProperty.Type.Name, destinationProperty.Name, "MapFrom", "from", sourceProperty.Type.Name));
-                            }
-                        }
-
-                        // existing MapTo detection on source
-                        var sourcePropertyTypeMapFromAttribute = FindAttributeFromPropertyType(sourceProperty, _mapToAttribute, attributeIndex);
-                        if (sourcePropertyTypeMapFromAttribute != null)
-                        {
-                            destinationPropertyHasMapFromAttribute = true;
-
-                            // TODO: this should be based on some reuse from the main function + assumes only one MapFrom attribute
-                            var sourceTargetPropertyType = sourcePropertyTypeMapFromAttribute.ConstructorArguments[0].Value as INamedTypeSymbol;
-                            if (!sourceTargetPropertyType?.Equals(destinationProperty.Type, SymbolEqualityComparer.Default) ?? false)
-                            {
-                                _diagnostics.Add(DiagnosticsHelper.SubClassHasIncompatibleMapper(attributeData, sourceProperty.Type.Name, sourceProperty.Name, "MapTo", "to", destinationProperty.Type.Name));
-                            }
+                            propertyMapping.UsingMapper(sourcePropertyCollectionType, destinationPropertyCollectionType);
                         }
                     }
 
-                    if (targetTypeProperty is not null && (HasCorrectNullability(destinationProperty, sourceProperty) || collectionTypeToUse is not null))
+                    if (propertyMethodToCall is not null)
                     {
-                        if (resolverTypeToUse is INamedTypeSymbol resolverType)
-                        {
-                            mappings.Add(CreatePropertyResolverMapping(attributeData, sourceProperty, destinationProperty, resolverType));
-                        }
-                        else if (collectionTypeToUse is not null)
-                        {
-                            var mapping = CreateCollectionPropertyMapping(sourceProperty, destinationProperty, collectionTypeToUse);
-
-                            if (mapping != null)
-                            {
-                                mappings.Add(mapping);
-                            }
-                            else
-                            {
-                                _diagnostics.Add(DiagnosticsHelper.UnmappableEnumerableProperty(attributeData, attributedType.Name, attibutedTypeProperty.Name, targetTypeProperty.Name, targetType.Name));
-                            }
-                        }
-                        else if (propertyMethodToCall is not null)
-                        {
-                            // TODO: the method can be outside the namespace of the extension method
-                            mappings.Add(new PropertyToPropertyWithMethodInvocationMapping(sourceProperty.Name, destinationProperty.Name, propertyMethodToCall));
-                        }
-                        else if (destinationPropertyHasMapFromAttribute || sourcePropertyHasMapToAttribute)
-                        {
-                            // TODO: what about arguments for the mapper?
-                            mappings.Add(new PropertyToPropertyWithMethodInvocationMapping(sourceProperty.Name, destinationProperty.Name, $"MapTo{destinationProperty.Type.Name}"));
-                        }
-                        else
-                        {
-                            mappings.Add(new PropertyToPropertyMapping(sourceProperty.Name, destinationProperty.Name));
-                        }
-
-                        processedTargetProperties.Add(targetTypeProperty);
+                        // TODO: find namespace
+                        propertyMapping.UsingMethod(propertyMethodToCall, default);
                     }
-                    else if (targetTypeProperty is not null && !HasCorrectNullability(destinationProperty, sourceProperty))
+
+                    if (!propertyMapping.TryValidateMapping(attributeData, out var diagnostics))
                     {
-                        _diagnostics.Add(DiagnosticsHelper.IncorrectNullability(attributeData, attributedType.Name, attibutedTypeProperty.Name, targetType.Name, targetTypeProperty.Name));
+                        _diagnostics.AddRange(diagnostics);
+
+                        hasInvalidMapping = true;
                     }
                     else
                     {
-                        _diagnostics.Add(DiagnosticsHelper.UnmappableProperty(attributeData, attributedType.Name, attibutedTypeProperty.Name, targetType.Name));
+                        mappings.Add(propertyMapping);
                     }
+                    
+                    processedTargetProperties.Add(targetTypeProperty);
                 }
 
                 foreach (var remainingTargetProperty in targetProperties.Except(processedTargetProperties))
@@ -186,18 +169,12 @@ namespace GeneratedMapper
                     _diagnostics.Add(DiagnosticsHelper.LeftOverProperty(attributeData, targetType.Name, remainingTargetProperty.Name, attributedType.Name));
                 }
 
-                if (mappings.Count == 0)
+                if (mappings.Count == 0 && !hasInvalidMapping)
                 {
-                    //diagnostics.Add(Diagnostic.Create(new DiagnosticDescriptor(
-                    //	NoPropertyMapsFoundDescriptorConstants.Id, NoPropertyMapsFoundDescriptorConstants.Title,
-                    //	NoPropertyMapsFoundDescriptorConstants.Message, DescriptorConstants.Usage, DiagnosticSeverity.Error, true,
-                    //	helpLinkUri: HelpUrlBuilder.Build(
-                    //		NoPropertyMapsFoundDescriptorConstants.Id, NoPropertyMapsFoundDescriptorConstants.Title)),
-                    //	attributeData.ApplicationSyntaxReference!.GetSyntax().GetLocation()));
+                    _diagnostics.Add(DiagnosticsHelper.EmptyMapper(attributeData, sourceType.Name, destinationType.Name));
                 }
 
-                var sourceType = (isMapFromAttribute ? targetType : attributedType);
-
+                // TODO: MEH
                 (SourceType, DestinationType, Mappings) =
                     (sourceType, destinationType, mappings);
             }
@@ -207,9 +184,17 @@ namespace GeneratedMapper
             }
         }
 
-        private CollectionToCollectionPropertyMapping? CreateCollectionPropertyMapping(IPropertySymbol sourceProperty,
-            IPropertySymbol destinationProperty,
-            ITypeSymbol collectionTypeToUse)
+        public ITypeSymbol DestinationType { get; private set; } = default!;
+
+        public IEnumerable<Diagnostic> Diagnostics => _diagnostics;
+
+        public IEnumerable<PropertyMappingInformation> Mappings { get; private set; } = default!;
+
+        public ITypeSymbol SourceType { get; private set; } = default!;
+
+        public bool IsFullyResolved => Mappings.All(x => !x.RequiresMappingInformationOfMapper || (x.MappingInformationOfMapper?.IsFullyResolved ?? false));
+
+        private void MapPropertyAsCollection(PropertyMappingInformation propertyMapping, IPropertySymbol destinationProperty)
         {
             var listType = DestinationCollectionType.Enumerable;
             var destinationCollectionItemType = default(ITypeSymbol);
@@ -237,27 +222,17 @@ namespace GeneratedMapper
 
             if (destinationCollectionItemType is not null)
             {
-                return new CollectionToCollectionPropertyMapping(
-                    sourceProperty.Name,
-                    sourceProperty.NullableAnnotation == NullableAnnotation.Annotated,
-                    collectionTypeToUse.ContainingNamespace.ToDisplayString(),
-                    destinationProperty.Name,
-                    destinationProperty.NullableAnnotation == NullableAnnotation.Annotated,
-                    destinationCollectionItemType.Name,
-                    destinationCollectionItemType.ContainingNamespace.ToDisplayString(),
-                    listType);
+                propertyMapping.AsCollection(listType, destinationCollectionItemType.Name, destinationCollectionItemType.ContainingNamespace.ToDisplayString());
             }
-
-            return null;
         }
 
-        private PropertyResolverMapping CreatePropertyResolverMapping(AttributeData attributeData, IPropertySymbol sourceProperty, IPropertySymbol destinationProperty, INamedTypeSymbol resolverType)
+        private void MapPropertyUsingResolver(PropertyMappingInformation propertyMapping, AttributeData attributeData, INamedTypeSymbol resolverType)
         {
             var resolverConstructor = resolverType.Constructors
-                                            .Where(x => x.DeclaredAccessibility == Accessibility.Public)
-                                            .OrderBy(x => x.Parameters.Length)
-                                            .FirstOrDefault();
-            var constructorArguments = new List<ConstructorParameter>();
+                .Where(x => x.DeclaredAccessibility == Accessibility.Public)
+                .OrderBy(x => x.Parameters.Length)
+                .FirstOrDefault();
+            var constructorArguments = new List<MethodParameter>();
 
             if (resolverConstructor.Parameters.Length > 0)
             {
@@ -269,19 +244,30 @@ namespace GeneratedMapper
                         break;
                     }
 
-                    constructorArguments.Add(new ConstructorParameter(
+                    // TODO: this is very naive
+                    var defaultValue = !parameter.HasExplicitDefaultValue ? default : parameter.ExplicitDefaultValue;
+                    var defaultValueString = default(string);
+                    if (defaultValue != null)
+                    {
+                        if (parameter.Type.Equals(_stringType, SymbolEqualityComparer.Default))
+                        {
+                            defaultValueString = $"\"{defaultValue}\"";
+                        }
+                        else
+                        {
+                            defaultValueString = defaultValue.ToString();
+                        }
+                    }
+
+                    constructorArguments.Add(new MethodParameter(
                         parameter.Name,
-                        namedParameterType.Name,
-                        namedParameterType.ContainingNamespace.ToDisplayString()));
+                        namedParameterType.ToDisplayString(),
+                        namedParameterType.ContainingNamespace.ToDisplayString(),
+                        defaultValueString));
                 }
             }
 
-            return new PropertyResolverMapping(
-                sourceProperty.Name,
-                destinationProperty.Name,
-                resolverType.Name,
-                resolverType.ContainingNamespace.ToDisplayString(),
-                constructorArguments);
+            propertyMapping.UsingResolver(resolverType.Name, resolverType.ContainingNamespace.ToDisplayString(), constructorArguments);
         }
 
         private static int GetAttributeIndex(AttributeData attributeData)
@@ -289,26 +275,22 @@ namespace GeneratedMapper
             return attributeData.NamedArguments.FirstOrDefault(x => x.Key == "Index").Value.Value as int? ?? 0;
         }
 
-        private AttributeData? FindAttribute(ImmutableArray<AttributeData>? attributes, INamedTypeSymbol attribute, int index)
+        private IEnumerable<AttributeData>? FindAttributes(ImmutableArray<AttributeData>? attributes, INamedTypeSymbol attribute, int? index)
         {
-            if (attributes?.FirstOrDefault(attr =>
+            return attributes?.Where(attr =>
                 attr.AttributeClass != null &&
                 attr.AttributeClass.Equals(attribute, SymbolEqualityComparer.Default) &&
-                GetAttributeIndex(attr) == index) is AttributeData data)
-            {
-                return data;
-            }
-
-            return default;
+                (!index.HasValue || GetAttributeIndex(attr) == index.Value));
         }
 
-        private AttributeData? FindAttributeFromPropertyType(IPropertySymbol property, INamedTypeSymbol attribute, int index)
-            => FindAttribute(property.Type.GetAttributes(), attribute, index);
+        private AttributeData? FindAttributeFromType(ITypeSymbol type, INamedTypeSymbol attribute, ITypeSymbol targetType)
+            => FindAttributes(type.GetAttributes(), attribute, default)
+                .FirstOrDefault(attr => (attr.ConstructorArguments.ElementAtOrDefault(0).Value as INamedTypeSymbol)?.Equals(targetType, SymbolEqualityComparer.Default) == true);
 
-        private AttributeData? FindAttributeFromProperty(IPropertySymbol property, INamedTypeSymbol attribute, int index)
-            => FindAttribute(property.GetAttributes(), attribute, index);
-        
-        private string? GetMapWithOverriddenPropertyName(IPropertySymbol property, int index)
+        private AttributeData? FindAttributeFromProperty(IPropertySymbol property, INamedTypeSymbol attribute, int? index)
+            => FindAttributes(property.GetAttributes(), attribute, index).FirstOrDefault();
+
+        private string? GetMapWithOverriddenPropertyName(IPropertySymbol property, int? index)
         {
             var mapWithAttribute = FindAttributeFromProperty(property, _mapWithAttribute, index);
             if (mapWithAttribute?.ConstructorArguments.ElementAtOrDefault(0).Value is string propertyName)
@@ -319,7 +301,7 @@ namespace GeneratedMapper
             return null;
         }
 
-        private string? GetMapWithMethodToCall(IPropertySymbol property, int index)
+        private string? GetMapWithMethodToCall(IPropertySymbol property, int? index)
         {
             var mapWithAttribute = FindAttributeFromProperty(property, _mapWithAttribute, index);
             if (mapWithAttribute?.ConstructorArguments.ElementAtOrDefault(1).Value is string methodName)
@@ -330,7 +312,7 @@ namespace GeneratedMapper
             return null;
         }
 
-        private ITypeSymbol? GetMapWithResolverType(IPropertySymbol property, int index)
+        private ITypeSymbol? GetMapWithResolverType(IPropertySymbol property, int? index)
         {
             var mapWithAttribute = FindAttributeFromProperty(property, _mapWithAttribute, index);
             if (mapWithAttribute?.ConstructorArguments.ElementAtOrDefault(0).Value is ITypeSymbol resolverType0)
@@ -345,7 +327,7 @@ namespace GeneratedMapper
             return null;
         }
 
-        private ITypeSymbol? GetCollectionTypeToUse(IPropertySymbol property)
+        private ITypeSymbol? GetCollectionType(IPropertySymbol property)
         {
             var collectionTypeToUse = default(ITypeSymbol);
             {
@@ -366,12 +348,6 @@ namespace GeneratedMapper
             return collectionTypeToUse;
         }
 
-        private static bool HasCorrectNullability(IPropertySymbol destinationProperty, IPropertySymbol sourceProperty)
-        {
-            return sourceProperty.NullableAnnotation != NullableAnnotation.Annotated ||
-                sourceProperty.NullableAnnotation == NullableAnnotation.Annotated && destinationProperty.NullableAnnotation == NullableAnnotation.Annotated;
-        }
-
         private bool ShouldIgnoreProperty(IPropertySymbol property)
         {
             return property.GetAttributes().Any(x => x.AttributeClass != null && x.AttributeClass.Equals(_ignoreAttribute, SymbolEqualityComparer.Default));
@@ -383,10 +359,5 @@ namespace GeneratedMapper
 
             return (attribute?.ConstructorArguments[0].Values.Where(x => x.Value is string).Select(x => (string)x.Value!)!) ?? Enumerable.Empty<string>();
         }
-
-        public ITypeSymbol DestinationType { get; private set; } = default!;
-        public IEnumerable<Diagnostic> Diagnostics => _diagnostics;
-        public IEnumerable<IMapping> Mappings { get; private set; } = default!;
-        public ITypeSymbol SourceType { get; private set; } = default!;
     }
 }
