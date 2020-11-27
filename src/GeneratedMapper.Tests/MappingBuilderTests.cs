@@ -1,5 +1,7 @@
-using GeneratedMapper.Abstractions;
+﻿using GeneratedMapper.Abstractions;
+using GeneratedMapper.Builders;
 using GeneratedMapper.Configurations;
+using GeneratedMapper.Information;
 using GeneratedMapper.Mappings;
 using Microsoft.CodeAnalysis;
 using Moq;
@@ -9,12 +11,15 @@ using System.Linq;
 
 namespace GeneratedMapper.Tests
 {
-    public class MappingBuilderTests
+    internal class MappingBuilderTests
     {
-        private readonly ConfigurationValues _values = new ConfigurationValues(IndentStyle.Space, 4);
+        private static readonly ConfigurationValues Values = new ConfigurationValues(IndentStyle.Space, 4);
 
-        private readonly Mock<ITypeSymbol> _sourceType = new Mock<ITypeSymbol>();
-        private readonly Mock<ITypeSymbol> _destinationType = new Mock<ITypeSymbol>();
+        private static readonly Mock<ITypeSymbol> SourceType = new Mock<ITypeSymbol>();
+        private static readonly Mock<ITypeSymbol> DestinationType = new Mock<ITypeSymbol>();
+
+        private static readonly Mock<ITypeSymbol> NestedSourceType = new Mock<ITypeSymbol>();
+        private static readonly Mock<ITypeSymbol> NestedDestinationType = new Mock<ITypeSymbol>();
 
         [SetUp]
         public void Setup()
@@ -23,41 +28,90 @@ namespace GeneratedMapper.Tests
             @namespace.Setup(x => x.Name).Returns("Namespace");
             @namespace.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace");
 
-            _sourceType.Setup(x => x.Name).Returns("Source");
-            _sourceType.Setup(x => x.ContainingNamespace).Returns(@namespace.Object);
-            _destinationType.Setup(x => x.Name).Returns("Destination");
-            _destinationType.Setup(x => x.ContainingNamespace).Returns(@namespace.Object);
+            SourceType.Setup(x => x.Name).Returns("Source");
+            SourceType.Setup(x => x.ContainingNamespace).Returns(@namespace.Object);
+            DestinationType.Setup(x => x.Name).Returns("Destination");
+            DestinationType.Setup(x => x.ContainingNamespace).Returns(@namespace.Object);
+
+            NestedSourceType.Setup(x => x.Name).Returns("SourceObject");
+            NestedSourceType.Setup(x => x.ContainingNamespace).Returns(@namespace.Object);
+            NestedDestinationType.Setup(x => x.Name).Returns("DestinationObject");
+            NestedDestinationType.Setup(x => x.ContainingNamespace).Returns(@namespace.Object);
         }
 
         [TestCaseSource(nameof(TestCases))]
-        public void TestCodeGeneration(IMapping[] mappings, string expectedSourceText)
+        public void TestCodeGeneration(PropertyMappingInformation[] mappings, string expectedSourceText)
         {
-            var information = new MappingInformation(_destinationType.Object, Enumerable.Empty<Diagnostic>(), mappings, _sourceType.Object);
-            var builder = new MappingBuilder(information, _values);
+            var information = new MappingInformation(DestinationType.Object, Enumerable.Empty<Diagnostic>(), mappings, SourceType.Object);
+            var builder = new MappingBuilder(information, Values);
 
-            Assert.AreEqual(expectedSourceText, builder.Text.ToString());
+            Assert.AreEqual(expectedSourceText, builder.GenerateSourceText().ToString());
         }
 
         private static IEnumerable<TestCaseData> TestCases()
-        {
-            yield return MappingSinglePropertyFromSourceToDestination();
-            yield return MappingThreePropertiesFromSourceToDestination();
-            yield return MappingSinglePropertyWithDifferentNamesFromSourceToDestination();
-            yield return MappingPropertyToStringFromSourceToDestination();
-            yield return MappingPropertyUsingResolverFromSourceToDestination();
-            yield return MappingPropertyUsingResolverWithConstructorArgumentsFromSourceToDestination();
-            yield return MappingMultiplePropertiesUsingResolversWithConstructorArgumentsFromSourceToDestination();
-            yield return MappingSingleEnumerablePropertyToListFromSourceToDestination();
+        { 
+            yield return MappingSinglePropertyFromSourceToDestination()
+                .SetName(nameof(MappingSinglePropertyFromSourceToDestination));
+            
+            yield return MappingThreePropertiesFromSourceToDestination()
+                .SetName(nameof(MappingThreePropertiesFromSourceToDestination));
+            
+            yield return MappingSinglePropertyWithDifferentNamesFromSourceToDestination()
+                .SetName(nameof(MappingSinglePropertyWithDifferentNamesFromSourceToDestination));
+
+            yield return MappingPropertyToStringFromSourceToDestination()
+                .SetName(nameof(MappingPropertyToStringFromSourceToDestination));
+
+            yield return MappingNullablePropertyToStringFromSourceToDestination()
+                .SetName(nameof(MappingNullablePropertyToStringFromSourceToDestination));
+
+            yield return MappingPropertyUsingResolverFromSourceToDestination()
+                .SetName(nameof(MappingPropertyUsingResolverFromSourceToDestination));
+            
+            yield return MappingPropertyUsingResolverWithConstructorArgumentsFromSourceToDestination()
+                .SetName(nameof(MappingPropertyUsingResolverWithConstructorArgumentsFromSourceToDestination));
+            
+            yield return MappingMultiplePropertiesUsingResolversWithConstructorArgumentsFromSourceToDestination()
+                .SetName(nameof(MappingMultiplePropertiesUsingResolversWithConstructorArgumentsFromSourceToDestination));
+            
+            yield return MappingMultiplePropertiesUsingSameResolversWithConstructorArgumentsFromSourceToDestination()
+                .SetName(nameof(MappingMultiplePropertiesUsingSameResolversWithConstructorArgumentsFromSourceToDestination));
+
+            yield return MappingSingleEnumerablePropertyWithMethodToListFromSourceToDestination()
+                .SetName(nameof(MappingSingleEnumerablePropertyWithMethodToListFromSourceToDestination));
+
+            yield return MappingSingleEnumerablePropertyToListFromSourceToDestination()
+                .SetName(nameof(MappingSingleEnumerablePropertyToListFromSourceToDestination));
+
+            yield return MappingSingleNullableEnumerablePropertyToListFromSourceToDestination()
+                .SetName(nameof(MappingSingleNullableEnumerablePropertyToListFromSourceToDestination));
+
+            yield return MappingSingleNullableEnumerablePropertyToArrayFromSourceToDestination()
+                .SetName(nameof(MappingSingleNullableEnumerablePropertyToArrayFromSourceToDestination));
+
+            yield return MappingSingleNullableEnumerablePropertyToArrayUsingResolverFromSourceToDestination()
+                .SetName(nameof(MappingSingleNullableEnumerablePropertyToArrayUsingResolverFromSourceToDestination));
+
+            yield return MappingPropertyUsingMapperOfDestinationType()
+                .SetName(nameof(MappingPropertyUsingMapperOfDestinationType));
+
+            yield return MappingPropertyUsingMapperOfDestinationTypeWithArguments()
+                .SetName(nameof(MappingPropertyUsingMapperOfDestinationTypeWithArguments));
+
+            yield return MappingCollectionPropertyUsingMapperOfDestinationTypeWithArguments()
+                .SetName(nameof(MappingCollectionPropertyUsingMapperOfDestinationTypeWithArguments));
+
+            yield return MappingCollectionPropertiesUsingMapperOfDestinationTypeWithArguments()
+                .SetName(nameof(MappingCollectionPropertiesUsingMapperOfDestinationTypeWithArguments));
         }
 
         private static TestCaseData MappingSinglePropertyFromSourceToDestination()
             => new TestCaseData(
                 new[] 
                 { 
-                    new PropertyToPropertyMapping("Name", "Name")
+                    new PropertyMappingInformation(SourceType.Object, DestinationType.Object).MapFrom("Name", false).MapTo("Name", false)
                 },
                 @"using System;
-using System.Linq;
 using Namespace;
 
 namespace Namespace
@@ -85,13 +139,12 @@ namespace Namespace
         private static TestCaseData MappingThreePropertiesFromSourceToDestination()
             => new TestCaseData(
                 new[] 
-                { 
-                    new PropertyToPropertyMapping("Name", "Name"),
-                    new PropertyToPropertyMapping("Title", "Title"),
-                    new PropertyToPropertyMapping("Content", "Content"),
+                {
+                    new PropertyMappingInformation(SourceType.Object, DestinationType.Object).MapFrom("Name", false).MapTo("Name", false),
+                    new PropertyMappingInformation(SourceType.Object, DestinationType.Object).MapFrom("Title", false).MapTo("Title", false),
+                    new PropertyMappingInformation(SourceType.Object, DestinationType.Object).MapFrom("Content", false).MapTo("Content", false)
                 },
                 @"using System;
-using System.Linq;
 using Namespace;
 
 namespace Namespace
@@ -122,10 +175,9 @@ namespace Namespace
             => new TestCaseData(
                 new[]
                 {
-                    new PropertyToPropertyMapping("Name", "Nom")
+                    new PropertyMappingInformation(SourceType.Object, DestinationType.Object).MapFrom("Name", false).MapTo("Nom", false)
                 },
                 @"using System;
-using System.Linq;
 using Namespace;
 
 namespace Namespace
@@ -154,10 +206,9 @@ namespace Namespace
             => new TestCaseData(
                 new[]
                 {
-                    new PropertyToPropertyWithMethodInvocationMapping("Count", "Count", "ToString")
+                    new PropertyMappingInformation(SourceType.Object, DestinationType.Object).MapFrom("Count", false).MapTo("Count", false).UsingMethod("ToString", default)
                 },
                 @"using System;
-using System.Linq;
 using Namespace;
 
 namespace Namespace
@@ -182,14 +233,44 @@ namespace Namespace
 }
 ");
 
+        private static TestCaseData MappingNullablePropertyToStringFromSourceToDestination()
+            => new TestCaseData(
+                new[]
+                {
+                    new PropertyMappingInformation(SourceType.Object, DestinationType.Object).MapFrom("Count", true).MapTo("Count", false).UsingMethod("ToString", default)
+                },
+                @"using System;
+using Namespace;
+
+namespace Namespace
+{
+    public static partial class SourceMapToExtensions
+    {
+        public static Destination MapToDestination(this Source self)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self));
+            }
+            
+            var target = new Destination
+            {
+                Count = self.Count?.ToString(),
+            };
+            
+            return target;
+        }
+    }
+}
+");
+
         private static TestCaseData MappingPropertyUsingResolverFromSourceToDestination()
             => new TestCaseData(
                 new[]
                 {
-                    new PropertyResolverMapping("Parameter", "ResolvedParameter", "Resolver", "Namespace.Resolvers", Enumerable.Empty<ConstructorParameter>())
+                    new PropertyMappingInformation(SourceType.Object, DestinationType.Object).MapFrom("Parameter", false).MapTo("ResolvedParameter", false).UsingResolver("Resolver", "Namespace.Resolvers", Enumerable.Empty<MethodParameter>())
                 },
                 @"using System;
-using System.Linq;
 using Namespace;
 using Namespace.Resolvers;
 
@@ -204,11 +285,11 @@ namespace Namespace
                 throw new ArgumentNullException(nameof(self));
             }
             
-            var resolverResolvedParameter = new Resolver();
+            var resolver = new Resolver();
             
             var target = new Destination
             {
-                ResolvedParameter = resolverResolvedParameter.Resolve(self.Parameter),
+                ResolvedParameter = resolver.Resolve(self.Parameter),
             };
             
             return target;
@@ -221,17 +302,14 @@ namespace Namespace
             => new TestCaseData(
                 new[]
                 {
-                    new PropertyResolverMapping(
-                        "Parameter", 
-                        "ResolvedParameter", 
-                        "SomeResolver", 
-                        "Namespace.Resolvers",
-                        new [] {
-                            new ConstructorParameter("randomService", "IRandomService", "Namespace.Services")
+                    new PropertyMappingInformation(SourceType.Object, DestinationType.Object)
+                        .MapFrom("Parameter", false)
+                        .MapTo("ResolvedParameter", false)
+                        .UsingResolver("SomeResolver", "Namespace.Resolvers", new [] {
+                            new MethodParameter("randomService", "IRandomService", "Namespace.Services", default)
                         })
                 },
                 @"using System;
-using System.Linq;
 using Namespace;
 using Namespace.Resolvers;
 using Namespace.Services;
@@ -247,11 +325,11 @@ namespace Namespace
                 throw new ArgumentNullException(nameof(self));
             }
             
-            var resolverResolvedParameter = new SomeResolver(someResolverRandomService);
+            var someResolver = new SomeResolver(someResolverRandomService);
             
             var target = new Destination
             {
-                ResolvedParameter = resolverResolvedParameter.Resolve(self.Parameter),
+                ResolvedParameter = someResolver.Resolve(self.Parameter),
             };
             
             return target;
@@ -264,29 +342,24 @@ namespace Namespace
             => new TestCaseData(
                 new[]
                 {
-                    new PropertyResolverMapping(
-                        "Parameter1",
-                        "ResolvedParameter1",
-                        "SomeResolver1",
-                        "Namespace.Resolvers1",
-                        new [] {
-                            new ConstructorParameter("randomService1", "IRandomService1", "Namespace.Services1")
+                    new PropertyMappingInformation(SourceType.Object, DestinationType.Object)
+                        .MapFrom("Parameter1", false)
+                        .MapTo("ResolvedParameter1", false)
+                        .UsingResolver("SomeResolver1", "Namespace.Resolvers1", new [] {
+                            new MethodParameter("randomService1", "IRandomService1", "Namespace.Services1", default)
                         }),
-                    new PropertyResolverMapping(
-                        "Parameter2",
-                        "ResolvedParameter2",
-                        "SomeResolver2",
-                        "Namespace.Resolvers2",
-                        new [] {
-                            new ConstructorParameter("randomService2", "IRandomService2", "Namespace.Services2")
+                    new PropertyMappingInformation(SourceType.Object, DestinationType.Object)
+                        .MapFrom("Parameter2", false)
+                        .MapTo("ResolvedParameter2", false)
+                        .UsingResolver("SomeResolver2", "Namespace.Resolvers2", new [] {
+                            new MethodParameter("randomService2", "IRandomService2", "Namespace.Services2", default)
                         })
                 },
                 @"using System;
-using System.Linq;
 using Namespace;
 using Namespace.Resolvers1;
-using Namespace.Services1;
 using Namespace.Resolvers2;
+using Namespace.Services1;
 using Namespace.Services2;
 
 namespace Namespace
@@ -300,14 +373,134 @@ namespace Namespace
                 throw new ArgumentNullException(nameof(self));
             }
             
-            var resolverResolvedParameter1 = new SomeResolver1(someResolver1RandomService1);
+            var someResolver1 = new SomeResolver1(someResolver1RandomService1);
             
-            var resolverResolvedParameter2 = new SomeResolver2(someResolver2RandomService2);
+            var someResolver2 = new SomeResolver2(someResolver2RandomService2);
             
             var target = new Destination
             {
-                ResolvedParameter1 = resolverResolvedParameter1.Resolve(self.Parameter1),
-                ResolvedParameter2 = resolverResolvedParameter2.Resolve(self.Parameter2),
+                ResolvedParameter1 = someResolver1.Resolve(self.Parameter1),
+                ResolvedParameter2 = someResolver2.Resolve(self.Parameter2),
+            };
+            
+            return target;
+        }
+    }
+}
+");
+
+        private static TestCaseData MappingMultiplePropertiesUsingSameResolversWithConstructorArgumentsFromSourceToDestination()
+            => new TestCaseData(
+                new[]
+                {
+                    new PropertyMappingInformation(SourceType.Object, DestinationType.Object)
+                        .MapFrom("Parameter1", false)
+                        .MapTo("ResolvedParameter1", false)
+                        .UsingResolver("SomeResolver", "Namespace.Resolvers", new [] {
+                            new MethodParameter("randomService", "IRandomService", "Namespace.Services", default)
+                        }),
+                    new PropertyMappingInformation(SourceType.Object, DestinationType.Object)
+                        .MapFrom("Parameter2", false)
+                        .MapTo("ResolvedParameter2", false)
+                        .UsingResolver("SomeResolver", "Namespace.Resolvers", new [] {
+                            new MethodParameter("randomService", "IRandomService", "Namespace.Services", default)
+                        })
+                },
+                @"using System;
+using Namespace;
+using Namespace.Resolvers;
+using Namespace.Services;
+
+namespace Namespace
+{
+    public static partial class SourceMapToExtensions
+    {
+        public static Destination MapToDestination(this Source self, IRandomService someResolverRandomService)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self));
+            }
+            
+            var someResolver = new SomeResolver(someResolverRandomService);
+            
+            var target = new Destination
+            {
+                ResolvedParameter1 = someResolver.Resolve(self.Parameter1),
+                ResolvedParameter2 = someResolver.Resolve(self.Parameter2),
+            };
+            
+            return target;
+        }
+    }
+}
+");
+
+        private static TestCaseData MappingSingleEnumerablePropertyWithMethodToListFromSourceToDestination()
+            => new TestCaseData(
+                new[]
+                {
+                    new PropertyMappingInformation(SourceType.Object, DestinationType.Object)
+                        .MapFrom("Collection", false)
+                        .MapTo("Collection", false)
+                        .AsCollection(DestinationCollectionType.List, "CollectionItem", "Namespace.Collections")
+                        .UsingMethod("ToItem", "Namespace.Collections")
+                },
+                @"using System;
+using System.Linq;
+using Namespace;
+using Namespace.Collections;
+
+namespace Namespace
+{
+    public static partial class SourceMapToExtensions
+    {
+        public static Destination MapToDestination(this Source self)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self));
+            }
+            
+            var target = new Destination
+            {
+                Collection = self.Collection.Select(element => element.ToItem()).ToList(),
+            };
+            
+            return target;
+        }
+    }
+}
+");
+
+        private static TestCaseData MappingSingleNullableEnumerablePropertyToListFromSourceToDestination()
+            => new TestCaseData(
+                new[]
+                {
+                    new PropertyMappingInformation(SourceType.Object, DestinationType.Object)
+                        .MapFrom("Collection", true)
+                        .MapTo("Collection", false)
+                        .AsCollection(DestinationCollectionType.Array, "CollectionItem", "Namespace.Collections")
+                },
+                @"using System;
+using System.Linq;
+using Namespace;
+using Namespace.Collections;
+
+namespace Namespace
+{
+    public static partial class SourceMapToExtensions
+    {
+        public static Destination MapToDestination(this Source self)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self));
+            }
+            
+            var target = new Destination
+            {
+                Collection = self.Collection?.ToArray() ?? Enumerable.Empty<CollectionItem>().ToArray(),
             };
             
             return target;
@@ -320,7 +513,10 @@ namespace Namespace
             => new TestCaseData(
                 new[]
                 {
-                    new CollectionToCollectionPropertyMapping("Collection", false, "Namespace.Collections", "Collection", true, "CollectionItem", "Namespace.Collections", DestinationCollectionType.List)
+                    new PropertyMappingInformation(SourceType.Object, DestinationType.Object)
+                        .MapFrom("Collection", false)
+                        .MapTo("Collection", false)
+                        .AsCollection(DestinationCollectionType.Array, "CollectionItem", "Namespace.Collections")
                 },
                 @"using System;
 using System.Linq;
@@ -340,7 +536,7 @@ namespace Namespace
             
             var target = new Destination
             {
-                Collection = self.Collection.Select(element => element.MapToCollectionItem()).ToList(),
+                Collection = self.Collection.ToArray(),
             };
             
             return target;
@@ -353,7 +549,11 @@ namespace Namespace
             => new TestCaseData(
                 new[]
                 {
-                    new CollectionToCollectionPropertyMapping("Collection", true, "Namespace.Collections", "Collection", false, "CollectionItem", "Namespace.Collections", DestinationCollectionType.Array)
+                    new PropertyMappingInformation(SourceType.Object, DestinationType.Object)
+                        .MapFrom("Collection", true)
+                        .MapTo("Collection", false)
+                        .AsCollection(DestinationCollectionType.Array, "CollectionItem", "Namespace.Collections")
+                        .UsingMethod("MapToCollectionItem", "Namespace.Collections")
                 },
                 @"using System;
 using System.Linq;
@@ -373,7 +573,7 @@ namespace Namespace
             
             var target = new Destination
             {
-                Collection = self?.Collection.Select(element => element.MapToCollectionItem()).ToArray() ?? Enumerable.Empty<CollectionItem>().ToArray(),
+                Collection = self.Collection?.Select(element => element.MapToCollectionItem()).ToArray() ?? Enumerable.Empty<CollectionItem>().ToArray(),
             };
             
             return target;
@@ -382,35 +582,238 @@ namespace Namespace
 }
 ");
 
-        // TODO: resolver arguments to nested mapper
-//        private static TestCaseData MappingNextedClassPropertyFromSourceToDestination()
-//            => new TestCaseData(
-//                new[]
-//                {
-//                    new PropertyToPropertyWithMethodInvocationMapping("NestedProperty", "NestedProperty", "ToNestedDestination")
-//                },
-//                @"using System;
+        private static TestCaseData MappingSingleNullableEnumerablePropertyToArrayUsingResolverFromSourceToDestination()
+            => new TestCaseData(
+                new[]
+                {
+                    new PropertyMappingInformation(SourceType.Object, DestinationType.Object)
+                        .MapFrom("Collection", true)
+                        .MapTo("Collection", false)
+                        .AsCollection(DestinationCollectionType.Array, "CollectionItem", "Namespace.Collections")
+                        .UsingResolver("CollectionResolver", "Namespace.Resolvers", new [] {
+                            new MethodParameter("cultureInfo", "CultureInfo", "System.Globalization", "CultureInfo.InvariantCulture")
+                        })
+                },
+                @"using System;
+using System.Globalization;
+using System.Linq;
+using Namespace;
+using Namespace.Collections;
+using Namespace.Resolvers;
 
-//namespace Namespace
-//{
-//    public static partial class SourceMapToExtensions
-//    {
-//        public static Destination MapToDestination(this Source self)
-//        {
-//            if (self is null)
-//            {
-//                throw new ArgumentNullException(nameof(self));
-//            }
+namespace Namespace
+{
+    public static partial class SourceMapToExtensions
+    {
+        public static Destination MapToDestination(this Source self, CultureInfo collectionResolverCultureInfo = CultureInfo.InvariantCulture)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self));
+            }
             
-//            var target = new Destination
-//            {
-//                NestedProperty = self.NestedProperty.ToNestedDestination(),
-//            };
+            var collectionResolver = new CollectionResolver(collectionResolverCultureInfo);
             
-//            return target;
-//        }
-//    }
-//}
-//");
+            var target = new Destination
+            {
+                Collection = self.Collection?.Select(element => collectionResolver.Resolve(element)).ToArray() ?? Enumerable.Empty<CollectionItem>().ToArray(),
+            };
+            
+            return target;
+        }
+    }
+}
+");
+
+        private static TestCaseData MappingPropertyUsingMapperOfDestinationType()
+            => new TestCaseData(
+                new[]
+                {
+                    new PropertyMappingInformation(SourceType.Object, DestinationType.Object)
+                        .MapFrom("NestedObject", true)
+                        .MapTo("NestedObject", false)
+                        .UsingMapper(NestedSourceType.Object, NestedDestinationType.Object)
+                        // this set mapper will be called by mapper generator
+                        .SetMappingInformation(new MappingInformation(NestedDestinationType.Object, Enumerable.Empty<Diagnostic>(), new [] {
+                            new PropertyMappingInformation(SourceType.Object, DestinationType.Object)
+                                .MapFrom("Name", false)
+                                .MapTo("Name", false)
+                        }, NestedSourceType.Object))
+                },
+                @"using System;
+using Namespace;
+
+namespace Namespace
+{
+    public static partial class SourceMapToExtensions
+    {
+        public static Destination MapToDestination(this Source self)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self));
+            }
+            
+            var target = new Destination
+            {
+                NestedObject = self.NestedObject?.MapToDestinationObject(),
+            };
+            
+            return target;
+        }
+    }
+}
+");
+
+        private static TestCaseData MappingPropertyUsingMapperOfDestinationTypeWithArguments()
+            => new TestCaseData(
+                new[]
+                {
+                    new PropertyMappingInformation(SourceType.Object, DestinationType.Object)
+                        .MapFrom("NestedObject", true)
+                        .MapTo("NestedObject", false)
+                        .UsingMapper(NestedSourceType.Object, NestedDestinationType.Object)
+                        // this set mapper will be called by mapper generator
+                        .SetMappingInformation(new MappingInformation(NestedDestinationType.Object, Enumerable.Empty<Diagnostic>(), new [] {
+                            new PropertyMappingInformation(SourceType.Object, DestinationType.Object)
+                                .MapFrom("Name", false)
+                                .MapTo("Name", false)
+                                .UsingResolver("SomeResolver", "Namespace.Resolvers", new[]
+                                {
+                                    new MethodParameter("cultureInfo", "CultureInfo", "System.Globalization", "CultureInfo.InvariantCulture")
+                                })
+                        }, NestedSourceType.Object))
+                },
+                @"using System;
+using System.Globalization;
+using Namespace;
+using Namespace.Resolvers;
+
+namespace Namespace
+{
+    public static partial class SourceMapToExtensions
+    {
+        public static Destination MapToDestination(this Source self, CultureInfo destinationObjectSomeResolverCultureInfo = CultureInfo.InvariantCulture)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self));
+            }
+            
+            var target = new Destination
+            {
+                NestedObject = self.NestedObject?.MapToDestinationObject(destinationObjectSomeResolverCultureInfo),
+            };
+            
+            return target;
+        }
+    }
+}
+");
+
+        private static TestCaseData MappingCollectionPropertyUsingMapperOfDestinationTypeWithArguments()
+            => new TestCaseData(
+                new[]
+                {
+                    new PropertyMappingInformation(SourceType.Object, DestinationType.Object)
+                        .MapFrom("NestedObject", true)
+                        .MapTo("NestedObject", false)
+                        .AsCollection(DestinationCollectionType.Enumerable, "DestinationObject", "Namespace")
+                        .UsingMapper(NestedSourceType.Object, NestedDestinationType.Object)
+                        // this set mapper will be called by mapper generator
+                        .SetMappingInformation(new MappingInformation(NestedDestinationType.Object, Enumerable.Empty<Diagnostic>(), new [] {
+                            new PropertyMappingInformation(SourceType.Object, DestinationType.Object)
+                                .MapFrom("Name", false)
+                                .MapTo("Name", false)
+                                .UsingResolver("SomeResolver", "Namespace.Resolvers", new[]
+                                {
+                                    new MethodParameter("cultureInfo", "CultureInfo", "System.Globalization", "CultureInfo.InvariantCulture")
+                                })
+                        }, NestedSourceType.Object))
+                },
+                @"using System;
+using System.Globalization;
+using System.Linq;
+using Namespace;
+using Namespace.Resolvers;
+
+namespace Namespace
+{
+    public static partial class SourceMapToExtensions
+    {
+        public static Destination MapToDestination(this Source self, CultureInfo destinationObjectSomeResolverCultureInfo = CultureInfo.InvariantCulture)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self));
+            }
+            
+            var target = new Destination
+            {
+                NestedObject = self.NestedObject?.Select(element => element.MapToDestinationObject(destinationObjectSomeResolverCultureInfo)) ?? Enumerable.Empty<DestinationObject>(),
+            };
+            
+            return target;
+        }
+    }
+}
+");
+
+        private static TestCaseData MappingCollectionPropertiesUsingMapperOfDestinationTypeWithArguments()
+            => new TestCaseData(
+                new[]
+                {
+                    new PropertyMappingInformation(SourceType.Object, DestinationType.Object)
+                        .MapFrom("NestedObject", true)
+                        .MapTo("NestedObject", false)
+                        .AsCollection(DestinationCollectionType.Enumerable, "DestinationObject", "Namespace")
+                        .UsingMapper(NestedSourceType.Object, NestedDestinationType.Object)
+                        // this set mapper will be called by mapper generator
+                        .SetMappingInformation(new MappingInformation(NestedDestinationType.Object, Enumerable.Empty<Diagnostic>(), new [] {
+                            new PropertyMappingInformation(SourceType.Object, DestinationType.Object)
+                                .MapFrom("Name1", false)
+                                .MapTo("Name1", false)
+                                .UsingResolver("SomeResolver", "Namespace.Resolvers", new[]
+                                {
+                                    new MethodParameter("someInt", "int", "System", default),
+                                    new MethodParameter("cultureInfo", "CultureInfo", "System.Globalization", "CultureInfo.InvariantCulture"),
+                                }),
+                            new PropertyMappingInformation(SourceType.Object, DestinationType.Object)
+                                .MapFrom("Name2", false)
+                                .MapTo("Name2", false)
+                                .UsingResolver("SomeResolver", "Namespace.Resolvers", new[]
+                                {
+                                    new MethodParameter("someInt", "int", "System", default),
+                                    new MethodParameter("cultureInfo", "CultureInfo", "System.Globalization", "CultureInfo.InvariantCulture")
+                                })
+                        }, NestedSourceType.Object))
+                },
+                @"using System;
+using System.Globalization;
+using System.Linq;
+using Namespace;
+using Namespace.Resolvers;
+
+namespace Namespace
+{
+    public static partial class SourceMapToExtensions
+    {
+        public static Destination MapToDestination(this Source self, int destinationObjectSomeResolverSomeInt, CultureInfo destinationObjectSomeResolverCultureInfo = CultureInfo.InvariantCulture)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self));
+            }
+            
+            var target = new Destination
+            {
+                NestedObject = self.NestedObject?.Select(element => element.MapToDestinationObject(destinationObjectSomeResolverSomeInt, destinationObjectSomeResolverCultureInfo)) ?? Enumerable.Empty<DestinationObject>(),
+            };
+            
+            return target;
+        }
+    }
+}
+");
     }
 }

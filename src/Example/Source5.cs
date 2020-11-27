@@ -6,7 +6,5 @@ namespace Example
     public class Source5
     {
         public NestedSource5Class[]? NestedNames { get; set; }
-
-        
     }
 }

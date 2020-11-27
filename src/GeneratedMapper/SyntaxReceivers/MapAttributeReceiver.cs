@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace GeneratedMapper.SyntaxReceivers
 {
-    public sealed class MapAttributeReceiver : ISyntaxReceiver
+    internal sealed class MapAttributeReceiver : ISyntaxReceiver
     {
         public List<TypeDeclarationSyntax> Candidates { get; } = new List<TypeDeclarationSyntax>();
 

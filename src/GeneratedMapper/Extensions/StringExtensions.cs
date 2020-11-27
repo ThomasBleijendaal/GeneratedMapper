@@ -1,6 +1,6 @@
 ﻿namespace GeneratedMapper.Extensions
 {
-    public static class StringExtensions
+    internal static class StringExtensions
     {
         public static string ToFirstLetterLower(this string input)
         {

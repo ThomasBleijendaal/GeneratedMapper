@@ -87,48 +87,75 @@ namespace Example
                 Name = "Hi B"
             };
 
-            ;
-
             var destination7a = source7a.MapToDestinationSource7().MapToDestination7a();
             var destination7b = source7b.MapToDestinationSource7().MapToDestination7b();
 
             Console.WriteLine(destination7a.Name);
-            //Console.WriteLine(destination7a.NameLength);
             Console.WriteLine(destination7b.Name);
-            //Console.WriteLine(destination7b.NameLength);
+
+            var source8 = new Source8
+            {
+                StartDate = DateTime.UtcNow,
+                EndDate = default
+            };
+
+            ;
+
+            var destination8 = source8.MapToDestination8(CultureInfo.CurrentCulture, "wut");
+
+            Console.WriteLine(destination8.StartDate);
+            Console.WriteLine(destination8.EndDate);
+
+            var sources8 = new Sources8 { Data = new[] { source8 } };
+
+            var destinations8 = sources8.MapToDestinations8(CultureInfo.CurrentCulture, "wut");
+
+            Console.WriteLine(destinations8.Data.ElementAt(0).StartDate);
+            Console.WriteLine(destinations8.Data.ElementAt(0).EndDate);
         }
     }
 
-    public class Source7a
+    [MapTo(typeof(Destinations8))]
+    public class Sources8
     {
-        public string Name { get; set; }
-    }
-    public class Source7b
-    {
-        public string Name { get; set; }
+        public IEnumerable<Source8> Data { get; set; }
     }
 
-    [MapFrom(typeof(Source7a), Index = 1)]
-    [MapFrom(typeof(Source7b), Index = 2)]
-    [MapTo(typeof(Destination7a), Index = 3)]
-    [MapTo(typeof(Destination7b), Index = 3)]
-    public class DestinationSource7
+    public class Destinations8
     {
-        public string Name { get; set; }
-
-        [MapWith("Name", "Count", Index = 1)]
-        [MapWith("Name", "GetHashCode", Index = 2)]
-        [Ignore(Index = 3)]
-        public int NameLength { get; set; }
+        public IEnumerable<Destination8> Data { get; set; }
     }
 
-    public class Destination7a
+    [MapTo(typeof(Destination8))]
+    public class Source8
     {
-        public string Name { get; set; }
+        [MapWith(typeof(DateResolver))]
+        public DateTime? StartDate { get; set; }
+
+        [MapWith(typeof(DateResolver))]
+        public DateTime? EndDate { get; set; }
     }
 
-    public class Destination7b
+    public class Destination8
     {
-        public string Name { get; set; }
+        public string StartDate { get; set; }
+        public string EndDate { get; set; }
+    }
+
+    public class DateResolver
+    {
+        private readonly CultureInfo _cultureInfo;
+        private readonly string? _fallback;
+
+        public DateResolver(CultureInfo cultureInfo, string? fallback = "blaat")
+        {
+            _cultureInfo = cultureInfo;
+            _fallback = fallback;
+        }
+
+        public string Resolve(DateTime? date)
+        {
+            return date?.ToString(_cultureInfo.DateTimeFormat) ?? _fallback ?? "-";
+        }
     }
 }
