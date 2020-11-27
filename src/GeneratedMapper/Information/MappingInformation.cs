@@ -8,7 +8,8 @@ using GeneratedMapper.Mappings;
 using Microsoft.CodeAnalysis;
 
 namespace GeneratedMapper.Information
-{
+{ 
+    // TODO: refactor this class to be like property mapping information (only holding info + validating) and moving logic outside
     internal sealed class MappingInformation
     {
         private readonly INamedTypeSymbol _enumerableType;
@@ -94,22 +95,18 @@ namespace GeneratedMapper.Information
 
                     var targetTypeProperty = targetProperties.FirstOrDefault(property => property.Name == targetPropertyToFind);
 
+                    if (targetTypeProperty == null)
+                    {
+                        _diagnostics.Add(DiagnosticsHelper.UnmappableProperty(AttributeData, attributedType.Name, targetPropertyToFind, targetType.Name));
+                        continue;
+                    }
+
                     var sourceProperty = isMapFromAttribute ? targetTypeProperty : attibutedTypeProperty;
                     var destinationProperty = isMapFromAttribute ? attibutedTypeProperty : targetTypeProperty;
                     var sourcePropertyIsNullable = sourceProperty.NullableAnnotation == NullableAnnotation.Annotated;
                     var destinationPropertyIsNullable = destinationProperty.NullableAnnotation == NullableAnnotation.Annotated;
 
-                    var sourcePropertyCollectionType = GetCollectionType(sourceProperty);
-                    var destinationPropertyCollectionType = GetCollectionType(destinationProperty);
-
-                    var destinationPropertyCollectionTypMapFromAttribute = destinationPropertyCollectionType is null || sourcePropertyCollectionType is null
-                        ? default : FindAttributeFromType(destinationPropertyCollectionType, _mapFromAttribute, sourcePropertyCollectionType);
-
-                    var sourcePropertyCollectionTypMapToAttribute = destinationPropertyCollectionType is null || sourcePropertyCollectionType is null
-                        ? default : FindAttributeFromType(sourcePropertyCollectionType, _mapToAttribute, destinationPropertyCollectionType);
-
-                    var propertyMapping = new PropertyMappingInformation(SourceType, DestinationType);
-                    propertyMapping
+                    var propertyMapping = new PropertyMappingInformation(SourceType, DestinationType)
                         .MapFrom(sourceProperty.Name, sourcePropertyIsNullable)
                         .MapTo(destinationProperty.Name, destinationPropertyIsNullable);
 
@@ -121,7 +118,7 @@ namespace GeneratedMapper.Information
                         MapPropertyUsingResolver(propertyMapping, attributeData, resolverType);
                     }
 
-                    // MapTo / MapFrom on nested property type
+                    // MapTo / MapFrom on sub property type
                     if (FindAttributeFromType(destinationProperty.Type, _mapFromAttribute, sourceProperty.Type) is not null ||
                         FindAttributeFromType(sourceProperty.Type, _mapToAttribute, destinationProperty.Type) is not null)
                     {
@@ -129,12 +126,14 @@ namespace GeneratedMapper.Information
                     }
 
                     // MapTo / MapFrom on collection element type
-                    if (sourcePropertyCollectionType is not null && destinationPropertyCollectionType is not null)
+                    if (GetCollectionType(sourceProperty) is ITypeSymbol sourcePropertyCollectionType &&
+                        GetCollectionType(destinationProperty) is ITypeSymbol destinationPropertyCollectionType)
                     {
                         // TODO: what about when it cannot find the type (namespace etc)?
                         MapPropertyAsCollection(propertyMapping, destinationProperty);
 
-                        if (destinationPropertyCollectionTypMapFromAttribute is not null || sourcePropertyCollectionTypMapToAttribute is not null)
+                        if (FindAttributeFromType(destinationPropertyCollectionType, _mapFromAttribute, sourcePropertyCollectionType) is not null ||
+                            FindAttributeFromType(sourcePropertyCollectionType, _mapToAttribute, destinationPropertyCollectionType) is not null)
                         {
                             propertyMapping.UsingMapper(sourcePropertyCollectionType, destinationPropertyCollectionType);
                         }
@@ -169,6 +168,7 @@ namespace GeneratedMapper.Information
         public IEnumerable<PropertyMappingInformation> Mappings { get; private set; } = default!;
 
         public ITypeSymbol SourceType { get; private set; } = default!;
+
         public AttributeData AttributeData { get; private set; }
 
         public bool IsFullyResolved => Mappings.All(x => !x.RequiresMappingInformationOfMapper || (x.MappingInformationOfMapper?.IsFullyResolved ?? false));
@@ -264,17 +264,13 @@ namespace GeneratedMapper.Information
         }
 
         private static int GetAttributeIndex(AttributeData attributeData)
-        {
-            return attributeData.NamedArguments.FirstOrDefault(x => x.Key == "Index").Value.Value as int? ?? 0;
-        }
-
+            => attributeData.NamedArguments.FirstOrDefault(x => x.Key == "Index").Value.Value as int? ?? 0;
+        
         private IEnumerable<AttributeData>? FindAttributes(ImmutableArray<AttributeData>? attributes, INamedTypeSymbol attribute, int? index)
-        {
-            return attributes?.Where(attr =>
+            => attributes?.Where(attr =>
                 attr.AttributeClass != null &&
                 attr.AttributeClass.Equals(attribute, SymbolEqualityComparer.Default) &&
                 (!index.HasValue || GetAttributeIndex(attr) == index.Value));
-        }
 
         private AttributeData? FindAttributeFromType(ITypeSymbol type, INamedTypeSymbol attribute, ITypeSymbol targetType)
             => FindAttributes(type.GetAttributes(), attribute, default)
@@ -284,26 +280,10 @@ namespace GeneratedMapper.Information
             => FindAttributes(property.GetAttributes(), attribute, index).FirstOrDefault();
 
         private string? GetMapWithOverriddenPropertyName(IPropertySymbol property, int? index)
-        {
-            var mapWithAttribute = FindAttributeFromProperty(property, _mapWithAttribute, index);
-            if (mapWithAttribute?.ConstructorArguments.ElementAtOrDefault(0).Value is string propertyName)
-            {
-                return propertyName;
-            }
-
-            return null;
-        }
+            => FindAttributeFromProperty(property, _mapWithAttribute, index)?.ConstructorArguments.ElementAtOrDefault(0).Value as string;
 
         private string? GetMapWithMethodToCall(IPropertySymbol property, int? index)
-        {
-            var mapWithAttribute = FindAttributeFromProperty(property, _mapWithAttribute, index);
-            if (mapWithAttribute?.ConstructorArguments.ElementAtOrDefault(1).Value is string methodName)
-            {
-                return methodName;
-            }
-
-            return null;
-        }
+            => FindAttributeFromProperty(property, _mapWithAttribute, index)?.ConstructorArguments.ElementAtOrDefault(1).Value as string;
 
         private ITypeSymbol? GetMapWithResolverType(IPropertySymbol property, int? index)
         {
@@ -347,10 +327,11 @@ namespace GeneratedMapper.Information
         }
 
         private IEnumerable<string> TargetPropertiesToIgnore(ITypeSymbol attributedType)
-        {
-            var attribute = attributedType.GetAttributes().FirstOrDefault(x => x.AttributeClass != null && x.AttributeClass.Equals(_ignoreInTargetAttribute, SymbolEqualityComparer.Default));
-
-            return (attribute?.ConstructorArguments[0].Values.Where(x => x.Value is string).Select(x => (string)x.Value!)!) ?? Enumerable.Empty<string>();
-        }
+            => attributedType
+                .GetAttributes()
+                .FirstOrDefault(x => x.AttributeClass != null && x.AttributeClass.Equals(_ignoreInTargetAttribute, SymbolEqualityComparer.Default))
+                ?.ConstructorArguments.ElementAtOrDefault(0).Values
+                .Where(x => x.Value is string)
+                .Select(x => (string)x.Value!) ?? Enumerable.Empty<string>();
     }
 }

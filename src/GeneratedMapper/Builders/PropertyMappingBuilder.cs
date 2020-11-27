@@ -87,14 +87,18 @@ namespace GeneratedMapper.Builders
         {
             return _information.ResolverConstructorParameters == null || _information.ResolverInstanceName == null
                 ? string.Empty
-                : string.Join(",", _information.ResolverConstructorParameters.Select(x => x.ToArgument(_information.ResolverInstanceName)));
+                : string.Join(", ", _information.ResolverConstructorParameters
+                    .Select(x => x.ToArgument(_information.ResolverInstanceName)));
         }
 
         private string GetMappingArguments()
         {
             return _information.MappingInformationOfMapper == null
                 ? string.Empty
-                : string.Join(",", _information.MappingInformationOfMapper.Mappings.SelectMany(x => x.MapArgumentsRequired).Select(x => x.ToArgument(_information.MappingInformationOfMapper.DestinationType.Name)));
+                : string.Join(", ", _information.MappingInformationOfMapper.Mappings
+                    .SelectMany(x => x.MapArgumentsRequired)
+                    .Select(x => x.ToArgument(_information.MappingInformationOfMapper.DestinationType.Name))
+                    .Distinct());
         }
     }
 }

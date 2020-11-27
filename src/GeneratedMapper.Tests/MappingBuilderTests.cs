@@ -100,6 +100,9 @@ namespace GeneratedMapper.Tests
 
             yield return MappingCollectionPropertyUsingMapperOfDestinationTypeWithArguments()
                 .SetName(nameof(MappingCollectionPropertyUsingMapperOfDestinationTypeWithArguments));
+
+            yield return MappingCollectionPropertiesUsingMapperOfDestinationTypeWithArguments()
+                .SetName(nameof(MappingCollectionPropertiesUsingMapperOfDestinationTypeWithArguments));
         }
 
         private static TestCaseData MappingSinglePropertyFromSourceToDestination()
@@ -756,34 +759,61 @@ namespace Namespace
 }
 ");
 
-        //        private static TestCaseData MappingNextedClassPropertyFromSourceToDestination()
-        //            => new TestCaseData(
-        //                new[]
-        //                {
-        //                    new PropertyToPropertyWithMethodInvocationMapping("NestedProperty", "NestedProperty", "ToNestedDestination")
-        //                },
-        //                @"using System;
+        private static TestCaseData MappingCollectionPropertiesUsingMapperOfDestinationTypeWithArguments()
+            => new TestCaseData(
+                new[]
+                {
+                    new PropertyMappingInformation(SourceType.Object, DestinationType.Object)
+                        .MapFrom("NestedObject", true)
+                        .MapTo("NestedObject", false)
+                        .AsCollection(DestinationCollectionType.Enumerable, "DestinationObject", "Namespace")
+                        .UsingMapper(NestedSourceType.Object, NestedDestinationType.Object)
+                        // this set mapper will be called by mapper generator
+                        .SetMappingInformation(new MappingInformation(NestedDestinationType.Object, Enumerable.Empty<Diagnostic>(), new [] {
+                            new PropertyMappingInformation(SourceType.Object, DestinationType.Object)
+                                .MapFrom("Name1", false)
+                                .MapTo("Name1", false)
+                                .UsingResolver("SomeResolver", "Namespace.Resolvers", new[]
+                                {
+                                    new MethodParameter("someInt", "int", "System", default),
+                                    new MethodParameter("cultureInfo", "CultureInfo", "System.Globalization", "CultureInfo.InvariantCulture"),
+                                }),
+                            new PropertyMappingInformation(SourceType.Object, DestinationType.Object)
+                                .MapFrom("Name2", false)
+                                .MapTo("Name2", false)
+                                .UsingResolver("SomeResolver", "Namespace.Resolvers", new[]
+                                {
+                                    new MethodParameter("someInt", "int", "System", default),
+                                    new MethodParameter("cultureInfo", "CultureInfo", "System.Globalization", "CultureInfo.InvariantCulture")
+                                })
+                        }, NestedSourceType.Object))
+                },
+                @"using System;
+using System.Globalization;
+using System.Linq;
+using Namespace;
+using Namespace.Resolvers;
 
-        //namespace Namespace
-        //{
-        //    public static partial class SourceMapToExtensions
-        //    {
-        //        public static Destination MapToDestination(this Source self)
-        //        {
-        //            if (self is null)
-        //            {
-        //                throw new ArgumentNullException(nameof(self));
-        //            }
-
-        //            var target = new Destination
-        //            {
-        //                NestedProperty = self.NestedProperty.ToNestedDestination(),
-        //            };
-
-        //            return target;
-        //        }
-        //    }
-        //}
-        //");
+namespace Namespace
+{
+    public static partial class SourceMapToExtensions
+    {
+        public static Destination MapToDestination(this Source self, int destinationObjectSomeResolverSomeInt, CultureInfo destinationObjectSomeResolverCultureInfo = CultureInfo.InvariantCulture)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self));
+            }
+            
+            var target = new Destination
+            {
+                NestedObject = self.NestedObject?.Select(element => element.MapToDestinationObject(destinationObjectSomeResolverSomeInt, destinationObjectSomeResolverCultureInfo)) ?? Enumerable.Empty<DestinationObject>(),
+            };
+            
+            return target;
+        }
+    }
+}
+");
     }
 }

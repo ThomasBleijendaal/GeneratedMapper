@@ -86,7 +86,7 @@ namespace GeneratedMapper
             bool resolvedSomething;
             do
             {
-                context.ReportDiagnostic(DiagnosticsHelper.Debug("Trying to resolve.."));
+                context.ReportDiagnostic(DiagnosticsHelper.Debug($"Trying to resolve {mappings.SelectMany(x => x.Mappings).Where(x => x.RequiresMappingInformationOfMapper && x.MappingInformationOfMapper == null).Count()} items.."));
 
                 resolvedSomething = false;
 
@@ -103,8 +103,6 @@ namespace GeneratedMapper
                         mapping.SetMappingInformation(mappingInformationToFind);
 
                         context.ReportDiagnostic(DiagnosticsHelper.Debug("Resolved something!"));
-
-                        return;
                     }
                 }
             }
