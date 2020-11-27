@@ -1,12 +1,11 @@
-﻿using GeneratedMapper.Abstractions;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 using GeneratedMapper.Attributes;
 using GeneratedMapper.Helpers;
 using GeneratedMapper.Mappings;
 using Microsoft.CodeAnalysis;
-using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
 
 namespace GeneratedMapper.Information
 {
@@ -40,6 +39,8 @@ namespace GeneratedMapper.Information
         // TODO: issues: no nested class detection (namespace issue)
         public MappingInformation(GeneratorExecutionContext context, ITypeSymbol attributedType, AttributeData attributeData)
         {
+            AttributeData = attributeData;
+
             _enumerableType = context.Compilation.GetTypeByMetadataName("System.Collections.IEnumerable") ?? throw new InvalidOperationException("Cannot find System.Collections.IEnumerable");
             _genericEnumerableType = context.Compilation.GetTypeByMetadataName("System.Collections.Generic.IEnumerable`1") ?? throw new InvalidOperationException("Cannot find System.Collections.Generic.IEnumerable`1");
             _genericListlikeType = context.Compilation.GetTypeByMetadataName("System.Collections.Generic.ICollection`1") ?? throw new InvalidOperationException("Cannot find System.Collections.Generic.ICollection`1");
@@ -53,13 +54,11 @@ namespace GeneratedMapper.Information
 
             try
             {
-                var hasInvalidMapping = false;
-
                 var isMapFromAttribute = attributeData.AttributeClass!.Name.Contains("MapFrom");
                 var attributeIndex = GetAttributeIndex(attributeData);
 
                 if (attributedType == null ||
-                    attributeData.ConstructorArguments[0].Value is not INamedTypeSymbol targetType ||
+                    attributeData.ConstructorArguments.ElementAtOrDefault(0).Value is not INamedTypeSymbol targetType ||
                     (isMapFromAttribute ? targetType : attributedType) is not INamedTypeSymbol sourceType ||
                     (isMapFromAttribute ? attributedType : targetType) is not INamedTypeSymbol destinationType)
                 {
@@ -72,6 +71,9 @@ namespace GeneratedMapper.Information
                     _diagnostics.Add(DiagnosticsHelper.NoParameterlessConstructor(attributeData));
                     return;
                 }
+
+                SourceType = sourceType;
+                DestinationType = destinationType;
 
                 var mappings = new List<PropertyMappingInformation>();
 
@@ -88,10 +90,6 @@ namespace GeneratedMapper.Information
                     .Where(x => x?.GetMethod is not null && x.GetMethod.DeclaredAccessibility == Accessibility.Public)
                     .Where(x => !ShouldIgnoreProperty(x)))
                 {
-
-                    var propertyMethodToCall = GetMapWithMethodToCall(attibutedTypeProperty, attributeIndex);
-                    var resolverTypeToUse = GetMapWithResolverType(attibutedTypeProperty, attributeIndex);
-
                     var targetPropertyToFind = GetMapWithOverriddenPropertyName(attibutedTypeProperty, attributeIndex) ?? attibutedTypeProperty.Name;
 
                     var targetTypeProperty = targetProperties.FirstOrDefault(property => property.Name == targetPropertyToFind);
@@ -104,16 +102,13 @@ namespace GeneratedMapper.Information
                     var sourcePropertyCollectionType = GetCollectionType(sourceProperty);
                     var destinationPropertyCollectionType = GetCollectionType(destinationProperty);
 
-                    var destinationPropertyTypeMapFromAttribute = FindAttributeFromType(destinationProperty.Type, _mapFromAttribute, sourceProperty.Type);
-                    var sourcePropertyTypeMapFromAttribute = FindAttributeFromType(sourceProperty.Type, _mapToAttribute, destinationProperty.Type);
-
-                    var destinationPropertyCollectionTypMapFromAttribute = destinationPropertyCollectionType is null || sourcePropertyCollectionType is null 
+                    var destinationPropertyCollectionTypMapFromAttribute = destinationPropertyCollectionType is null || sourcePropertyCollectionType is null
                         ? default : FindAttributeFromType(destinationPropertyCollectionType, _mapFromAttribute, sourcePropertyCollectionType);
 
-                    var sourcePropertyCollectionTypMapToAttribute = destinationPropertyCollectionType is null || sourcePropertyCollectionType is null 
+                    var sourcePropertyCollectionTypMapToAttribute = destinationPropertyCollectionType is null || sourcePropertyCollectionType is null
                         ? default : FindAttributeFromType(sourcePropertyCollectionType, _mapToAttribute, destinationPropertyCollectionType);
 
-                    var propertyMapping = new PropertyMappingInformation(sourceType, destinationType);
+                    var propertyMapping = new PropertyMappingInformation(SourceType, DestinationType);
                     propertyMapping
                         .MapFrom(sourceProperty.Name, sourcePropertyIsNullable)
                         .MapTo(destinationProperty.Name, destinationPropertyIsNullable);
@@ -121,13 +116,14 @@ namespace GeneratedMapper.Information
                     // general issues:
                     // TODO: what if the user wants to resolve something that also has a MapTo / MapFrom?
 
-                    if (resolverTypeToUse is INamedTypeSymbol resolverType)
+                    if (GetMapWithResolverType(attibutedTypeProperty, attributeIndex) is INamedTypeSymbol resolverType)
                     {
                         MapPropertyUsingResolver(propertyMapping, attributeData, resolverType);
                     }
 
                     // MapTo / MapFrom on nested property type
-                    if (destinationPropertyTypeMapFromAttribute is not null || sourcePropertyTypeMapFromAttribute is not null)
+                    if (FindAttributeFromType(destinationProperty.Type, _mapFromAttribute, sourceProperty.Type) is not null ||
+                        FindAttributeFromType(sourceProperty.Type, _mapToAttribute, destinationProperty.Type) is not null)
                     {
                         propertyMapping.UsingMapper(sourceProperty.Type, destinationProperty.Type);
                     }
@@ -144,23 +140,14 @@ namespace GeneratedMapper.Information
                         }
                     }
 
-                    if (propertyMethodToCall is not null)
+                    if (GetMapWithMethodToCall(attibutedTypeProperty, attributeIndex) is string propertyMethodToCall)
                     {
                         // TODO: find namespace
                         propertyMapping.UsingMethod(propertyMethodToCall, default);
                     }
 
-                    if (!propertyMapping.TryValidateMapping(attributeData, out var diagnostics))
-                    {
-                        _diagnostics.AddRange(diagnostics);
+                    mappings.Add(propertyMapping);
 
-                        hasInvalidMapping = true;
-                    }
-                    else
-                    {
-                        mappings.Add(propertyMapping);
-                    }
-                    
                     processedTargetProperties.Add(targetTypeProperty);
                 }
 
@@ -169,14 +156,7 @@ namespace GeneratedMapper.Information
                     _diagnostics.Add(DiagnosticsHelper.LeftOverProperty(attributeData, targetType.Name, remainingTargetProperty.Name, attributedType.Name));
                 }
 
-                if (mappings.Count == 0 && !hasInvalidMapping)
-                {
-                    _diagnostics.Add(DiagnosticsHelper.EmptyMapper(attributeData, sourceType.Name, destinationType.Name));
-                }
-
-                // TODO: MEH
-                (SourceType, DestinationType, Mappings) =
-                    (sourceType, destinationType, mappings);
+                Mappings = mappings;
             }
             catch (Exception ex)
             {
@@ -186,13 +166,26 @@ namespace GeneratedMapper.Information
 
         public ITypeSymbol DestinationType { get; private set; } = default!;
 
-        public IEnumerable<Diagnostic> Diagnostics => _diagnostics;
-
         public IEnumerable<PropertyMappingInformation> Mappings { get; private set; } = default!;
 
         public ITypeSymbol SourceType { get; private set; } = default!;
+        public AttributeData AttributeData { get; private set; }
 
         public bool IsFullyResolved => Mappings.All(x => !x.RequiresMappingInformationOfMapper || (x.MappingInformationOfMapper?.IsFullyResolved ?? false));
+
+        public bool TryValidate(out IEnumerable<Diagnostic> diagnostics)
+        {
+            if (!Mappings.Any())
+            {
+                _diagnostics.Add(DiagnosticsHelper.EmptyMapper(AttributeData, SourceType.Name, DestinationType.Name));
+            }
+
+            diagnostics = _diagnostics.Union(Mappings
+                .SelectMany(x => x.TryValidateMapping(AttributeData, out var issues) ? issues : Enumerable.Empty<Diagnostic>()))
+                .ToList();
+
+            return !diagnostics.Any();
+        }
 
         private void MapPropertyAsCollection(PropertyMappingInformation propertyMapping, IPropertySymbol destinationProperty)
         {

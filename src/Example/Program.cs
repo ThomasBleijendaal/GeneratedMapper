@@ -66,17 +66,17 @@ namespace Example
 
             Console.WriteLine(destination5.NestedNames.First().Name);
 
-            //var source6 = new Source6
-            //{
-            //    Sub = new SubSource6
-            //    {
-            //        Name = "Hi"
-            //    }
-            //};
+            var source6 = new Source6
+            {
+                Sub = new SubSource6
+                {
+                    Name = "Hi"
+                }
+            };
 
-            //var destination6 = source6.MapToDestination6();
+            var destination6 = source6.MapToDestination6();
 
-            //Console.WriteLine(destination6.Sub.Name);
+            Console.WriteLine(destination6.Sub.Name);
 
             //var source7a = new Source7a()
             //{

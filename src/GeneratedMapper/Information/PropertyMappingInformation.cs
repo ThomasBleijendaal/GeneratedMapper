@@ -138,7 +138,7 @@ namespace GeneratedMapper.Information
             }
         }
 
-        public bool TryValidateMapping(AttributeData attributeData, out IEnumerable<Diagnostic> diagnostics, bool skipResolveables = true)
+        public bool TryValidateMapping(AttributeData attributeData, out IEnumerable<Diagnostic> diagnostics)
         {
             var messages = new List<Diagnostic>();
 
@@ -152,14 +152,11 @@ namespace GeneratedMapper.Information
                 messages.Add(DiagnosticsHelper.IncorrectNullability(attributeData, SourcePropertyName!, DestinationPropertyName!));
             }
 
-            if (!skipResolveables)
+            if (RequiresMappingInformationOfMapper && MappingInformationOfMapper == null)
             {
-                if (RequiresMappingInformationOfMapper && MappingInformationOfMapper == null)
-                {
-                    messages.Add(DiagnosticsHelper.MissingMappingInformation(attributeData, DestinationPropertyName!));
-                }
+                messages.Add(DiagnosticsHelper.MissingMappingInformation(attributeData, DestinationPropertyName!));
             }
-
+            
             if ((!string.IsNullOrWhiteSpace(ResolverTypeToUse) && !string.IsNullOrWhiteSpace(SourcePropertyMethodToCall)) ||
                 (!string.IsNullOrWhiteSpace(ResolverTypeToUse) && RequiresMappingInformationOfMapper) ||
                 (!string.IsNullOrWhiteSpace(SourcePropertyMethodToCall) && RequiresMappingInformationOfMapper))
