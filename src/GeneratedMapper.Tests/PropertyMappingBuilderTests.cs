@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
+using GeneratedMapper.Enums;
 using GeneratedMapper.Information;
 using GeneratedMapper.Mappings;
 using Microsoft.CodeAnalysis;
@@ -10,87 +10,104 @@ namespace GeneratedMapper.Tests
 {
     internal class PropertyMappingBuilderTests
     {
+        private static readonly Mock<AttributeData> AttributeData = new Mock<AttributeData>();
+
         private static readonly Mock<ITypeSymbol> SourceType = new Mock<ITypeSymbol>();
         private static readonly Mock<ITypeSymbol> DestinationType = new Mock<ITypeSymbol>();
 
         private static readonly Mock<ITypeSymbol> NestedSourceType = new Mock<ITypeSymbol>();
         private static readonly Mock<ITypeSymbol> NestedDestinationType = new Mock<ITypeSymbol>();
 
+        private MappingInformation _mappingInformation;
+        private MappingInformation _nestedMappingInformation = new MappingInformation(AttributeData.Object).MapFrom(SourceType.Object).MapTo(DestinationType.Object);
+        private PropertyMappingInformation _validBase;
+
         [SetUp]
         public void Setup()
         {
-
+            _mappingInformation = new MappingInformation(AttributeData.Object);
+            _validBase = new PropertyMappingInformation(_mappingInformation).MapFrom("x", false).MapTo("x", false);
         }
 
-        [TestCaseSource(nameof(TestCases))]
-        public void TestCodeGeneration(bool expectedIsValid, PropertyMappingInformation mapping)
+        public void DoTest(bool expectedIsValid, PropertyMappingInformation mapping)
         {
-            // TODO: give clear test names
-            var isValid = mapping.TryValidateMapping(default, out var diag);
+            _mappingInformation.AddProperty(mapping);
+
+            var isValid = _mappingInformation.TryValidate(out var diag);
 
             var messages = string.Join(", ", diag.Select(x => x.GetMessage()));
 
             Assert.IsTrue(expectedIsValid == isValid, messages);
         }
 
-        private static IEnumerable<TestCaseData> TestCases()
-        {
-            var mappingInfo = new MappingInformation(NestedDestinationType.Object, Enumerable.Empty<Diagnostic>(), Enumerable.Empty<PropertyMappingInformation>(), NestedSourceType.Object);
+        [Test]
+        public void EmptyMapping() => DoTest(false, new PropertyMappingInformation(_mappingInformation));
+        
+        [Test]
+        public void OnlyMapTo() => DoTest(false, new PropertyMappingInformation(_mappingInformation).MapTo("x", false));
+        
+        [Test]
+        public void OnlyMapFrom() => DoTest(false, new PropertyMappingInformation(_mappingInformation).MapFrom("x", false));
+        
+        [Test]
+        public void SimpleMapper() => DoTest(true, new PropertyMappingInformation(_mappingInformation).MapFrom("x", false).MapTo("x", false));
+        
+        [Test]
+        public void NullableToNotNullable() => DoTest(false, new PropertyMappingInformation(_mappingInformation).MapFrom("x", true).MapTo("x", false));
+        
+        [Test]
+        public void NullableToNullable() => DoTest(true, new PropertyMappingInformation(_mappingInformation).MapFrom("x", true).MapTo("x", true));
 
-            yield return new TestCaseData(false, new PropertyMappingInformation(SourceType.Object, DestinationType.Object))
-                .SetName("Empty mapping");
-            yield return new TestCaseData(false, new PropertyMappingInformation(SourceType.Object, DestinationType.Object).MapTo("x", false))
-                .SetName("Only map to");
-            yield return new TestCaseData(false, new PropertyMappingInformation(SourceType.Object, DestinationType.Object).MapFrom("x", false))
-                .SetName("Only map from");
-            yield return new TestCaseData(true, new PropertyMappingInformation(SourceType.Object, DestinationType.Object).MapFrom("x", false).MapTo("x", false))
-                .SetName("Simple mapper");
-            yield return new TestCaseData(false, new PropertyMappingInformation(SourceType.Object, DestinationType.Object).MapFrom("x", true).MapTo("x", false))
-                .SetName("Nullable to not-nullable");
-            yield return new TestCaseData(true, new PropertyMappingInformation(SourceType.Object, DestinationType.Object).MapFrom("x", true).MapTo("x", true))
-                .SetName("Nullable to nullable");
+        [Test]
+        public void SimpleMapperAsCollection() => DoTest(true, new PropertyMappingInformation(_mappingInformation).MapFrom("x", false).MapTo("x", false).AsCollection(DestinationCollectionType.Array, "x", "x"));
+        
+        [Test]
+        public void NotNullableToNullableAsCollection() => DoTest(true, new PropertyMappingInformation(_mappingInformation).MapFrom("x", false).MapTo("x", true).AsCollection(DestinationCollectionType.Array, "x", "x"));
+        
+        [Test]
+        public void NullableToNotNullableAsCollection() => DoTest(true, new PropertyMappingInformation(_mappingInformation).MapFrom("x", true).MapTo("x", false).AsCollection(DestinationCollectionType.Array, "x", "x"));
+        
+        [Test]
+        public void NullableToNullableAsCollection() => DoTest(true, new PropertyMappingInformation(_mappingInformation).MapFrom("x", true).MapTo("x", true).AsCollection(DestinationCollectionType.Array, "x", "x"));
 
-            yield return new TestCaseData(true, new PropertyMappingInformation(SourceType.Object, DestinationType.Object).MapFrom("x", false).MapTo("x", false).AsCollection(DestinationCollectionType.Array, "x", "x"))
-                .SetName("Simple mapper as collection");
-            yield return new TestCaseData(true, new PropertyMappingInformation(SourceType.Object, DestinationType.Object).MapFrom("x", false).MapTo("x", true).AsCollection(DestinationCollectionType.Array, "x", "x"))
-                .SetName("Not-nullable to nullable as collection");
-            yield return new TestCaseData(true, new PropertyMappingInformation(SourceType.Object, DestinationType.Object).MapFrom("x", true).MapTo("x", false).AsCollection(DestinationCollectionType.Array, "x", "x"))
-                .SetName("Nullable to not-nullable as collection");
-            yield return new TestCaseData(true, new PropertyMappingInformation(SourceType.Object, DestinationType.Object).MapFrom("x", true).MapTo("x", true).AsCollection(DestinationCollectionType.Array, "x", "x"))
-                .SetName("Nullable to nullable as collection");
+        [Test]
+        public void ValidBaseAsCollectionWithoutMapping() => DoTest(true, _validBase.AsCollection(DestinationCollectionType.Array, "x", "x"));
+        
+        [Test]
+        public void ValidBaseAsCollectionUsingMapper() => DoTest(true, _validBase.AsCollection(DestinationCollectionType.Array, "x", "x").UsingMapper(NestedSourceType.Object, NestedDestinationType.Object).SetMappingInformation(_nestedMappingInformation));
+        
+        [Test]
+        public void ValidBaseAsCollectionUsingMethod() => DoTest(true, _validBase.AsCollection(DestinationCollectionType.Array, "x", "x").UsingMethod("x", "x"));
+        
+        [Test]
+        public void ValidBaseAsCollectionUsingResolver() => DoTest(true, _validBase.AsCollection(DestinationCollectionType.Array, "x", "x").UsingResolver("x", "x", Enumerable.Empty<MethodInformation>()));
 
-            yield return new TestCaseData(true, validBase().AsCollection(DestinationCollectionType.Array, "x", "x"))
-                .SetName("Valid base as collection without mapping");
-            yield return new TestCaseData(true, validBase().AsCollection(DestinationCollectionType.Array, "x", "x").UsingMapper(NestedSourceType.Object, NestedDestinationType.Object).SetMappingInformation(mappingInfo))
-                .SetName("Valid base as collection using mapper");
-            yield return new TestCaseData(true, validBase().AsCollection(DestinationCollectionType.Array, "x", "x").UsingMethod("x", "x"))
-                .SetName("Valid base as collection using method");
-            yield return new TestCaseData(true, validBase().AsCollection(DestinationCollectionType.Array, "x", "x").UsingResolver("x", "x", Enumerable.Empty<MethodParameter>()))
-                .SetName("Valid base as collection using resolver");
+        [Test]
+        public void ValidBaseUsingMapperWithoutMappingInformation() => DoTest(false, _validBase.UsingMapper(NestedSourceType.Object, NestedDestinationType.Object));
+        
+        [Test]
+        public void ValidBaseUsingMapperWithMappingInformation() => DoTest(true, _validBase.UsingMapper(NestedSourceType.Object, NestedDestinationType.Object).SetMappingInformation(_nestedMappingInformation));
 
-            yield return new TestCaseData(false, validBase().UsingMapper(NestedSourceType.Object, NestedDestinationType.Object))
-                .SetName("Valid base using mapper without mapping information");
-            yield return new TestCaseData(true, validBase().UsingMapper(NestedSourceType.Object, NestedDestinationType.Object).SetMappingInformation(mappingInfo))
-                .SetName("Valid base using mapper with mapping informatio");
+        [Test]
+        public void ValidBaseUsingResolver() => DoTest(true, _validBase.UsingResolver("x", "x", Enumerable.Empty<MethodInformation>()));
+        
+        [Test]
+        public void ValidBaseUsingMethodWithoutNamespace() => DoTest(true, _validBase.UsingMethod("x", default));
+        
+        [Test]
+        public void ValidBaseUsingMethodWithNamespace() => DoTest(true, _validBase.UsingMethod("x", "x"));
 
-            yield return new TestCaseData(true, validBase().UsingResolver("x", "x", Enumerable.Empty<MethodParameter>()))
-                .SetName("Valid base using resolver");
-            yield return new TestCaseData(true, validBase().UsingMethod("x", default))
-                .SetName("Valid base using method without namespace");
-            yield return new TestCaseData(true, validBase().UsingMethod("x", "x"))
-                .SetName("Valid base using method with namespace");
+        [Test]
+        public void ValidBaseUsingResolverWithoutConstructorParametersAndUsingMethod() => DoTest(false, _validBase.UsingResolver("x", "x", Enumerable.Empty<MethodInformation>()).UsingMethod("x", "x"));
+        
+        [Test]
+        public void ValidBaseUsingResolverWithConstructorParametersAndUsingMapperWithMappingInformation() => DoTest(false, _validBase.UsingResolver("x", "x", Enumerable.Empty<MethodInformation>()).UsingMapper(NestedSourceType.Object, NestedDestinationType.Object).SetMappingInformation(_nestedMappingInformation));
+        
+        [Test]
+        public void ValidBaseUsingMethodAndUsingMapperWithMappingInformation() => DoTest(false, _validBase.UsingMethod("x", "x").UsingMapper(NestedSourceType.Object, NestedDestinationType.Object).SetMappingInformation(_nestedMappingInformation));
 
-            yield return new TestCaseData(false, validBase().UsingResolver("x", "x", Enumerable.Empty<MethodParameter>()).UsingMethod("x", "x"))
-                .SetName("Valid base using resolver without constructor parameters and using method");
-            yield return new TestCaseData(false, validBase().UsingResolver("x", "x", Enumerable.Empty<MethodParameter>()).UsingMapper(NestedSourceType.Object, NestedDestinationType.Object).SetMappingInformation(mappingInfo))
-                .SetName("Valid base using resolver with constructor parameters and using mapper with mapping information");
-            yield return new TestCaseData(false, validBase().UsingMethod("x", "x").UsingMapper(NestedSourceType.Object, NestedDestinationType.Object).SetMappingInformation(mappingInfo))
-                .SetName("Valid base using method and using mapper with mapping information");
+        [Test]
+        public void ValidBaseUsingRecursiveMapper() => DoTest(true, _validBase.UsingMapper(NestedSourceType.Object, NestedDestinationType.Object).SetMappingInformation(_mappingInformation));
 
-            static PropertyMappingInformation validBase()
-            {
-                return new PropertyMappingInformation(SourceType.Object, DestinationType.Object).MapFrom("x", false).MapTo("x", false);
-            }
-        }
     }
 }

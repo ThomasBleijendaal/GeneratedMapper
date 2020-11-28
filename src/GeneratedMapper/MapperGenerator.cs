@@ -7,6 +7,7 @@ using GeneratedMapper.Builders;
 using GeneratedMapper.Configurations;
 using GeneratedMapper.Helpers;
 using GeneratedMapper.Information;
+using GeneratedMapper.Parsers;
 using GeneratedMapper.SyntaxReceivers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
@@ -29,7 +30,7 @@ namespace GeneratedMapper
                 var foundMappings = FindMappings(context);
 
                 // resolve all mappings that need other mappings information (like nested mappings)
-                ResolvePendingNestedMappings(context, foundMappings);
+                ResolvePendingNestedMappings(foundMappings);
 
                 ValidateMappings(context, foundMappings);
 
@@ -52,6 +53,8 @@ namespace GeneratedMapper
 
         private static List<MappingInformation> FindMappings(GeneratorExecutionContext context)
         {
+            var parser = new MappingAttributeParser(context, new PropertyParser(context, new ConstructorParser(context)));
+
             var foundMappings = new List<MappingInformation>();
 
             if (context.SyntaxReceiver is MapAttributeReceiver attributeReceiver)
@@ -62,18 +65,15 @@ namespace GeneratedMapper
                 foreach (var candidateTypeNode in attributeReceiver.Candidates)
                 {
                     var model = context.Compilation.GetSemanticModel(candidateTypeNode.SyntaxTree);
-
-                    var candidateTypeSymbol = model.GetDeclaredSymbol(candidateTypeNode) as ITypeSymbol;
-                    if (candidateTypeSymbol is not null)
+                    if (model.GetDeclaredSymbol(candidateTypeNode) is ITypeSymbol candidateTypeSymbol)
                     {
-                        var attributes = candidateTypeSymbol.GetAttributes()
-                            .Where(x =>
-                                x.AttributeClass != null &&
-                                (x.AttributeClass.Equals(mapToAttribute, SymbolEqualityComparer.Default) ||
-                                x.AttributeClass.Equals(mapFromAttribute, SymbolEqualityComparer.Default)));
-
-                        foundMappings.AddRange(attributes
-                            .Select(mappingAttribute => new MappingInformation(context, candidateTypeSymbol, mappingAttribute)));
+                        foundMappings.AddRange(
+                            candidateTypeSymbol.GetAttributes()
+                                .Where(attribute =>
+                                    attribute.AttributeClass != null &&
+                                    (attribute.AttributeClass.Equals(mapToAttribute, SymbolEqualityComparer.Default) ||
+                                    attribute.AttributeClass.Equals(mapFromAttribute, SymbolEqualityComparer.Default)))
+                                .Select(attribute => parser.ParseAttribute(candidateTypeSymbol, attribute)));
                     }
                 }
             }
@@ -81,32 +81,26 @@ namespace GeneratedMapper
             return foundMappings;
         }
 
-        private static void ResolvePendingNestedMappings(GeneratorExecutionContext context, IEnumerable<MappingInformation> mappings)
+        private static void ResolvePendingNestedMappings(IEnumerable<MappingInformation> mappings)
         {
             bool resolvedSomething;
             do
             {
-                context.ReportDiagnostic(DiagnosticsHelper.Debug($"Trying to resolve {mappings.SelectMany(x => x.Mappings).Where(x => x.RequiresMappingInformationOfMapper && x.MappingInformationOfMapper == null).Count()} items.."));
-
                 resolvedSomething = false;
 
-                foreach (var mapping in mappings.SelectMany(x => x.Mappings).Where(x => x.RequiresMappingInformationOfMapper && x.MappingInformationOfMapper == null))
+                foreach (var mapping in mappings.SelectMany(x => x.Mappings).Where(x => x.RequiresMappingInformationOfMapper && x.MappingInformationOfMapperToUse == null))
                 {
-                    context.ReportDiagnostic(DiagnosticsHelper.Debug("Something needs resolving.."));
-                    context.ReportDiagnostic(DiagnosticsHelper.Debug($"From {mapping.MapperFromType?.Name}"));
-                    context.ReportDiagnostic(DiagnosticsHelper.Debug($"To {mapping.MapperToType?.Name}"));
-
-                    var mappingInformationToFind = mappings.FirstOrDefault(x => x.SourceType.Equals(mapping.MapperFromType, SymbolEqualityComparer.Default) && x.DestinationType.Equals(mapping.MapperToType, SymbolEqualityComparer.Default));
+                    var mappingInformationToFind = mappings
+                        .FirstOrDefault(x => x.SourceType.Equals(mapping.MapperFromType, SymbolEqualityComparer.Default) && 
+                            x.DestinationType.Equals(mapping.MapperToType, SymbolEqualityComparer.Default));
                     if (mappingInformationToFind != null && mappingInformationToFind.IsFullyResolved)
                     {
                         resolvedSomething = true;
                         mapping.SetMappingInformation(mappingInformationToFind);
-
-                        context.ReportDiagnostic(DiagnosticsHelper.Debug("Resolved something!"));
                     }
                 }
             }
-            while (resolvedSomething);
+            while (false && resolvedSomething);
         }
 
         private static void ValidateMappings(GeneratorExecutionContext context, IEnumerable<MappingInformation> mappings)

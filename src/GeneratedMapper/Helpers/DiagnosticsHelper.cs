@@ -81,7 +81,7 @@ namespace GeneratedMapper.Helpers
         {
             Id = "GM010",
             Title = "Property cannot be mapped",
-            Message = "The type '{0}' indicates it has a mapper but the mapping information is not provided by the code generator.",
+            Message = "The mapper for mapping type '{0}' to type '{1}' cannot be found.",
             Severity = DiagnosticSeverity.Error
         };
 
@@ -89,7 +89,7 @@ namespace GeneratedMapper.Helpers
         {
             Id = "GM011",
             Title = "Property cannot be mapped",
-            Message = "The property '{0}' has multiple mapping instructions for the same target type.",
+            Message = "The property '{0}' has multiple mappings for the same target type.",
             Severity = DiagnosticSeverity.Error
         };
 
@@ -119,8 +119,8 @@ namespace GeneratedMapper.Helpers
             => GetDiagnostic(_unmappableEnumerableProperty, attributeData, attributedClass, property, targetProperty, targetClass);
         public static Diagnostic SubClassHasIncompatibleMapper(AttributeData attributeData, string sourceProperty, string destinationCollectionType)
             => GetDiagnostic(_subClassHasIncompatibleMapper, attributeData, sourceProperty, destinationCollectionType);
-        public static Diagnostic MissingMappingInformation(AttributeData attributeData, string destinationType)
-            => GetDiagnostic(_missingMappingInformation, attributeData, destinationType);
+        public static Diagnostic MissingMappingInformation(AttributeData attributeData, string? mapFromType, string? mapToType)
+            => GetDiagnostic(_missingMappingInformation, attributeData, mapFromType, mapToType);
         public static Diagnostic ConflictingMappingInformation(AttributeData attributeData, string sourceProperty)
             => GetDiagnostic(_conflictingMappingInformation, attributeData, sourceProperty);
         public static Diagnostic EmptyMapper(AttributeData attributeData, string sourceType, string destinationType)
@@ -138,7 +138,7 @@ namespace GeneratedMapper.Helpers
                     true),
                 default);
 
-        private static Diagnostic GetDiagnostic(DiagStruct message, AttributeData attributeData, params string[] replacements)
+        private static Diagnostic GetDiagnostic(DiagStruct message, AttributeData attributeData, params string?[] replacements)
             => Diagnostic.Create(
                 new DiagnosticDescriptor(
                     message.Id,
