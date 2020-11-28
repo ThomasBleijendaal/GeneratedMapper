@@ -35,8 +35,8 @@ namespace Example
 
             ;
 
-            Console.WriteLine(JsonSerializer.Serialize(source.MapToSimpleDestination()));
-            Console.WriteLine(JsonSerializer.Serialize(source.MapToComplexDestination(CultureInfo.InvariantCulture)));
+            Console.WriteLine(JsonSerializer.Serialize(source.MapToSimpleDestination(), new JsonSerializerOptions { WriteIndented = true }));
+            Console.WriteLine(JsonSerializer.Serialize(source.MapToComplexDestination(CultureInfo.CurrentCulture), new JsonSerializerOptions { WriteIndented = true }));
         }
     }
 
@@ -102,9 +102,9 @@ namespace Example
     {
         private readonly CultureInfo _cultureInfo;
 
-        public DateResolver()
+        public DateResolver(CultureInfo cultureInfo)
         {
-            _cultureInfo = CultureInfo.InvariantCulture;
+            _cultureInfo = cultureInfo;
         }
 
         public string Resolve(DateTime date) => date.ToString(_cultureInfo);

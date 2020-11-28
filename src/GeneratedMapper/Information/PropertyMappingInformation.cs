@@ -124,10 +124,9 @@ namespace GeneratedMapper.Information
 
         public IEnumerable<string> NamespacesUsed => _namespacesRequired;
 
-        // TODO: recursion hazard
         public IEnumerable<MethodInformation> MapArgumentsRequired
             => this.DoRecursionSafe(
-                mapping => mapping.ResolverConstructorParameters?.Select(argument => argument.CopyWithPrefix(ResolverTypeToUse!)) ?? Enumerable.Empty<MethodInformation>(),
+                mapping => mapping.ResolverConstructorParameters?.Select(argument => argument.CopyWithPrefix(mapping.ResolverTypeToUse!)) ?? Enumerable.Empty<MethodInformation>(),
                 mapping => mapping.MappingInformationOfMapperToUse?.Mappings);
 
         public bool TryValidateMapping(AttributeData attributeData, out IEnumerable<Diagnostic> diagnostics)

@@ -64,7 +64,6 @@ namespace GeneratedMapper.Information
             return this;
         }
 
-        // TODO: recursion hazard
         public bool IsFullyResolved => this.DoRecursionSafe(
             x => x.Mappings,
             x => x.Mappings.Select(x => x.MappingInformationOfMapperToUse))
