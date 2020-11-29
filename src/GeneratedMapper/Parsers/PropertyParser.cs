@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using GeneratedMapper.Attributes;
 using GeneratedMapper.Enums;
@@ -22,8 +23,12 @@ namespace GeneratedMapper.Parsers
         private readonly INamedTypeSymbol _mapFromAttribute;
 
         private readonly ConstructorParser _constructorParser;
+        private readonly List<ExtensionMethodInformation> _extensionMethods;
 
-        public PropertyParser(GeneratorExecutionContext context, ConstructorParser constructorParser)
+        public PropertyParser(
+            GeneratorExecutionContext context, 
+            ConstructorParser constructorParser,
+            List<ExtensionMethodInformation> extensionMethods)
         {
             _enumerableType = context.Compilation.GetTypeByMetadataName("System.Collections.IEnumerable") ?? throw new InvalidOperationException("Cannot find System.Collections.IEnumerable");
             _genericEnumerableType = context.Compilation.GetTypeByMetadataName("System.Collections.Generic.IEnumerable`1")?.ConstructUnboundGenericType() ?? throw new InvalidOperationException("Cannot find System.Collections.Generic.IEnumerable`1");
@@ -34,6 +39,7 @@ namespace GeneratedMapper.Parsers
             _mapToAttribute = context.Compilation.GetTypeByMetadataName(typeof(MapToAttribute).FullName) ?? throw new InvalidOperationException("Cannot find MapToAttribute");
             _mapFromAttribute = context.Compilation.GetTypeByMetadataName(typeof(MapFromAttribute).FullName) ?? throw new InvalidOperationException("Cannot find MapFromAttribute");
             _constructorParser = constructorParser;
+            _extensionMethods = extensionMethods;
         }
 
         public PropertyMappingInformation ParseProperty(
@@ -73,7 +79,6 @@ namespace GeneratedMapper.Parsers
                 if (GetCollectionType(sourceProperty) is ITypeSymbol sourcePropertyCollectionType &&
                     GetCollectionType(destinationProperty) is ITypeSymbol destinationPropertyCollectionType)
                 {
-                    // TODO: what about when it cannot find the type (namespace etc)?
                     MapPropertyAsCollection(propertyMapping, destinationProperty);
 
                     if (destinationPropertyCollectionType.HasAttribute(_mapFromAttribute, default, 0, sourcePropertyCollectionType) ||
@@ -85,8 +90,23 @@ namespace GeneratedMapper.Parsers
 
                 if (mapWithAttribute?.ConstructorArgument<string>(1) is string propertyMethodToCall)
                 {
-                    // TODO: find namespace
-                    propertyMapping.UsingMethod(propertyMethodToCall, default);
+                    if (sourceProperty.Type is INamedTypeSymbol namedSourcePropertyType &&
+                        namedSourcePropertyType.GetMembers(propertyMethodToCall)
+                            .OfType<IMethodSymbol>()
+                            .Any(x => x.Parameters.Length == 0)) // TODO: remove this limitation of only accepting methods without parameters?
+                    {
+                        propertyMapping.UsingMethod(propertyMethodToCall, default);
+                    }
+                    else if (_extensionMethods.FirstOrDefault(extensionMethod => extensionMethod.MethodName == propertyMethodToCall &&
+                        sourceProperty.Type.Equals(extensionMethod.AcceptsType, SymbolEqualityComparer.Default) &&
+                        destinationProperty.Type.Equals(extensionMethod.ReturnsType, SymbolEqualityComparer.Default)) is ExtensionMethodInformation extensionMethod)
+                    {
+                        propertyMapping.UsingMethod(propertyMethodToCall, extensionMethod.PartOfType.ContainingNamespace.ToDisplayString());
+                    }
+                    else
+                    {
+                        throw new ParseException(DiagnosticsHelper.CannotFindMethod(mappingInformation.AttributeData, mappingInformation.SourceType.Name, sourceProperty.Name!, propertyMethodToCall));
+                    }
                 }
             }
             catch (ParseException ex)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using GeneratedMapper.Attributes;
+using GeneratedMapper.Configurations;
 using GeneratedMapper.Enums;
 using GeneratedMapper.Exceptions;
 using GeneratedMapper.Extensions;
@@ -18,6 +19,7 @@ namespace GeneratedMapper.Parsers
         private readonly INamedTypeSymbol _ignoreAttribute;
         private readonly INamedTypeSymbol _ignoreInTargetAttribute;
 
+        private readonly GeneratorExecutionContext _context;
         private readonly PropertyParser _propertyParser;
 
         public MappingAttributeParser(GeneratorExecutionContext context, PropertyParser propertyParser)
@@ -25,13 +27,13 @@ namespace GeneratedMapper.Parsers
             _mapWithAttribute = context.Compilation.GetTypeByMetadataName(typeof(MapWithAttribute).FullName) ?? throw new InvalidOperationException("Cannot find MapWithAttribute");
             _ignoreAttribute = context.Compilation.GetTypeByMetadataName(typeof(IgnoreAttribute).FullName) ?? throw new InvalidOperationException("Cannot find IgnoreAttribute");
             _ignoreInTargetAttribute = context.Compilation.GetTypeByMetadataName(typeof(IgnoreInTargetAttribute).FullName) ?? throw new InvalidOperationException("Cannot find IgnoreInTargetAttribute");
-
+            _context = context;
             _propertyParser = propertyParser ?? throw new ArgumentNullException(nameof(propertyParser));
         }
 
-        public MappingInformation ParseAttribute(ITypeSymbol attributedType, AttributeData attributeData)
+        public MappingInformation ParseAttribute(ConfigurationValues configurationValues, ITypeSymbol attributedType, AttributeData attributeData)
         {
-            var mappingInformation = new MappingInformation(attributeData);
+            var mappingInformation = new MappingInformation(attributeData, configurationValues);
 
             try
             {
@@ -54,7 +56,7 @@ namespace GeneratedMapper.Parsers
 
                 var destinationPropertyExclusions = TargetPropertiesToIgnore(attributedType, mappingInformation.AttributeIndex);
 
-                var targetProperties = targetType
+                var targetProperties = targetType!
                     .GetMembers()
                     .OfType<IPropertySymbol>()
                     .Where(x => x.SetMethod is not null && x.SetMethod.DeclaredAccessibility == Accessibility.Public)

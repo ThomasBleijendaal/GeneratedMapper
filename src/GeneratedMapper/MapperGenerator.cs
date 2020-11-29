@@ -36,8 +36,7 @@ namespace GeneratedMapper
 
                 foreach (var information in foundMappings)
                 {
-                    var configurationValues = new ConfigurationValues(IndentStyle.Space, 4); // TODO: context, candidateTypeNode.SyntaxTree);
-                    var (name, text) = GenerateMapping(information, configurationValues);
+                    var (name, text) = GenerateMapping(information);
 
                     if (name is not null && text is not null)
                     {
@@ -53,7 +52,9 @@ namespace GeneratedMapper
 
         private static List<MappingInformation> FindMappings(GeneratorExecutionContext context)
         {
-            var parser = new MappingAttributeParser(context, new PropertyParser(context, new ConstructorParser(context)));
+            var extensionMethods = FindExtensionMethods(context);
+
+            var parser = new MappingAttributeParser(context, new PropertyParser(context, new ConstructorParser(context), extensionMethods));
 
             var foundMappings = new List<MappingInformation>();
 
@@ -64,6 +65,8 @@ namespace GeneratedMapper
 
                 foreach (var candidateTypeNode in attributeReceiver.Candidates)
                 {
+                    var configurationValues = new ConfigurationValues(context, candidateTypeNode.SyntaxTree);
+
                     var model = context.Compilation.GetSemanticModel(candidateTypeNode.SyntaxTree);
                     if (model.GetDeclaredSymbol(candidateTypeNode) is ITypeSymbol candidateTypeSymbol)
                     {
@@ -73,12 +76,34 @@ namespace GeneratedMapper
                                     attribute.AttributeClass != null &&
                                     (attribute.AttributeClass.Equals(mapToAttribute, SymbolEqualityComparer.Default) ||
                                     attribute.AttributeClass.Equals(mapFromAttribute, SymbolEqualityComparer.Default)))
-                                .Select(attribute => parser.ParseAttribute(candidateTypeSymbol, attribute)));
+                                .Select(attribute => parser.ParseAttribute(configurationValues, candidateTypeSymbol, attribute)));
                     }
                 }
             }
 
             return foundMappings;
+        }
+
+        private static List<ExtensionMethodInformation> FindExtensionMethods(GeneratorExecutionContext context)
+        {
+            var parser = new ExtensionMethodParser();
+
+            var foundExtensionMethods = new List<ExtensionMethodInformation>();
+
+            if (context.SyntaxReceiver is MapAttributeReceiver attributeReceiver)
+            {
+                foreach (var extensionMethodClass in attributeReceiver.ClassesWithExtensionMethods)
+                {
+                    var model = context.Compilation.GetSemanticModel(extensionMethodClass.SyntaxTree);
+
+                    if (model.GetDeclaredSymbol(extensionMethodClass) is ITypeSymbol typeWithExtensionMethods)
+                    {
+                        foundExtensionMethods.AddRange(parser.ParseType(typeWithExtensionMethods));
+                    }
+                }
+            }
+
+            return foundExtensionMethods;
         }
 
         private static void ResolvePendingNestedMappings(IEnumerable<MappingInformation> mappings)
@@ -88,11 +113,15 @@ namespace GeneratedMapper
             {
                 resolvedSomething = false;
 
-                foreach (var mapping in mappings.SelectMany(x => x.Mappings).Where(x => x.RequiresMappingInformationOfMapper && x.MappingInformationOfMapperToUse == null))
+                foreach (var mapping in mappings
+                    .SelectMany(x => x.Mappings)
+                    .Where(x => x.RequiresMappingInformationOfMapper && x.MappingInformationOfMapperToUse == null))
                 {
                     var mappingInformationToFind = mappings
                         .FirstOrDefault(x => x.SourceType.Equals(mapping.MapperFromType, SymbolEqualityComparer.Default) && 
                             x.DestinationType.Equals(mapping.MapperToType, SymbolEqualityComparer.Default));
+
+                    // TODO: the check if its fully resolved can be an issue when the mappings are dependent on each other, like A -> B -> A etc.
                     if (mappingInformationToFind != null && mappingInformationToFind.IsFullyResolved)
                     {
                         resolvedSomething = true;
@@ -100,7 +129,7 @@ namespace GeneratedMapper
                     }
                 }
             }
-            while (false && resolvedSomething);
+            while (resolvedSomething);
         }
 
         private static void ValidateMappings(GeneratorExecutionContext context, IEnumerable<MappingInformation> mappings)
@@ -117,11 +146,11 @@ namespace GeneratedMapper
             }
         }
 
-        private static (string? name, SourceText? text) GenerateMapping(MappingInformation information, ConfigurationValues configurationValues)
+        private static (string? name, SourceText? text) GenerateMapping(MappingInformation information)
         {
             if (information.SourceType != null && information.DestinationType != null)
             {
-                var text = new MappingBuilder(information, configurationValues).GenerateSourceText();
+                var text = new MappingBuilder(information).GenerateSourceText();
                 return ($"{information.SourceType.Name}_To_{information.DestinationType.Name}_Map.g.cs", text);
             }
 

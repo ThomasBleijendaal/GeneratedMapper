@@ -31,17 +31,21 @@ namespace GeneratedMapper.Tests
             @namespace.Setup(x => x.Name).Returns("Namespace");
             @namespace.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace");
 
+            var namespaceOfNestedTypes = new Mock<INamespaceSymbol>();
+            namespaceOfNestedTypes.Setup(x => x.Name).Returns("Nested");
+            namespaceOfNestedTypes.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace.Nested");
+
             _sourceType.Setup(x => x.Name).Returns("Source");
             _sourceType.Setup(x => x.ContainingNamespace).Returns(@namespace.Object);
             _destinationType.Setup(x => x.Name).Returns("Destination");
             _destinationType.Setup(x => x.ContainingNamespace).Returns(@namespace.Object);
 
             _nestedSourceType.Setup(x => x.Name).Returns("SourceObject");
-            _nestedSourceType.Setup(x => x.ContainingNamespace).Returns(@namespace.Object);
+            _nestedSourceType.Setup(x => x.ContainingNamespace).Returns(namespaceOfNestedTypes.Object);
             _nestedDestinationType.Setup(x => x.Name).Returns("DestinationObject");
-            _nestedDestinationType.Setup(x => x.ContainingNamespace).Returns(@namespace.Object);
+            _nestedDestinationType.Setup(x => x.ContainingNamespace).Returns(namespaceOfNestedTypes.Object);
 
-            _mappingInformation = new MappingInformation(_attributeData.Object).MapFrom(_sourceType.Object).MapTo(_destinationType.Object);
+            _mappingInformation = new MappingInformation(_attributeData.Object, _values).MapFrom(_sourceType.Object).MapTo(_destinationType.Object);
         }
 
 
@@ -52,7 +56,7 @@ namespace GeneratedMapper.Tests
                 _mappingInformation.AddProperty(mapping);
             }
 
-            var builder = new MappingBuilder(_mappingInformation, _values);
+            var builder = new MappingBuilder(_mappingInformation);
 
             Assert.AreEqual(expectedSourceText, builder.GenerateSourceText().ToString());
         }
@@ -265,7 +269,7 @@ namespace Namespace
                         .MapFrom("Parameter", false)
                         .MapTo("ResolvedParameter", false)
                         .UsingResolver("SomeResolver", "Namespace.Resolvers", new [] {
-                            new MethodInformation("randomService", "IRandomService", "Namespace.Services", default)
+                            new MethodInformation("randomService", "IRandomService", false, "Namespace.Services", default)
                         })
                 },
                 @"using System;
@@ -306,13 +310,13 @@ namespace Namespace
                         .MapFrom("Parameter1", false)
                         .MapTo("ResolvedParameter1", false)
                         .UsingResolver("SomeResolver1", "Namespace.Resolvers1", new [] {
-                            new MethodInformation("randomService1", "IRandomService1", "Namespace.Services1", default)
+                            new MethodInformation("randomService1", "IRandomService1", false,"Namespace.Services1", default)
                         }),
                     new PropertyMappingInformation(_mappingInformation)
                         .MapFrom("Parameter2", false)
                         .MapTo("ResolvedParameter2", false)
                         .UsingResolver("SomeResolver2", "Namespace.Resolvers2", new [] {
-                            new MethodInformation("randomService2", "IRandomService2", "Namespace.Services2", default)
+                            new MethodInformation("randomService2", "IRandomService2", false,"Namespace.Services2", default)
                         })
                 },
                 @"using System;
@@ -358,13 +362,13 @@ namespace Namespace
                         .MapFrom("Parameter1", false)
                         .MapTo("ResolvedParameter1", false)
                         .UsingResolver("SomeResolver", "Namespace.Resolvers", new [] {
-                            new MethodInformation("randomService", "IRandomService", "Namespace.Services", default)
+                            new MethodInformation("randomService", "IRandomService", false, "Namespace.Services", default)
                         }),
                     new PropertyMappingInformation(_mappingInformation)
                         .MapFrom("Parameter2", false)
                         .MapTo("ResolvedParameter2", false)
                         .UsingResolver("SomeResolver", "Namespace.Resolvers", new [] {
-                            new MethodInformation("randomService", "IRandomService", "Namespace.Services", default)
+                            new MethodInformation("randomService", "IRandomService", false, "Namespace.Services", default)
                         })
                 },
                 @"using System;
@@ -561,7 +565,7 @@ namespace Namespace
                         .MapTo("Collection", false)
                         .AsCollection(DestinationCollectionType.Array, "CollectionItem", "Namespace.Collections")
                         .UsingResolver("CollectionResolver", "Namespace.Resolvers", new [] {
-                            new MethodInformation("cultureInfo", "CultureInfo", "System.Globalization", "CultureInfo.InvariantCulture")
+                            new MethodInformation("cultureInfo", "CultureInfo", false, "System.Globalization", "CultureInfo.InvariantCulture")
                         })
                 },
                 @"using System;
@@ -607,7 +611,7 @@ namespace Namespace
                         .MapTo("NestedObject", false)
                         .UsingMapper(_nestedSourceType.Object, _nestedDestinationType.Object)
                         // this set mapper will be called by mapper generator
-                        .SetMappingInformation(new MappingInformation(_attributeData.Object)
+                        .SetMappingInformation(new MappingInformation(_attributeData.Object, _values)
                             .MapFrom(_nestedSourceType.Object)
                             .MapTo(_nestedDestinationType.Object)
                             .AddProperty(new PropertyMappingInformation(_mappingInformation)
@@ -616,6 +620,7 @@ namespace Namespace
                 },
                 @"using System;
 using Namespace;
+using Namespace.Nested;
 
 #nullable enable
 
@@ -651,7 +656,7 @@ namespace Namespace
                         .MapTo("NestedObject", false)
                         .UsingMapper(_nestedSourceType.Object, _nestedDestinationType.Object)
                         // this set mapper will be called by mapper generator
-                        .SetMappingInformation(new MappingInformation(_attributeData.Object)
+                        .SetMappingInformation(new MappingInformation(_attributeData.Object, _values)
                             .MapFrom(_nestedSourceType.Object)
                             .MapTo(_nestedDestinationType.Object)
                             .AddProperty(new PropertyMappingInformation(_mappingInformation)
@@ -659,12 +664,13 @@ namespace Namespace
                                 .MapTo("Name", false)
                                 .UsingResolver("SomeResolver", "Namespace.Resolvers", new[]
                                 {
-                                    new MethodInformation("cultureInfo", "CultureInfo", "System.Globalization", "CultureInfo.InvariantCulture")
+                                    new MethodInformation("cultureInfo", "CultureInfo", false, "System.Globalization", "CultureInfo.InvariantCulture")
                                 })))
                 },
                 @"using System;
 using System.Globalization;
 using Namespace;
+using Namespace.Nested;
 using Namespace.Resolvers;
 
 #nullable enable
@@ -674,6 +680,57 @@ namespace Namespace
     public static partial class SourceMapToExtensions
     {
         public static Destination MapToDestination(this Source self, CultureInfo someResolverCultureInfo = CultureInfo.InvariantCulture)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self));
+            }
+            
+            var target = new Destination
+            {
+                NestedObject = self.NestedObject?.MapToDestinationObject(someResolverCultureInfo),
+            };
+            
+            return target;
+        }
+    }
+}
+");
+
+        [Test]
+        public void MappingPropertyUsingMapperOfDestinationTypeWithNullableArguments()
+            => DoTest(
+                new[]
+                {
+                    new PropertyMappingInformation(_mappingInformation)
+                        .MapFrom("NestedObject", true)
+                        .MapTo("NestedObject", false)
+                        .UsingMapper(_nestedSourceType.Object, _nestedDestinationType.Object)
+                        // this set mapper will be called by mapper generator
+                        .SetMappingInformation(new MappingInformation(_attributeData.Object, _values)
+                            .MapFrom(_nestedSourceType.Object)
+                            .MapTo(_nestedDestinationType.Object)
+                            .AddProperty(new PropertyMappingInformation(_mappingInformation)
+                                .MapFrom("Name", false)
+                                .MapTo("Name", false)
+                                .UsingResolver("SomeResolver", "Namespace.Resolvers", new[]
+                                {
+                                    new MethodInformation("cultureInfo", "CultureInfo", true, "System.Globalization", "CultureInfo.InvariantCulture")
+                                })))
+                },
+                @"using System;
+using System.Globalization;
+using Namespace;
+using Namespace.Nested;
+using Namespace.Resolvers;
+
+#nullable enable
+
+namespace Namespace
+{
+    public static partial class SourceMapToExtensions
+    {
+        public static Destination MapToDestination(this Source self, CultureInfo? someResolverCultureInfo = CultureInfo.InvariantCulture)
         {
             if (self is null)
             {
@@ -702,7 +759,7 @@ namespace Namespace
                         .AsCollection(DestinationCollectionType.Enumerable, "DestinationObject", "Namespace")
                         .UsingMapper(_nestedSourceType.Object, _nestedDestinationType.Object)
                         // this set mapper will be called by mapper generator
-                        .SetMappingInformation(new MappingInformation(_attributeData.Object)
+                        .SetMappingInformation(new MappingInformation(_attributeData.Object, _values)
                             .MapFrom(_nestedSourceType.Object)
                             .MapTo(_nestedDestinationType.Object)
                             .AddProperty(new PropertyMappingInformation(_mappingInformation)
@@ -710,13 +767,14 @@ namespace Namespace
                                 .MapTo("Name", false)
                                 .UsingResolver("SomeResolver", "Namespace.Resolvers", new[]
                                 {
-                                    new MethodInformation("cultureInfo", "CultureInfo", "System.Globalization", "CultureInfo.InvariantCulture")
+                                    new MethodInformation("cultureInfo", "CultureInfo", false,"System.Globalization", "CultureInfo.InvariantCulture")
                                 })))
                 },
                 @"using System;
 using System.Globalization;
 using System.Linq;
 using Namespace;
+using Namespace.Nested;
 using Namespace.Resolvers;
 
 #nullable enable
@@ -754,7 +812,7 @@ namespace Namespace
                         .AsCollection(DestinationCollectionType.Enumerable, "DestinationObject", "Namespace")
                         .UsingMapper(_nestedSourceType.Object, _nestedDestinationType.Object)
                         // this set mapper will be called by mapper generator
-                        .SetMappingInformation(new MappingInformation(_attributeData.Object)
+                        .SetMappingInformation(new MappingInformation(_attributeData.Object, _values)
                             .MapFrom(_nestedSourceType.Object)
                             .MapTo(_nestedDestinationType.Object)
                             .AddProperty(new PropertyMappingInformation(_mappingInformation)
@@ -762,22 +820,23 @@ namespace Namespace
                                 .MapTo("Name1", false)
                                 .UsingResolver("SomeResolver", "Namespace.Resolvers", new[]
                                 {
-                                    new MethodInformation("someInt", "int", "System", default),
-                                    new MethodInformation("cultureInfo", "CultureInfo", "System.Globalization", "CultureInfo.InvariantCulture"),
+                                    new MethodInformation("someInt", "int", false, "System", default),
+                                    new MethodInformation("cultureInfo", "CultureInfo", false, "System.Globalization", "CultureInfo.InvariantCulture"),
                                 }))
                             .AddProperty(new PropertyMappingInformation(_mappingInformation)
                                 .MapFrom("Name2", false)
                                 .MapTo("Name2", false)
                                 .UsingResolver("SomeResolver", "Namespace.Resolvers", new[]
                                 {
-                                    new MethodInformation("someInt", "int", "System", default),
-                                    new MethodInformation("cultureInfo", "CultureInfo", "System.Globalization", "CultureInfo.InvariantCulture")
+                                    new MethodInformation("someInt", "int", false, "System", default),
+                                    new MethodInformation("cultureInfo", "CultureInfo", false,"System.Globalization", "CultureInfo.InvariantCulture")
                                 })))
                 },
                 @"using System;
 using System.Globalization;
 using System.Linq;
 using Namespace;
+using Namespace.Nested;
 using Namespace.Resolvers;
 
 #nullable enable
@@ -853,7 +912,7 @@ namespace Namespace
                         .MapTo("Date", false)
                         .UsingResolver("DateTimeResolver", "Namespace.Resolvers", new []
                         {
-                            new MethodInformation("cultureInfo", "CultureInfo", "System.Globalization", default)
+                            new MethodInformation("cultureInfo", "CultureInfo", false, "System.Globalization", default)
                         }),
                     new PropertyMappingInformation(_mappingInformation)
                         .MapFrom("NestedSource", true)

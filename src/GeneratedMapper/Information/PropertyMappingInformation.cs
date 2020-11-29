@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using GeneratedMapper.Enums;
-using GeneratedMapper.Exceptions;
 using GeneratedMapper.Extensions;
 using GeneratedMapper.Helpers;
 using GeneratedMapper.Mappings;
@@ -73,6 +72,10 @@ namespace GeneratedMapper.Information
             MapperFromType = sourceType;
             MapperToType = destinationType;
 
+            // add these namespaces just to be sure
+            _namespacesRequired.Add(sourceType.ContainingNamespace.ToDisplayString());
+            _namespacesRequired.Add(destinationType.ContainingNamespace.ToDisplayString());
+
             // if the mapper is recursive, directly resolve it
             if (sourceType.Equals(BelongsToMapping.SourceType, SymbolEqualityComparer.Default) &&
                 destinationType.Equals(BelongsToMapping.DestinationType, SymbolEqualityComparer.Default))
@@ -138,7 +141,7 @@ namespace GeneratedMapper.Information
                 messages.Add(DiagnosticsHelper.UnrecognizedTypes(attributeData));
             }
 
-            if ((SourcePropertyIsNullable && !DestinationPropertyIsNullable) && CollectionType == default)
+            if (SourcePropertyIsNullable && !DestinationPropertyIsNullable && CollectionType == default)
             {
                 messages.Add(DiagnosticsHelper.IncorrectNullability(attributeData, SourcePropertyName!, DestinationPropertyName!));
             }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.Json;
-using GeneratedMapper.Attributes;
+using Example.Sources;
 
 namespace Example
 {
@@ -32,83 +32,16 @@ namespace Example
                 }
             };
 
-            ;
+            // important known limitation for source generators:
+
+            // if this example is run inside the GeneratorMapper solution, intellisense will fail to 
+            //      load the GeneratorMapper.dll so these two methods will be flagged as missing --
+            //      the project still builds and runs correctly.
+
+            // if this example is run with GeneratorMapper as NuGet package, intellisense will work correctly
 
             Console.WriteLine(JsonSerializer.Serialize(source.MapToSimpleDestination(), new JsonSerializerOptions { WriteIndented = true }));
             Console.WriteLine(JsonSerializer.Serialize(source.MapToComplexDestination(CultureInfo.CurrentCulture), new JsonSerializerOptions { WriteIndented = true }));
         }
-    }
-
-    [MapTo(typeof(SimpleDestination), Index = 1)]
-    [MapTo(typeof(ComplexDestination), Index = 2)]
-    public class Source
-    {
-        [MapWith("Name", Index = 2)]
-        [MapWith("Greeting", "ConvertToGreeting", Index = 2)]
-        public string Name { get; set; }
-
-        [MapWith("CompanyName", typeof(CompanyNameResolver), Index = 1)]
-        public Company Company { get; set; }
-    }
-
-    public class Company
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; }
-        public double Revenue { get; set; }
-
-        public DateTime StartDate { get; set; }
-
-        public string SomeData { get; set; }
-
-        public List<Company>? SubCompanies { get; set; }
-    }
-
-    public class SimpleDestination
-    {
-        public string Name { get; set; }
-
-        public string CompanyName { get; set; }
-    }
-
-    public class ComplexDestination
-    {
-        public string Name { get; set; }
-
-        public string Greeting { get; set; }
-
-        public CompanyDestination Company { get; set; }
-    }
-
-    [MapFrom(typeof(Company))]
-    [IgnoreInTarget(nameof(Company.SomeData))]
-    public class CompanyDestination
-    {
-        [MapWith("Id", "ToString")]
-        public string Id { get; set; }
-        public string Name { get; set; }
-        public double Revenue { get; set; }
-
-        [MapWith(typeof(DateResolver))]
-        public string StartDate { get; set; }
-
-        public List<CompanyDestination> SubCompanies { get; set; }
-    }
-
-    public class CompanyNameResolver
-    {
-        public string Resolve(Company source) => source.Name;
-    }
-
-    public class DateResolver
-    {
-        private readonly CultureInfo _cultureInfo;
-
-        public DateResolver(CultureInfo cultureInfo)
-        {
-            _cultureInfo = cultureInfo;
-        }
-
-        public string Resolve(DateTime date) => date.ToString(_cultureInfo);
     }
 }

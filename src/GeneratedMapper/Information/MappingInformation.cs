@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using GeneratedMapper.Configurations;
 using GeneratedMapper.Enums;
 using GeneratedMapper.Extensions;
 using GeneratedMapper.Helpers;
@@ -13,11 +14,13 @@ namespace GeneratedMapper.Information
         private readonly List<PropertyMappingInformation> _propertyMappings = new();
 
         public AttributeData AttributeData { get; private set; }
+        public ConfigurationValues ConfigurationValues { get; private set; }
         public int AttributeIndex { get; private set; }
 
-        public MappingInformation(AttributeData attributeData)
+        public MappingInformation(AttributeData attributeData, ConfigurationValues configurationValues)
         {
             AttributeData = attributeData;
+            ConfigurationValues = configurationValues;
             AttributeIndex = attributeData.GetIndex();
         }
 

@@ -101,6 +101,14 @@ namespace GeneratedMapper.Helpers
             Severity = DiagnosticSeverity.Error
         };
 
+        private static DiagStruct _cannotFindMethod = new()
+        {
+            Id = "GM0013",
+            Title = "Method cannot be found",
+            Message = "The method '{2}' for a property '{1}' of type '{0}' was specified using a [MapWith] but cannot be found.",
+            Severity = DiagnosticSeverity.Error
+        };
+
         public static Diagnostic NoParameterlessConstructor(AttributeData attributeData)
             => GetDiagnostic(_noParameterlessConstructor, attributeData);
         public static Diagnostic UnrecognizedTypes(AttributeData attributeData)
@@ -113,6 +121,8 @@ namespace GeneratedMapper.Helpers
             => GetDiagnostic(_leftOverProperty, attributeData, targetClass, targetProperty, attributedClass);
         public static Diagnostic CannotFindType(AttributeData attributeData, string type)
             => GetDiagnostic(_cannotFindType, attributeData, type);
+        public static Diagnostic CannotFindMethod(AttributeData attributeData, string sourceTypeName, string sourceProperty, string methodName)
+            => GetDiagnostic(_cannotFindMethod, attributeData, sourceTypeName, sourceProperty, methodName);
         public static Diagnostic CannotFindTypeOfConstructorArgument(AttributeData attributeData, string argumentName, string resolverTypeName)
             => GetDiagnostic(_cannotFindConstructorArgumentType, attributeData, argumentName, resolverTypeName);
         public static Diagnostic UnmappableEnumerableProperty(AttributeData attributeData, string attributedClass, string property, string targetProperty, string targetClass)

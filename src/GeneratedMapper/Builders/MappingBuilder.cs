@@ -16,13 +16,11 @@ namespace GeneratedMapper.Builders
         private const string SourceInstanceName = "self";
         private const string TargetInstanceName = "target";
         private readonly MappingInformation _information;
-        private readonly ConfigurationValues _configurationValues;
         private readonly List<PropertyMappingBuilder> _propertyMappingBuilders;
 
-        public MappingBuilder(MappingInformation information, ConfigurationValues configurationValues)
+        public MappingBuilder(MappingInformation information)
         {
             _information = information;
-            _configurationValues = configurationValues;
             _propertyMappingBuilders = information.Mappings.Select(mapping => new PropertyMappingBuilder(mapping)).ToList();
         }
 
@@ -30,7 +28,7 @@ namespace GeneratedMapper.Builders
         {
             using var writer = new StringWriter();
             using var indentWriter = new IndentedTextWriter(writer,
-                _configurationValues.IndentStyle == IndentStyle.Tab ? "\t" : new string(' ', (int)_configurationValues.IndentSize));
+                _information.ConfigurationValues.IndentStyle == IndentStyle.Tab ? "\t" : new string(' ', (int)_information.ConfigurationValues.IndentSize));
 
             var usingStatements = new List<string>();
 

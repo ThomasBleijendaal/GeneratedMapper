@@ -47,6 +47,7 @@ namespace GeneratedMapper.Parsers
                     constructorArguments.Add(new MethodInformation(
                         parameter.Name,
                         parameter.ToDisplayString(),
+                        parameter.NullableAnnotation == NullableAnnotation.Annotated,
                         parameter.ContainingNamespace.ToDisplayString(),
                         defaultValueString));
                 }
