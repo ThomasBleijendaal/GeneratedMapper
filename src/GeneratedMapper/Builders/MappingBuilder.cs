@@ -68,10 +68,10 @@ namespace GeneratedMapper.Builders
             indentWriter.WriteLine("{");
             indentWriter.Indent++;
 
-            var mapArguments = new[] { $"this {_information.SourceType.Name} {SourceInstanceName}" }
+            var mapArguments = new[] { $"this {_information.SourceType.GetFullTypeName()} {SourceInstanceName}" }
                 .Union(_propertyMappingBuilders.SelectMany(x => x.MapArgumentsRequired().Select(x => x.ToMethodParameter(""))).Distinct());
 
-            indentWriter.WriteLine($"public static {_information.DestinationType.Name} MapTo{_information.DestinationType.Name}({string.Join(", ", mapArguments)})");
+            indentWriter.WriteLine($"public static {_information.DestinationType.GetFullTypeName()} MapTo{_information.DestinationType.Name}({string.Join(", ", mapArguments)})");
             indentWriter.WriteLine("{");
             indentWriter.Indent++;
 
@@ -88,7 +88,7 @@ namespace GeneratedMapper.Builders
 
             indentWriter.WriteLines(WriteMappingCode(map => map.PreConstructionInitialization()), true);
 
-            indentWriter.WriteLine($"var {TargetInstanceName} = new {_information.DestinationType.Name}");
+            indentWriter.WriteLine($"var {TargetInstanceName} = new {_information.DestinationType.GetFullTypeName()}");
             indentWriter.WriteLine("{");
             indentWriter.Indent++;
 

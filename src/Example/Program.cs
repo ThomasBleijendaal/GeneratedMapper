@@ -29,7 +29,12 @@ namespace Example
                             new Company { Id = Guid.NewGuid(), Name = "SubCompany2b", Revenue = 234, StartDate = new DateTime(2020, 5, 1) },
                         } },
                     }
-                }
+                },
+                Metadata = new[] {
+                    new Source.SourceMetadata
+                    {
+                        Data = Guid.NewGuid().ToString()
+                    }}
             };
 
             // important known limitation for source generators:

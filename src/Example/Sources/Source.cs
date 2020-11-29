@@ -14,5 +14,14 @@ namespace Example.Sources
 
         [MapWith("CompanyName", typeof(CompanyNameResolver), Index = 1)]
         public Company Company { get; set; }
+
+        [Ignore(Index = 2)]
+        public SourceMetadata[]? Metadata { get; set; }
+
+        [MapTo(typeof(SimpleDestination.SimpleDestinationMetadata))]
+        public class SourceMetadata
+        {
+            public string Data { get; set; }
+        }
     }
 }

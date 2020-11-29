@@ -59,7 +59,6 @@ namespace GeneratedMapper.Parsers
             {
                 // general issues:
                 // TODO: what if the user wants to resolve something that also has a MapTo / MapFrom?
-                // TODO: issues: no nested class detection (namespace issue)
 
                 if (mapWithAttribute is not null && GetMapWithResolverType(mapWithAttribute) is INamedTypeSymbol resolverType)
                 {
@@ -90,10 +89,11 @@ namespace GeneratedMapper.Parsers
 
                 if (mapWithAttribute?.ConstructorArgument<string>(1) is string propertyMethodToCall)
                 {
+                    // TODO: remove this limitation of only accepting methods without parameters?
                     if (sourceProperty.Type is INamedTypeSymbol namedSourcePropertyType &&
                         namedSourcePropertyType.GetMembers(propertyMethodToCall)
                             .OfType<IMethodSymbol>()
-                            .Any(x => x.Parameters.Length == 0)) // TODO: remove this limitation of only accepting methods without parameters?
+                            .Any(x => x.Parameters.Length == 0)) 
                     {
                         propertyMapping.UsingMethod(propertyMethodToCall, default);
                     }
@@ -186,7 +186,10 @@ namespace GeneratedMapper.Parsers
 
             if (destinationCollectionItemType is not null)
             {
-                propertyMapping.AsCollection(listType, destinationCollectionItemType.Name, destinationCollectionItemType.ContainingNamespace.ToDisplayString());
+                propertyMapping.AsCollection(
+                    listType, 
+                    destinationCollectionItemType.GetFullTypeName(), 
+                    destinationCollectionItemType.ContainingNamespace.ToDisplayString());
             }
         }
     }

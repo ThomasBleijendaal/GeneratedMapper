@@ -16,11 +16,14 @@ namespace GeneratedMapper.Tests
 
         private readonly Mock<AttributeData> _attributeData = new Mock<AttributeData>();
 
-        private readonly Mock<ITypeSymbol> _sourceType = new Mock<ITypeSymbol>();
-        private readonly Mock<ITypeSymbol> _destinationType = new Mock<ITypeSymbol>();
+        private readonly Mock<INamedTypeSymbol> _sourceType = new Mock<INamedTypeSymbol>();
+        private readonly Mock<INamedTypeSymbol> _destinationType = new Mock<INamedTypeSymbol>();
 
-        private readonly Mock<ITypeSymbol> _nestedSourceType = new Mock<ITypeSymbol>();
-        private readonly Mock<ITypeSymbol> _nestedDestinationType = new Mock<ITypeSymbol>();
+        private readonly Mock<INamedTypeSymbol> _nestedSourceType = new Mock<INamedTypeSymbol>();
+        private readonly Mock<INamedTypeSymbol> _nestedDestinationType = new Mock<INamedTypeSymbol>();
+
+        private readonly Mock<INamedTypeSymbol> _containedSourceType = new Mock<INamedTypeSymbol>();
+        private readonly Mock<INamedTypeSymbol> _containedDestinationType = new Mock<INamedTypeSymbol>();
 
         private MappingInformation _mappingInformation;
 
@@ -45,25 +48,35 @@ namespace GeneratedMapper.Tests
             _nestedDestinationType.Setup(x => x.Name).Returns("DestinationObject");
             _nestedDestinationType.Setup(x => x.ContainingNamespace).Returns(namespaceOfNestedTypes.Object);
 
-            _mappingInformation = new MappingInformation(_attributeData.Object, _values).MapFrom(_sourceType.Object).MapTo(_destinationType.Object);
+            _containedSourceType.Setup(x => x.Name).Returns("SubSource");
+            _containedSourceType.Setup(x => x.ContainingNamespace).Returns(@namespace.Object);
+            _containedSourceType.Setup(x => x.ContainingType).Returns(_sourceType.Object);
+
+            _containedDestinationType.Setup(x => x.Name).Returns("SubDestination");
+            _containedDestinationType.Setup(x => x.ContainingNamespace).Returns(@namespace.Object);
+            _containedDestinationType.Setup(x => x.ContainingType).Returns(_destinationType.Object);
+
+            _mappingInformation = new MappingInformation(_attributeData.Object, _values)
+                .MapFrom(_sourceType.Object)
+                .MapTo(_destinationType.Object);
         }
 
 
-        public void DoTest(PropertyMappingInformation[] mappings, string expectedSourceText)
+        public void DoTest(MappingInformation mappingInformation, PropertyMappingInformation[] mappings, string expectedSourceText)
         {
             foreach (var mapping in mappings)
             {
-                _mappingInformation.AddProperty(mapping);
+                mappingInformation.AddProperty(mapping);
             }
 
-            var builder = new MappingBuilder(_mappingInformation);
+            var builder = new MappingBuilder(mappingInformation);
 
             Assert.AreEqual(expectedSourceText, builder.GenerateSourceText().ToString());
         }
 
         [Test]
         public void MappingSinglePropertyFromSourceToDestination()
-            => DoTest(
+            => DoTest(_mappingInformation,
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation).MapFrom("Name", false).MapTo("Name", false)
@@ -95,7 +108,7 @@ namespace Namespace
 
         [Test]
         public void MappingThreePropertiesFromSourceToDestination()
-            => DoTest(
+            => DoTest(_mappingInformation,
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation).MapFrom("Name", false).MapTo("Name", false),
@@ -131,7 +144,7 @@ namespace Namespace
 
         [Test]
         public void MappingSinglePropertyWithDifferentNamesFromSourceToDestination()
-            => DoTest(
+            => DoTest(_mappingInformation,
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation).MapFrom("Name", false).MapTo("Nom", false)
@@ -163,7 +176,7 @@ namespace Namespace
 
         [Test]
         public void MappingPropertyToStringFromSourceToDestination()
-            => DoTest(
+            => DoTest(_mappingInformation,
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation).MapFrom("Count", false).MapTo("Count", false).UsingMethod("ToString", default)
@@ -195,7 +208,7 @@ namespace Namespace
 
         [Test]
         public void MappingNullablePropertyToStringFromSourceToDestination()
-            => DoTest(
+            => DoTest(_mappingInformation,
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation).MapFrom("Count", true).MapTo("Count", false).UsingMethod("ToString", default)
@@ -227,7 +240,7 @@ namespace Namespace
 
         [Test]
         public void MappingPropertyUsingResolverFromSourceToDestination()
-            => DoTest(
+            => DoTest(_mappingInformation,
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation).MapFrom("Parameter", false).MapTo("ResolvedParameter", false).UsingResolver("Resolver", "Namespace.Resolvers", Enumerable.Empty<MethodInformation>())
@@ -262,7 +275,7 @@ namespace Namespace
 
         [Test]
         public void MappingPropertyUsingResolverWithConstructorArgumentsFromSourceToDestination()
-            => DoTest(
+            => DoTest(_mappingInformation,
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation)
@@ -303,7 +316,7 @@ namespace Namespace
 
         [Test]
         public void MappingMultiplePropertiesUsingResolversWithConstructorArgumentsFromSourceToDestination()
-            => DoTest(
+            => DoTest(_mappingInformation,
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation)
@@ -355,7 +368,7 @@ namespace Namespace
 
         [Test]
         public void MappingMultiplePropertiesUsingSameResolversWithConstructorArgumentsFromSourceToDestination()
-            => DoTest(
+            => DoTest(_mappingInformation,
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation)
@@ -403,7 +416,7 @@ namespace Namespace
 
         [Test]
         public void MappingSingleEnumerablePropertyWithMethodToListFromSourceToDestination()
-            => DoTest(
+            => DoTest(_mappingInformation,
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation)
@@ -441,7 +454,7 @@ namespace Namespace
 
         [Test]
         public void MappingSingleNullableEnumerablePropertyToListFromSourceToDestination()
-            => DoTest(
+            => DoTest(_mappingInformation,
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation)
@@ -480,7 +493,7 @@ namespace Namespace
 
         [Test]
         public void MappingSingleEnumerablePropertyToListFromSourceToDestination()
-            => DoTest(
+            => DoTest(_mappingInformation,
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation)
@@ -517,7 +530,7 @@ namespace Namespace
 
         [Test]
         public void MappingSingleNullableEnumerablePropertyToArrayFromSourceToDestination()
-            => DoTest(
+            => DoTest(_mappingInformation,
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation)
@@ -557,7 +570,7 @@ namespace Namespace
 
         [Test]
         public void MappingSingleNullableEnumerablePropertyToArrayUsingResolverFromSourceToDestination()
-            => DoTest(
+            => DoTest(_mappingInformation,
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation)
@@ -603,7 +616,7 @@ namespace Namespace
 
         [Test]
         public void MappingPropertyUsingMapperOfDestinationType()
-            => DoTest(
+            => DoTest(_mappingInformation,
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation)
@@ -648,7 +661,7 @@ namespace Namespace
 
         [Test]
         public void MappingPropertyUsingMapperOfDestinationTypeWithArguments()
-            => DoTest(
+            => DoTest(_mappingInformation,
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation)
@@ -699,7 +712,7 @@ namespace Namespace
 
         [Test]
         public void MappingPropertyUsingMapperOfDestinationTypeWithNullableArguments()
-            => DoTest(
+            => DoTest(_mappingInformation,
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation)
@@ -750,7 +763,7 @@ namespace Namespace
 
         [Test]
         public void MappingCollectionPropertyUsingMapperOfDestinationTypeWithArguments()
-            => DoTest(
+            => DoTest(_mappingInformation,
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation)
@@ -803,7 +816,7 @@ namespace Namespace
 
         [Test]
         public void MappingCollectionPropertiesUsingMapperOfDestinationTypeWithArguments()
-            => DoTest(
+            => DoTest(_mappingInformation,
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation)
@@ -865,7 +878,7 @@ namespace Namespace
 
         [Test]
         public void MappingUsingRecursiveMapper()
-            => DoTest(
+            => DoTest(_mappingInformation,
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation)
@@ -904,7 +917,7 @@ namespace Namespace
 
         [Test]
         public void MappingUsingRecursiveMapperWithArguments()
-            => DoTest(
+            => DoTest(_mappingInformation,
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation)
@@ -952,5 +965,86 @@ namespace Namespace
     }
 }
 ");
+
+        [Test]
+        public void MappingUsingSubClasses()
+        {
+            var information = new MappingInformation(_attributeData.Object, _values)
+                .MapFrom(_containedSourceType.Object).MapTo(_containedDestinationType.Object);
+
+            DoTest(information,
+                new[]
+                {
+                    new PropertyMappingInformation(information)
+                        .MapFrom("DateTime", false)
+                        .MapTo("Date", false)
+                },
+                @"using System;
+using Namespace;
+
+namespace Namespace
+{
+    public static partial class SubSourceMapToExtensions
+    {
+        public static Destination.SubDestination MapToSubDestination(this Source.SubSource self)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self));
+            }
+            
+            var target = new Destination.SubDestination
+            {
+                Date = self.DateTime,
+            };
+            
+            return target;
+        }
+    }
+}
+");
+        }
+        [Test]
+        public void MappingAsCollectionUsingSubClasses()
+        {
+            var information = new MappingInformation(_attributeData.Object, _values)
+                .MapFrom(_containedSourceType.Object).MapTo(_containedDestinationType.Object);
+
+            DoTest(information,
+                new[]
+                {
+                    new PropertyMappingInformation(information)
+                        .MapFrom("Items", true)
+                        .MapTo("Items", false)
+                        .AsCollection(DestinationCollectionType.List, "Destination.SubDestination.Item", "Namespace")
+                },
+                @"using System;
+using System.Linq;
+using Namespace;
+
+#nullable enable
+
+namespace Namespace
+{
+    public static partial class SubSourceMapToExtensions
+    {
+        public static Destination.SubDestination MapToSubDestination(this Source.SubSource self)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self));
+            }
+            
+            var target = new Destination.SubDestination
+            {
+                Items = self.Items?.ToList() ?? Enumerable.Empty<Destination.SubDestination.Item>().ToList(),
+            };
+            
+            return target;
+        }
+    }
+}
+");
+        }
     }
 }
