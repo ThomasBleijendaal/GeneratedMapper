@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using GeneratedMapper.Enums;
+using GeneratedMapper.Exceptions;
 using GeneratedMapper.Extensions;
 using GeneratedMapper.Helpers;
 using GeneratedMapper.Mappings;
@@ -7,21 +10,19 @@ using Microsoft.CodeAnalysis;
 
 namespace GeneratedMapper.Information
 {
-    internal class PropertyMappingInformation
+    internal sealed class PropertyMappingInformation
     {
         private readonly List<string> _namespacesRequired = new List<string>
         {
             "System"
         };
 
-        public PropertyMappingInformation(ITypeSymbol sourceType, ITypeSymbol destinationType)
+        public PropertyMappingInformation(MappingInformation belongsToMapping)
         {
-            SourceType = sourceType;
-            DestinationType = destinationType;
+            BelongsToMapping = belongsToMapping ?? throw new ArgumentNullException(nameof(belongsToMapping));
         }
 
-        public ITypeSymbol SourceType { get; }
-        public ITypeSymbol DestinationType { get; }
+        public MappingInformation BelongsToMapping { get; private set; }
 
         public string? SourcePropertyName { get; private set; }
         public bool SourcePropertyIsNullable { get; private set; }
@@ -64,7 +65,7 @@ namespace GeneratedMapper.Information
         public ITypeSymbol? MapperFromType { get; private set; }
         public ITypeSymbol? MapperToType { get; private set; }
 
-        public MappingInformation? MappingInformationOfMapper { get; private set; }
+        public MappingInformation? MappingInformationOfMapperToUse { get; private set; }
 
         public PropertyMappingInformation UsingMapper(ITypeSymbol sourceType, ITypeSymbol destinationType)
         {
@@ -72,12 +73,19 @@ namespace GeneratedMapper.Information
             MapperFromType = sourceType;
             MapperToType = destinationType;
 
+            // if the mapper is recursive, directly resolve it
+            if (sourceType.Equals(BelongsToMapping.SourceType, SymbolEqualityComparer.Default) &&
+                destinationType.Equals(BelongsToMapping.DestinationType, SymbolEqualityComparer.Default))
+            {
+                MappingInformationOfMapperToUse = BelongsToMapping;
+            }
+
             return this;
         }
 
         public PropertyMappingInformation SetMappingInformation(MappingInformation information)
         {
-            MappingInformationOfMapper = information;
+            MappingInformationOfMapperToUse = information;
 
             _namespacesRequired.AddRange(information.Mappings.SelectMany(x => x.NamespacesUsed));
 
@@ -86,9 +94,9 @@ namespace GeneratedMapper.Information
 
         public string? ResolverTypeToUse { get; private set; }
         public string? ResolverInstanceName { get; private set; }
-        public IEnumerable<MethodParameter>? ResolverConstructorParameters { get; private set; }
+        public IEnumerable<MethodInformation>? ResolverConstructorParameters { get; private set; }
 
-        public PropertyMappingInformation UsingResolver(string resolverTypeName, string resolverNamespace, IEnumerable<MethodParameter> constructorParameters)
+        public PropertyMappingInformation UsingResolver(string resolverTypeName, string resolverNamespace, IEnumerable<MethodInformation> constructorParameters)
         {
             ResolverTypeToUse = resolverTypeName;
             ResolverInstanceName = $"{resolverTypeName.Replace(".", "").ToFirstLetterLower()}";
@@ -116,27 +124,10 @@ namespace GeneratedMapper.Information
 
         public IEnumerable<string> NamespacesUsed => _namespacesRequired;
 
-        public IEnumerable<MethodParameter> MapArgumentsRequired
-        {
-            get
-            {
-                if (ResolverConstructorParameters != null && ResolverTypeToUse != null)
-                {
-                    foreach (var argument in ResolverConstructorParameters)
-                    {
-                        yield return argument.CopyWithPrefix(ResolverTypeToUse);
-                    }
-                }
-
-                if (MappingInformationOfMapper != null)
-                {
-                    foreach (var argument in MappingInformationOfMapper.Mappings.SelectMany(x => x.MapArgumentsRequired))
-                    {
-                        yield return argument.CopyWithPrefix(MappingInformationOfMapper.DestinationType.Name);
-                    }
-                }
-            }
-        }
+        public IEnumerable<MethodInformation> MapArgumentsRequired
+            => this.DoRecursionSafe(
+                mapping => mapping.ResolverConstructorParameters?.Select(argument => argument.CopyWithPrefix(mapping.ResolverTypeToUse!)) ?? Enumerable.Empty<MethodInformation>(),
+                mapping => mapping.MappingInformationOfMapperToUse?.Mappings);
 
         public bool TryValidateMapping(AttributeData attributeData, out IEnumerable<Diagnostic> diagnostics)
         {
@@ -152,11 +143,11 @@ namespace GeneratedMapper.Information
                 messages.Add(DiagnosticsHelper.IncorrectNullability(attributeData, SourcePropertyName!, DestinationPropertyName!));
             }
 
-            if (RequiresMappingInformationOfMapper && MappingInformationOfMapper == null)
+            if (RequiresMappingInformationOfMapper && MappingInformationOfMapperToUse == null)
             {
-                messages.Add(DiagnosticsHelper.MissingMappingInformation(attributeData, DestinationPropertyName!));
+                messages.Add(DiagnosticsHelper.MissingMappingInformation(attributeData, MapperFromType?.Name, MapperToType?.Name));
             }
-            
+
             if ((!string.IsNullOrWhiteSpace(ResolverTypeToUse) && !string.IsNullOrWhiteSpace(SourcePropertyMethodToCall)) ||
                 (!string.IsNullOrWhiteSpace(ResolverTypeToUse) && RequiresMappingInformationOfMapper) ||
                 (!string.IsNullOrWhiteSpace(SourcePropertyMethodToCall) && RequiresMappingInformationOfMapper))
@@ -167,5 +158,7 @@ namespace GeneratedMapper.Information
             diagnostics = messages;
             return messages.Count == 0;
         }
+
+        public bool RequiresNullableContext => SourcePropertyIsNullable && (CollectionType != default || RequiresMappingInformationOfMapper);
     }
 }

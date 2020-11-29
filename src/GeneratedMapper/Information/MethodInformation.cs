@@ -4,11 +4,11 @@ using GeneratedMapper.Extensions;
 namespace GeneratedMapper.Mappings
 {
     // TODO: add nullablility (and validate)
-    internal class MethodParameter
+    internal class MethodInformation
     {
-        public MethodParameter(
-            string argumentName, 
-            string typeName, 
+        public MethodInformation(
+            string argumentName,
+            string typeName,
             string @namespace,
             string? defaultValue)
         {
@@ -23,8 +23,8 @@ namespace GeneratedMapper.Mappings
         public string Namespace { get; private set; }
         public string? DefaultValue { get; }
 
-        public MethodParameter CopyWithPrefix(string prefix)
-            => new MethodParameter(ToArgument(prefix), TypeName, Namespace, DefaultValue);
+        public MethodInformation CopyWithPrefix(string prefix)
+            => new MethodInformation(ToArgument(prefix), TypeName, Namespace, DefaultValue);
 
         public string ToMethodParameter(string prefix)
             => $"{TypeName} {ToArgument(prefix)}{(DefaultValue == null ? "" : $" = { DefaultValue}")}";

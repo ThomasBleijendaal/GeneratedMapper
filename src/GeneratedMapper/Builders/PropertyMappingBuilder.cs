@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using GeneratedMapper.Enums;
 using GeneratedMapper.Information;
 using GeneratedMapper.Mappings;
 
@@ -29,9 +30,9 @@ namespace GeneratedMapper.Builders
                     ? $" ?? Enumerable.Empty<{_information.DestinationCollectionItemTypeName}>(){enumerationMethod}"
                     : "";
 
-                if (_information.MappingInformationOfMapper != null)
+                if (_information.MappingInformationOfMapperToUse != null)
                 {
-                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}{safePropagation}.Select(element => element.MapTo{_information.MappingInformationOfMapper.DestinationType.Name}({GetMappingArguments()})){enumerationMethod}{optionalEmptyCollectionCreation}";
+                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}{safePropagation}.Select(element => element.MapTo{_information.MappingInformationOfMapperToUse.DestinationType.Name}({GetMappingArguments()})){enumerationMethod}{optionalEmptyCollectionCreation}";
                 }
                 else if (_information.SourcePropertyMethodToCall != null)
                 {
@@ -48,9 +49,9 @@ namespace GeneratedMapper.Builders
             }
             else
             {
-                if (_information.MappingInformationOfMapper != null)
+                if (_information.MappingInformationOfMapperToUse != null)
                 {
-                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}{safePropagation}.MapTo{_information.MappingInformationOfMapper.DestinationType.Name}({GetMappingArguments()})";
+                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}{safePropagation}.MapTo{_information.MappingInformationOfMapperToUse.DestinationType.Name}({GetMappingArguments()})";
                 }
                 else if (_information.SourcePropertyMethodToCall != null)
                 {
@@ -81,7 +82,7 @@ namespace GeneratedMapper.Builders
 
         public IEnumerable<string> NamespacesUsed() => _information.NamespacesUsed;
 
-        public IEnumerable<MethodParameter> MapArgumentsRequired() => _information.MapArgumentsRequired;
+        public IEnumerable<MethodInformation> MapArgumentsRequired() => _information.MapArgumentsRequired;
 
         private string GetResolverArguments()
         {
@@ -93,11 +94,11 @@ namespace GeneratedMapper.Builders
 
         private string GetMappingArguments()
         {
-            return _information.MappingInformationOfMapper == null
+            return _information.MappingInformationOfMapperToUse == null
                 ? string.Empty
-                : string.Join(", ", _information.MappingInformationOfMapper.Mappings
+                : string.Join(", ", _information.MappingInformationOfMapperToUse.Mappings
                     .SelectMany(x => x.MapArgumentsRequired)
-                    .Select(x => x.ToArgument(_information.MappingInformationOfMapper.DestinationType.Name))
+                    .Select(x => x.ToArgument(""))
                     .Distinct());
         }
     }

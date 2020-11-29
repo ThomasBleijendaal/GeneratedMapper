@@ -52,6 +52,12 @@ namespace GeneratedMapper.Builders
             {
                 indentWriter.WriteLine();
             }
+            
+            if (_information.RequiresNullableContext)
+            {
+                indentWriter.WriteLine("#nullable enable");
+                indentWriter.WriteLine();
+            }
 
             if (!_information.SourceType.ContainingNamespace.IsGlobalNamespace)
             {

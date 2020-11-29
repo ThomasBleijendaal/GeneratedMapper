@@ -1,4 +1,4 @@
-﻿namespace GeneratedMapper.Mappings
+﻿namespace GeneratedMapper.Enums
 {
     internal enum DestinationCollectionType
     {
