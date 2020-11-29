@@ -67,7 +67,17 @@ namespace GeneratedMapper.Builders
                 }
             }
 
-            return $"{_information.DestinationPropertyName} = {sourceExpression},";
+            string optionalThrow;
+            if (_information.BelongsToMapping.ConfigurationValues.Customizations.ThrowWhenNotNullablePropertyIsNull)
+            {
+                optionalThrow = string.Empty;// $" ?? throw "
+            }
+            else
+            {
+                optionalThrow = string.Empty;
+            }
+
+            return $"{_information.DestinationPropertyName} = {sourceExpression}{optionalThrow},";
         }
 
         public string? PreConstructionInitialization()

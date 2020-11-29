@@ -1,5 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
-using System;
+﻿using System;
+using Microsoft.CodeAnalysis;
 
 namespace GeneratedMapper.Configurations
 {
@@ -10,13 +10,14 @@ namespace GeneratedMapper.Configurations
         private const string IndentStyleKey = "indent_style";
         private const IndentStyle IndentStyleDefaultValue = IndentStyle.Space;
 
-        internal ConfigurationValues(IndentStyle indentStyle, uint indentSize)
+        internal ConfigurationValues(IndentStyle indentStyle, uint indentSize, MapperCustomizations customizations)
         {
             IndentStyle = indentStyle;
             IndentSize = indentSize;
+            Customizations = customizations;
         }
 
-        public ConfigurationValues(GeneratorExecutionContext context, SyntaxTree tree)
+        public ConfigurationValues(GeneratorExecutionContext context, SyntaxTree tree, MapperCustomizations customizations)
         {
             var options = context.AnalyzerConfigOptions.GetOptions(tree);
 
@@ -26,9 +27,13 @@ namespace GeneratedMapper.Configurations
             IndentSize = options.TryGetValue(IndentSizeKey, out var indentSize) ?
                 (uint.TryParse(indentSize, out var indentSizeValue) ? indentSizeValue : IndentSizeDefaultValue) :
                 IndentSizeDefaultValue;
+
+            Customizations = customizations;
         }
 
         internal IndentStyle IndentStyle { get; }
         internal uint IndentSize { get; }
+
+        internal MapperCustomizations Customizations { get; set; }
     }
 }

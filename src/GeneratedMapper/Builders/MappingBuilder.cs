@@ -41,6 +41,8 @@ namespace GeneratedMapper.Builders
                 .SelectMany(map => map.NamespacesUsed())
                 .Select(@namespace => $"using {@namespace};"));
 
+            usingStatements.AddRange(_information.ConfigurationValues.Customizations.NamespacesToInclude.Select(n => $"using {n};"));
+
             foreach (var usingStatement in usingStatements.Distinct().OrderBy(x => x.StartsWith("using System") ? 1 : 2).ThenBy(x => x.Replace(".", "").Replace(";", "")))
             {
                 indentWriter.WriteLine(usingStatement);

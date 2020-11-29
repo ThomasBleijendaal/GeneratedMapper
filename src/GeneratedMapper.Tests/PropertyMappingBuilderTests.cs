@@ -11,7 +11,7 @@ namespace GeneratedMapper.Tests
 {
     internal class PropertyMappingBuilderTests
     {
-        private readonly ConfigurationValues _values = new ConfigurationValues(IndentStyle.Space, 4);
+        private readonly ConfigurationValues _values = new ConfigurationValues(IndentStyle.Space, 4, new MapperCustomizations());
 
         private readonly Mock<AttributeData> _attributeData = new Mock<AttributeData>();
 

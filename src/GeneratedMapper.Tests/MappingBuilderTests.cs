@@ -12,7 +12,7 @@ namespace GeneratedMapper.Tests
 {
     internal class MappingBuilderTests
     {
-        private readonly ConfigurationValues _values = new ConfigurationValues(IndentStyle.Space, 4);
+        private readonly ConfigurationValues _values = new ConfigurationValues(IndentStyle.Space, 4, new MapperCustomizations());
 
         private readonly Mock<AttributeData> _attributeData = new Mock<AttributeData>();
 
@@ -105,6 +105,96 @@ namespace Namespace
     }
 }
 ");
+
+        [Test]
+        public void MappingSinglePropertyFromSourceToDestinationWithExtraNamespacesConfigured()
+        {
+            var customizations = new MapperCustomizations
+            {
+                NamespacesToInclude = new [] { "Hard.To.Recognize.Namespace", "Hidden.Namespace" }
+            };
+
+            var mappingInformation = new MappingInformation(_attributeData.Object, new ConfigurationValues(IndentStyle.Space, 4, customizations))
+                .MapFrom(_sourceType.Object)
+                .MapTo(_destinationType.Object);
+
+            DoTest(mappingInformation,
+                new[]
+                {
+                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", false).MapTo("Name", false)
+                },
+                @"using System;
+using Hard.To.Recognize.Namespace;
+using Hidden.Namespace;
+using Namespace;
+
+namespace Namespace
+{
+    public static partial class SourceMapToExtensions
+    {
+        public static Destination MapToDestination(this Source self)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self));
+            }
+            
+            var target = new Destination
+            {
+                Name = self.Name,
+            };
+            
+            return target;
+        }
+    }
+}
+");
+        }
+
+        [Test]
+        public void MappingSinglePropertyFromSourceToDestinationWithThrowIfNull()
+        {
+            var customizations = new MapperCustomizations
+            {
+                ThrowWhenNotNullablePropertyIsNull = true
+            };
+            
+            var mappingInformation = new MappingInformation(_attributeData.Object, new ConfigurationValues(IndentStyle.Space, 4, customizations))
+                .MapFrom(_sourceType.Object)
+                .MapTo(_destinationType.Object);
+
+            DoTest(mappingInformation,
+                new[]
+                {
+                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", false).MapTo("Name", false)
+                },
+                @"using System;
+using Hard.To.Recognize.Namespace;
+using Hidden.Namespace;
+using Namespace;
+
+namespace Namespace
+{
+    public static partial class SourceMapToExtensions
+    {
+        public static Destination MapToDestination(this Source self)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self));
+            }
+            
+            var target = new Destination
+            {
+                Name = self.Name ?? throw new NullReferenceException(""Source -> Destination: Property 'Name' is null while not nullable.""),
+            };
+            
+            return target;
+        }
+    }
+}
+");
+        }
 
         [Test]
         public void MappingThreePropertiesFromSourceToDestination()
@@ -1004,6 +1094,7 @@ namespace Namespace
 }
 ");
         }
+
         [Test]
         public void MappingAsCollectionUsingSubClasses()
         {
