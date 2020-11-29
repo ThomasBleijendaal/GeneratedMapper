@@ -104,12 +104,11 @@ namespace GeneratedMapper.Parsers
             return mappingInformation;
         }
 
-        // TODO: this does not seem to work
         private IEnumerable<string> TargetPropertiesToIgnore(ITypeSymbol attributedType, int index)
             => attributedType
-                .FindAttributes(_ignoreAttribute, index)
-                ?.SelectMany(attribute => attribute.ConstructorArguments)
-                .Where(value => value.Value is string)
+                .FindAttributes(_ignoreInTargetAttribute, index)
+                ?.SelectMany(attribute => attribute.ConstructorArguments[0].Values.Select(x => x.Value))
+                .Where(value => value is string)
                 .Cast<string>()
                 ?? Enumerable.Empty<string>();
 

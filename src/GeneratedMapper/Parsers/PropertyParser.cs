@@ -20,15 +20,15 @@ namespace GeneratedMapper.Parsers
 
         private readonly INamedTypeSymbol _mapToAttribute;
         private readonly INamedTypeSymbol _mapFromAttribute;
-        
+
         private readonly ConstructorParser _constructorParser;
 
         public PropertyParser(GeneratorExecutionContext context, ConstructorParser constructorParser)
         {
             _enumerableType = context.Compilation.GetTypeByMetadataName("System.Collections.IEnumerable") ?? throw new InvalidOperationException("Cannot find System.Collections.IEnumerable");
-            _genericEnumerableType = context.Compilation.GetTypeByMetadataName("System.Collections.Generic.IEnumerable`1") ?? throw new InvalidOperationException("Cannot find System.Collections.Generic.IEnumerable`1");
-            _genericListlikeType = context.Compilation.GetTypeByMetadataName("System.Collections.Generic.ICollection`1") ?? throw new InvalidOperationException("Cannot find System.Collections.Generic.ICollection`1");
-            _genericReadOnlyListlikeType = context.Compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyList`1") ?? throw new InvalidOperationException("Cannot find System.Collections.Generic.IReadOnlyList`1");
+            _genericEnumerableType = context.Compilation.GetTypeByMetadataName("System.Collections.Generic.IEnumerable`1")?.ConstructUnboundGenericType() ?? throw new InvalidOperationException("Cannot find System.Collections.Generic.IEnumerable`1");
+            _genericListlikeType = context.Compilation.GetTypeByMetadataName("System.Collections.Generic.ICollection`1")?.ConstructUnboundGenericType() ?? throw new InvalidOperationException("Cannot find System.Collections.Generic.ICollection`1");
+            _genericReadOnlyListlikeType = context.Compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyList`1")?.ConstructUnboundGenericType() ?? throw new InvalidOperationException("Cannot find System.Collections.Generic.IReadOnlyList`1");
             _stringType = context.Compilation.GetTypeByMetadataName("System.String") ?? throw new InvalidOperationException("Cannot find System.String");
 
             _mapToAttribute = context.Compilation.GetTypeByMetadataName(typeof(MapToAttribute).FullName) ?? throw new InvalidOperationException("Cannot find MapToAttribute");
@@ -57,7 +57,7 @@ namespace GeneratedMapper.Parsers
 
                 if (mapWithAttribute is not null && GetMapWithResolverType(mapWithAttribute) is INamedTypeSymbol resolverType)
                 {
-                    propertyMapping.UsingResolver(resolverType.Name, 
+                    propertyMapping.UsingResolver(resolverType.Name,
                         resolverType.ContainingNamespace.ToDisplayString(),
                         _constructorParser.ParseConstructorParameters(resolverType));
                 }
@@ -153,14 +153,14 @@ namespace GeneratedMapper.Parsers
                 namedDestinationPropertyType.IsGenericType &&
                 namedDestinationPropertyType.TypeArguments.Length == 1)
             {
-                var unboundGenericType = namedDestinationPropertyType.ConstructUnboundGenericType();
+                var unboundGenericTypeInterfaces = namedDestinationPropertyType.AllInterfaces.Select(x => x.IsGenericType ? x.ConstructUnboundGenericType() : x);
 
                 destinationCollectionItemType = namedDestinationPropertyType.TypeArguments.First();
 
                 listType =
-                    unboundGenericType.Equals(_genericListlikeType, SymbolEqualityComparer.Default) ? DestinationCollectionType.List
-                    : unboundGenericType.Equals(_genericReadOnlyListlikeType, SymbolEqualityComparer.Default) ? DestinationCollectionType.List
-                    : unboundGenericType.Equals(_genericEnumerableType, SymbolEqualityComparer.Default) ? DestinationCollectionType.Enumerable
+                    unboundGenericTypeInterfaces.Any(x => x.Equals(_genericListlikeType, SymbolEqualityComparer.Default)) ? DestinationCollectionType.List
+                    : unboundGenericTypeInterfaces.Any(x => x.Equals(_genericReadOnlyListlikeType, SymbolEqualityComparer.Default)) ? DestinationCollectionType.List
+                    : unboundGenericTypeInterfaces.Any(x => x.Equals(_genericEnumerableType, SymbolEqualityComparer.Default)) ? DestinationCollectionType.Enumerable
                     : DestinationCollectionType.Enumerable;
             }
 

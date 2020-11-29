@@ -1,9 +1,8 @@
-﻿using GeneratedMapper.Attributes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text.Json;
+using GeneratedMapper.Attributes;
 
 namespace Example
 {
@@ -60,7 +59,9 @@ namespace Example
 
         public DateTime StartDate { get; set; }
 
-        public List<Company> SubCompanies { get; set; } = new List<Company>(); // TODO: remove new
+        public string SomeData { get; set; }
+
+        public List<Company>? SubCompanies { get; set; }
     }
 
     public class SimpleDestination
@@ -80,6 +81,7 @@ namespace Example
     }
 
     [MapFrom(typeof(Company))]
+    [IgnoreInTarget(nameof(Company.SomeData))]
     public class CompanyDestination
     {
         [MapWith("Id", "ToString")]
@@ -90,7 +92,7 @@ namespace Example
         [MapWith(typeof(DateResolver))]
         public string StartDate { get; set; }
 
-        public IEnumerable<CompanyDestination> SubCompanies { get; set; }
+        public List<CompanyDestination> SubCompanies { get; set; }
     }
 
     public class CompanyNameResolver

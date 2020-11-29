@@ -65,11 +65,10 @@ namespace GeneratedMapper.Information
         }
 
         public bool IsFullyResolved => this.DoRecursionSafe(
-            x => x.Mappings,
-            x => x.Mappings.Select(x => x.MappingInformationOfMapperToUse))
+                x => x.Mappings,
+                x => x.Mappings.Select(x => x.MappingInformationOfMapperToUse))
             .All(x => !x.RequiresMappingInformationOfMapper || x.MappingInformationOfMapperToUse != null);
-        // public bool IsFullyResolved => Mappings.All(x => !x.RequiresMappingInformationOfMapper || (x.MappingInformationOfMapperToUse?.IsFullyResolved ?? false));
-
+        
         public bool TryValidate(out IEnumerable<Diagnostic> diagnostics)
         {
             if (!Mappings.Any())
