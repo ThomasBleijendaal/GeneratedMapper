@@ -25,22 +25,26 @@ namespace GeneratedMapper.Information
 
         public string? SourcePropertyName { get; private set; }
         public bool SourcePropertyIsNullable { get; private set; }
+        public bool SourcePropertyIsValueType { get; private set; }
 
-        public PropertyMappingInformation MapFrom(string propertyName, bool isNullable)
+        public PropertyMappingInformation MapFrom(string propertyName, bool isNullable, bool valueType)
         {
             SourcePropertyName = propertyName;
             SourcePropertyIsNullable = isNullable;
+            SourcePropertyIsValueType = valueType;
 
             return this;
         }
 
         public string? DestinationPropertyName { get; private set; }
         public bool DestinationPropertyIsNullable { get; private set; }
+        public bool DestinationPropertyIsValueType { get; private set; }
 
-        public PropertyMappingInformation MapTo(string propertyName, bool isNullable)
+        public PropertyMappingInformation MapTo(string propertyName, bool isNullable, bool valueType)
         {
             DestinationPropertyName = propertyName;
             DestinationPropertyIsNullable = isNullable;
+            DestinationPropertyIsValueType = valueType;
 
             return this;
         }
@@ -153,7 +157,8 @@ namespace GeneratedMapper.Information
 
             if ((!string.IsNullOrWhiteSpace(ResolverTypeToUse) && !string.IsNullOrWhiteSpace(SourcePropertyMethodToCall)) ||
                 (!string.IsNullOrWhiteSpace(ResolverTypeToUse) && RequiresMappingInformationOfMapper) ||
-                (!string.IsNullOrWhiteSpace(SourcePropertyMethodToCall) && RequiresMappingInformationOfMapper))
+                (!string.IsNullOrWhiteSpace(SourcePropertyMethodToCall) && RequiresMappingInformationOfMapper) ||
+                (SourcePropertyIsValueType != DestinationPropertyIsValueType && string.IsNullOrWhiteSpace(ResolverTypeToUse) && string.IsNullOrWhiteSpace(SourcePropertyMethodToCall) && !RequiresMappingInformationOfMapper))
             {
                 messages.Add(DiagnosticsHelper.ConflictingMappingInformation(attributeData, SourcePropertyName!));
             }

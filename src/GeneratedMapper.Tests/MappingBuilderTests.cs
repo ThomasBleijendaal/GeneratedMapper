@@ -78,7 +78,7 @@ namespace GeneratedMapper.Tests
             => DoTest(_mappingInformation,
                 new[]
                 {
-                    new PropertyMappingInformation(_mappingInformation).MapFrom("Name", false).MapTo("Name", false)
+                    new PropertyMappingInformation(_mappingInformation).MapFrom("Name", false, false).MapTo("Name", false, false)
                 },
                 @"using System;
 using Namespace;
@@ -121,7 +121,7 @@ namespace Namespace
             DoTest(mappingInformation,
                 new[]
                 {
-                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", false).MapTo("Name", false)
+                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", false, false).MapTo("Name", false, false)
                 },
                 @"using System;
 using Hard.To.Recognize.Namespace;
@@ -166,7 +166,7 @@ namespace Namespace
             DoTest(mappingInformation,
                 new[]
                 {
-                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", true).MapTo("Name", false)
+                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", true, false).MapTo("Name", false, false)
                 },
                 @"using System;
 using Namespace;
@@ -184,7 +184,7 @@ namespace Namespace
             
             var target = new Destination
             {
-                Name = self.Name ?? throw new Exception(""Source -> Destination: Property 'Name' is null while not nullable.""),
+                Name = self.Name ?? throw new Exception(""Source -> Destination: Property 'Name' is null.""),
             };
             
             return target;
@@ -209,7 +209,7 @@ namespace Namespace
             DoTest(mappingInformation,
                 new[]
                 {
-                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", true).MapTo("Name", true)
+                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", true, false).MapTo("Name", true, false)
                 },
                 @"using System;
 using Namespace;
@@ -252,7 +252,7 @@ namespace Namespace
             DoTest(mappingInformation,
                 new[]
                 {
-                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", false).MapTo("Name", true)
+                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", false, false).MapTo("Name", true, false)
                 },
                 @"using System;
 using Namespace;
@@ -295,7 +295,7 @@ namespace Namespace
             DoTest(mappingInformation,
                 new[]
                 {
-                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", false).MapTo("Name", false)
+                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", false, false).MapTo("Name", false, false)
                 },
                 @"using System;
 using Namespace;
@@ -313,7 +313,51 @@ namespace Namespace
             
             var target = new Destination
             {
-                Name = self.Name ?? throw new Exception(""Source -> Destination: Property 'Name' is null while not nullable.""),
+                Name = self.Name ?? throw new Exception(""Source -> Destination: Property 'Name' is null.""),
+            };
+            
+            return target;
+        }
+    }
+}
+");
+        }
+
+
+        [Test]
+        public void MappingSingleNullableValueTypePropertyFromSourceToDestinationWithThrowIfNullOnNotNullableValueTypeProperty()
+        {
+            var customizations = new MapperCustomizations
+            {
+                ThrowWhenNotNullablePropertyIsNull = true
+            };
+
+            var mappingInformation = new MappingInformation(_attributeData.Object, new ConfigurationValues(IndentStyle.Space, 4, customizations))
+                .MapFrom(_sourceType.Object)
+                .MapTo(_destinationType.Object);
+
+            DoTest(mappingInformation,
+                new[]
+                {
+                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", true, true).MapTo("Name", false, true)
+                },
+                @"using System;
+using Namespace;
+
+namespace Namespace
+{
+    public static partial class SourceMapToExtensions
+    {
+        public static Destination MapToDestination(this Source self)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self));
+            }
+            
+            var target = new Destination
+            {
+                Name = self.Name ?? throw new Exception(""Source -> Destination: Property 'Name' is null.""),
             };
             
             return target;
@@ -324,13 +368,143 @@ namespace Namespace
         }
 
         [Test]
+        public void MappingSingleNullableValueTypePropertyFromSourceToDestinationWithThrowIfNullOnNullableValueTypeProperty()
+        {
+            var customizations = new MapperCustomizations
+            {
+                ThrowWhenNotNullablePropertyIsNull = true
+            };
+
+            var mappingInformation = new MappingInformation(_attributeData.Object, new ConfigurationValues(IndentStyle.Space, 4, customizations))
+                .MapFrom(_sourceType.Object)
+                .MapTo(_destinationType.Object);
+
+            DoTest(mappingInformation,
+                new[]
+                {
+                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", true, true).MapTo("Name", true, true)
+                },
+                @"using System;
+using Namespace;
+
+namespace Namespace
+{
+    public static partial class SourceMapToExtensions
+    {
+        public static Destination MapToDestination(this Source self)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self));
+            }
+            
+            var target = new Destination
+            {
+                Name = self.Name,
+            };
+            
+            return target;
+        }
+    }
+}
+");
+        }
+
+        [Test]
+        public void MappingSingleValueTypePropertyFromSourceToDestinationWithThrowIfNullOnNullableValueTypeProperty()
+        {
+            var customizations = new MapperCustomizations
+            {
+                ThrowWhenNotNullablePropertyIsNull = true
+            };
+
+            var mappingInformation = new MappingInformation(_attributeData.Object, new ConfigurationValues(IndentStyle.Space, 4, customizations))
+                .MapFrom(_sourceType.Object)
+                .MapTo(_destinationType.Object);
+
+            DoTest(mappingInformation,
+                new[]
+                {
+                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", false, true).MapTo("Name", true, true)
+                },
+                @"using System;
+using Namespace;
+
+namespace Namespace
+{
+    public static partial class SourceMapToExtensions
+    {
+        public static Destination MapToDestination(this Source self)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self));
+            }
+            
+            var target = new Destination
+            {
+                Name = self.Name,
+            };
+            
+            return target;
+        }
+    }
+}
+");
+        }
+
+        [Test]
+        public void MappingSingleValueTypePropertyFromSourceToDestinationWithThrowIfNullOnNotValueTypeProperty()
+        {
+            var customizations = new MapperCustomizations
+            {
+                ThrowWhenNotNullablePropertyIsNull = true
+            };
+
+            var mappingInformation = new MappingInformation(_attributeData.Object, new ConfigurationValues(IndentStyle.Space, 4, customizations))
+                .MapFrom(_sourceType.Object)
+                .MapTo(_destinationType.Object);
+
+            DoTest(mappingInformation,
+                new[]
+                {
+                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", false, true).MapTo("Name", false, true)
+                },
+                @"using System;
+using Namespace;
+
+namespace Namespace
+{
+    public static partial class SourceMapToExtensions
+    {
+        public static Destination MapToDestination(this Source self)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self));
+            }
+            
+            var target = new Destination
+            {
+                Name = self.Name,
+            };
+            
+            return target;
+        }
+    }
+}
+");
+        }
+
+
+        [Test]
         public void MappingThreePropertiesFromSourceToDestination()
             => DoTest(_mappingInformation,
                 new[]
                 {
-                    new PropertyMappingInformation(_mappingInformation).MapFrom("Name", false).MapTo("Name", false),
-                    new PropertyMappingInformation(_mappingInformation).MapFrom("Title", false).MapTo("Title", false),
-                    new PropertyMappingInformation(_mappingInformation).MapFrom("Content", false).MapTo("Content", false)
+                    new PropertyMappingInformation(_mappingInformation).MapFrom("Name", false, false).MapTo("Name", false, false),
+                    new PropertyMappingInformation(_mappingInformation).MapFrom("Title", false, false).MapTo("Title", false, false),
+                    new PropertyMappingInformation(_mappingInformation).MapFrom("Content", false, false).MapTo("Content", false, false)
                 },
                 @"using System;
 using Namespace;
@@ -364,7 +538,7 @@ namespace Namespace
             => DoTest(_mappingInformation,
                 new[]
                 {
-                    new PropertyMappingInformation(_mappingInformation).MapFrom("Name", false).MapTo("Nom", false)
+                    new PropertyMappingInformation(_mappingInformation).MapFrom("Name", false, false).MapTo("Nom", false, false)
                 },
                 @"using System;
 using Namespace;
@@ -396,7 +570,7 @@ namespace Namespace
             => DoTest(_mappingInformation,
                 new[]
                 {
-                    new PropertyMappingInformation(_mappingInformation).MapFrom("Count", false).MapTo("Count", false).UsingMethod("ToString", default)
+                    new PropertyMappingInformation(_mappingInformation).MapFrom("Count", false, false).MapTo("Count", false, false).UsingMethod("ToString", default)
                 },
                 @"using System;
 using Namespace;
@@ -430,7 +604,7 @@ namespace Namespace
             => DoTest(_mappingInformation,
                 new[]
                 {
-                    new PropertyMappingInformation(_mappingInformation).MapFrom("Count", true).MapTo("Count", false).UsingMethod("ToString", default)
+                    new PropertyMappingInformation(_mappingInformation).MapFrom("Count", true, false).MapTo("Count", false, false).UsingMethod("ToString", default)
                 },
                 @"using System;
 using Namespace;
@@ -464,7 +638,7 @@ namespace Namespace
             => DoTest(_mappingInformation,
                 new[]
                 {
-                    new PropertyMappingInformation(_mappingInformation).MapFrom("Parameter", false).MapTo("ResolvedParameter", false).UsingResolver("Resolver", "Namespace.Resolvers", Enumerable.Empty<MethodInformation>())
+                    new PropertyMappingInformation(_mappingInformation).MapFrom("Parameter", false, false).MapTo("ResolvedParameter", false, false).UsingResolver("Resolver", "Namespace.Resolvers", Enumerable.Empty<MethodInformation>())
                 },
                 @"using System;
 using Namespace;
@@ -500,8 +674,8 @@ namespace Namespace
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation)
-                        .MapFrom("Parameter", false)
-                        .MapTo("ResolvedParameter", false)
+                        .MapFrom("Parameter", false, false)
+                        .MapTo("ResolvedParameter", false, false)
                         .UsingResolver("SomeResolver", "Namespace.Resolvers", new [] {
                             new MethodInformation("randomService", "IRandomService", false, "Namespace.Services", default)
                         })
@@ -536,19 +710,60 @@ namespace Namespace
 ");
 
         [Test]
+        public void MappingPropertyUsingResolverWithNullableConstructorArgumentsFromSourceToDestination()
+            => DoTest(_mappingInformation,
+                new[]
+                {
+                    new PropertyMappingInformation(_mappingInformation)
+                        .MapFrom("Parameter", false, false)
+                        .MapTo("ResolvedParameter", false, false)
+                        .UsingResolver("SomeResolver", "Namespace.Resolvers", new [] {
+                            new MethodInformation("randomService", "IRandomService", true, "Namespace.Services", default)
+                        })
+                },
+                @"using System;
+using Namespace;
+using Namespace.Resolvers;
+using Namespace.Services;
+
+namespace Namespace
+{
+    public static partial class SourceMapToExtensions
+    {
+        public static Destination MapToDestination(this Source self, IRandomService? someResolverRandomService)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self));
+            }
+            
+            var someResolver = new SomeResolver(someResolverRandomService);
+            
+            var target = new Destination
+            {
+                ResolvedParameter = someResolver.Resolve(self.Parameter),
+            };
+            
+            return target;
+        }
+    }
+}
+");
+
+        [Test]
         public void MappingMultiplePropertiesUsingResolversWithConstructorArgumentsFromSourceToDestination()
             => DoTest(_mappingInformation,
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation)
-                        .MapFrom("Parameter1", false)
-                        .MapTo("ResolvedParameter1", false)
+                        .MapFrom("Parameter1", false, false)
+                        .MapTo("ResolvedParameter1", false, false)
                         .UsingResolver("SomeResolver1", "Namespace.Resolvers1", new [] {
                             new MethodInformation("randomService1", "IRandomService1", false,"Namespace.Services1", default)
                         }),
                     new PropertyMappingInformation(_mappingInformation)
-                        .MapFrom("Parameter2", false)
-                        .MapTo("ResolvedParameter2", false)
+                        .MapFrom("Parameter2", false, false)
+                        .MapTo("ResolvedParameter2", false, false)
                         .UsingResolver("SomeResolver2", "Namespace.Resolvers2", new [] {
                             new MethodInformation("randomService2", "IRandomService2", false,"Namespace.Services2", default)
                         })
@@ -593,14 +808,14 @@ namespace Namespace
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation)
-                        .MapFrom("Parameter1", false)
-                        .MapTo("ResolvedParameter1", false)
+                        .MapFrom("Parameter1", false, false)
+                        .MapTo("ResolvedParameter1", false, false)
                         .UsingResolver("SomeResolver", "Namespace.Resolvers", new [] {
                             new MethodInformation("randomService", "IRandomService", false, "Namespace.Services", default)
                         }),
                     new PropertyMappingInformation(_mappingInformation)
-                        .MapFrom("Parameter2", false)
-                        .MapTo("ResolvedParameter2", false)
+                        .MapFrom("Parameter2", false, false)
+                        .MapTo("ResolvedParameter2", false, false)
                         .UsingResolver("SomeResolver", "Namespace.Resolvers", new [] {
                             new MethodInformation("randomService", "IRandomService", false, "Namespace.Services", default)
                         })
@@ -641,8 +856,8 @@ namespace Namespace
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation)
-                        .MapFrom("Collection", false)
-                        .MapTo("Collection", false)
+                        .MapFrom("Collection", false, false)
+                        .MapTo("Collection", false, false)
                         .AsCollection(DestinationCollectionType.List, "CollectionItem", "Namespace.Collections")
                         .UsingMethod("ToItem", "Namespace.Collections")
                 },
@@ -681,8 +896,8 @@ namespace Namespace
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation)
-                        .MapFrom("Collection", true)
-                        .MapTo("Collection", false)
+                        .MapFrom("Collection", true, false)
+                        .MapTo("Collection", false, false)
                         .AsCollection(DestinationCollectionType.Array, "CollectionItem", "Namespace.Collections")
                 },
                 @"using System;
@@ -720,8 +935,8 @@ namespace Namespace
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation)
-                        .MapFrom("Collection", false)
-                        .MapTo("Collection", false)
+                        .MapFrom("Collection", false, false)
+                        .MapTo("Collection", false, false)
                         .AsCollection(DestinationCollectionType.Array, "CollectionItem", "Namespace.Collections")
                 },
                 @"using System;
@@ -759,8 +974,8 @@ namespace Namespace
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation)
-                        .MapFrom("Collection", true)
-                        .MapTo("Collection", false)
+                        .MapFrom("Collection", true, false)
+                        .MapTo("Collection", false, false)
                         .AsCollection(DestinationCollectionType.Array, "CollectionItem", "Namespace.Collections")
                         .UsingMethod("MapToCollectionItem", "Namespace.Collections")
                 },
@@ -799,8 +1014,8 @@ namespace Namespace
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation)
-                        .MapFrom("Collection", true)
-                        .MapTo("Collection", false)
+                        .MapFrom("Collection", true, false)
+                        .MapTo("Collection", false, false)
                         .AsCollection(DestinationCollectionType.Array, "CollectionItem", "Namespace.Collections")
                         .UsingResolver("CollectionResolver", "Namespace.Resolvers", new [] {
                             new MethodInformation("cultureInfo", "CultureInfo", false, "System.Globalization", "CultureInfo.InvariantCulture")
@@ -854,7 +1069,7 @@ namespace Namespace
             DoTest(mappingInformation,
                 new[]
                 {
-                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", true).MapTo("Name", true).AsCollection(DestinationCollectionType.Array, "DestinationItem", "Namespace")
+                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", true, false).MapTo("Name", true, false).AsCollection(DestinationCollectionType.Array, "DestinationItem", "Namespace")
                 },
                 @"using System;
 using System.Linq;
@@ -900,7 +1115,7 @@ namespace Namespace
             DoTest(mappingInformation,
                 new[]
                 {
-                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", true).MapTo("Name", false).AsCollection(DestinationCollectionType.Array, "DestinationItem", "Namespace")
+                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", true, false).MapTo("Name", false, false).AsCollection(DestinationCollectionType.Array, "DestinationItem", "Namespace")
                 },
                 @"using System;
 using System.Linq;
@@ -946,7 +1161,7 @@ namespace Namespace
             DoTest(mappingInformation,
                 new[]
                 {
-                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", false).MapTo("Name", true).AsCollection(DestinationCollectionType.Array, "DestinationItem", "Namespace")
+                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", false, false).MapTo("Name", true, false).AsCollection(DestinationCollectionType.Array, "DestinationItem", "Namespace")
                 },
                 @"using System;
 using System.Linq;
@@ -992,7 +1207,7 @@ namespace Namespace
             DoTest(mappingInformation,
                 new[]
                 {
-                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", false).MapTo("Name", false).AsCollection(DestinationCollectionType.Array, "DestinationItem", "Namespace")
+                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", false, false).MapTo("Name", false, false).AsCollection(DestinationCollectionType.Array, "DestinationItem", "Namespace")
                 },
                 @"using System;
 using System.Linq;
@@ -1013,7 +1228,7 @@ namespace Namespace
             
             var target = new Destination
             {
-                Name = self.Name?.ToArray() ?? throw new Exception(""Source -> Destination: Property 'Name' is null while not nullable.""),
+                Name = self.Name?.ToArray() ?? throw new Exception(""Source -> Destination: Property 'Name' is null.""),
             };
             
             return target;
@@ -1029,16 +1244,16 @@ namespace Namespace
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation)
-                        .MapFrom("NestedObject", true)
-                        .MapTo("NestedObject", false)
+                        .MapFrom("NestedObject", true, false)
+                        .MapTo("NestedObject", false, false)
                         .UsingMapper(_nestedSourceType.Object, _nestedDestinationType.Object)
                         // this set mapper will be called by mapper generator
                         .SetMappingInformation(new MappingInformation(_attributeData.Object, _values)
                             .MapFrom(_nestedSourceType.Object)
                             .MapTo(_nestedDestinationType.Object)
                             .AddProperty(new PropertyMappingInformation(_mappingInformation)
-                                .MapFrom("Name", false)
-                                .MapTo("Name", false)))
+                                .MapFrom("Name", false, false)
+                                .MapTo("Name", false, false)))
                 },
                 @"using System;
 using Namespace;
@@ -1074,16 +1289,16 @@ namespace Namespace
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation)
-                        .MapFrom("NestedObject", true)
-                        .MapTo("NestedObject", false)
+                        .MapFrom("NestedObject", true, false)
+                        .MapTo("NestedObject", false, false)
                         .UsingMapper(_nestedSourceType.Object, _nestedDestinationType.Object)
                         // this set mapper will be called by mapper generator
                         .SetMappingInformation(new MappingInformation(_attributeData.Object, _values)
                             .MapFrom(_nestedSourceType.Object)
                             .MapTo(_nestedDestinationType.Object)
                             .AddProperty(new PropertyMappingInformation(_mappingInformation)
-                                .MapFrom("Name", false)
-                                .MapTo("Name", false)
+                                .MapFrom("Name", false, false)
+                                .MapTo("Name", false, false)
                                 .UsingResolver("SomeResolver", "Namespace.Resolvers", new[]
                                 {
                                     new MethodInformation("cultureInfo", "CultureInfo", false, "System.Globalization", "CultureInfo.InvariantCulture")
@@ -1125,16 +1340,16 @@ namespace Namespace
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation)
-                        .MapFrom("NestedObject", true)
-                        .MapTo("NestedObject", false)
+                        .MapFrom("NestedObject", true, false)
+                        .MapTo("NestedObject", false, false)
                         .UsingMapper(_nestedSourceType.Object, _nestedDestinationType.Object)
                         // this set mapper will be called by mapper generator
                         .SetMappingInformation(new MappingInformation(_attributeData.Object, _values)
                             .MapFrom(_nestedSourceType.Object)
                             .MapTo(_nestedDestinationType.Object)
                             .AddProperty(new PropertyMappingInformation(_mappingInformation)
-                                .MapFrom("Name", false)
-                                .MapTo("Name", false)
+                                .MapFrom("Name", false, false)
+                                .MapTo("Name", false, false)
                                 .UsingResolver("SomeResolver", "Namespace.Resolvers", new[]
                                 {
                                     new MethodInformation("cultureInfo", "CultureInfo", true, "System.Globalization", "CultureInfo.InvariantCulture")
@@ -1176,8 +1391,8 @@ namespace Namespace
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation)
-                        .MapFrom("NestedObject", true)
-                        .MapTo("NestedObject", false)
+                        .MapFrom("NestedObject", true, false)
+                        .MapTo("NestedObject", false, false)
                         .AsCollection(DestinationCollectionType.Enumerable, "DestinationObject", "Namespace")
                         .UsingMapper(_nestedSourceType.Object, _nestedDestinationType.Object)
                         // this set mapper will be called by mapper generator
@@ -1185,8 +1400,8 @@ namespace Namespace
                             .MapFrom(_nestedSourceType.Object)
                             .MapTo(_nestedDestinationType.Object)
                             .AddProperty(new PropertyMappingInformation(_mappingInformation)
-                                .MapFrom("Name", false)
-                                .MapTo("Name", false)
+                                .MapFrom("Name", false, false)
+                                .MapTo("Name", false, false)
                                 .UsingResolver("SomeResolver", "Namespace.Resolvers", new[]
                                 {
                                     new MethodInformation("cultureInfo", "CultureInfo", false,"System.Globalization", "CultureInfo.InvariantCulture")
@@ -1229,8 +1444,8 @@ namespace Namespace
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation)
-                        .MapFrom("NestedObject", true)
-                        .MapTo("NestedObject", false)
+                        .MapFrom("NestedObject", true, false)
+                        .MapTo("NestedObject", false, false)
                         .AsCollection(DestinationCollectionType.Enumerable, "DestinationObject", "Namespace")
                         .UsingMapper(_nestedSourceType.Object, _nestedDestinationType.Object)
                         // this set mapper will be called by mapper generator
@@ -1238,16 +1453,16 @@ namespace Namespace
                             .MapFrom(_nestedSourceType.Object)
                             .MapTo(_nestedDestinationType.Object)
                             .AddProperty(new PropertyMappingInformation(_mappingInformation)
-                                .MapFrom("Name1", false)
-                                .MapTo("Name1", false)
+                                .MapFrom("Name1", false, false)
+                                .MapTo("Name1", false, false)
                                 .UsingResolver("SomeResolver", "Namespace.Resolvers", new[]
                                 {
                                     new MethodInformation("someInt", "int", false, "System", default),
                                     new MethodInformation("cultureInfo", "CultureInfo", false, "System.Globalization", "CultureInfo.InvariantCulture"),
                                 }))
                             .AddProperty(new PropertyMappingInformation(_mappingInformation)
-                                .MapFrom("Name2", false)
-                                .MapTo("Name2", false)
+                                .MapFrom("Name2", false, false)
+                                .MapTo("Name2", false, false)
                                 .UsingResolver("SomeResolver", "Namespace.Resolvers", new[]
                                 {
                                     new MethodInformation("someInt", "int", false, "System", default),
@@ -1291,8 +1506,8 @@ namespace Namespace
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation)
-                        .MapFrom("NestedSource", true)
-                        .MapTo("NestedDestination", false)
+                        .MapFrom("NestedSource", true, false)
+                        .MapTo("NestedDestination", false, false)
                         .UsingMapper(_sourceType.Object, _destinationType.Object)
                         // the short circuit in UsingMapper does not work with mocked types
                         .SetMappingInformation(_mappingInformation)
@@ -1330,15 +1545,15 @@ namespace Namespace
                 new[]
                 {
                     new PropertyMappingInformation(_mappingInformation)
-                        .MapFrom("DateTime", false)
-                        .MapTo("Date", false)
+                        .MapFrom("DateTime", false, false)
+                        .MapTo("Date", false, false)
                         .UsingResolver("DateTimeResolver", "Namespace.Resolvers", new []
                         {
                             new MethodInformation("cultureInfo", "CultureInfo", false, "System.Globalization", default)
                         }),
                     new PropertyMappingInformation(_mappingInformation)
-                        .MapFrom("NestedSource", true)
-                        .MapTo("NestedDestination", false)
+                        .MapFrom("NestedSource", true, false)
+                        .MapTo("NestedDestination", false, false)
                         .UsingMapper(_sourceType.Object, _destinationType.Object)
                         // the short circuit in UsingMapper does not work with mocked types
                         .SetMappingInformation(_mappingInformation)
@@ -1375,6 +1590,56 @@ namespace Namespace
 }
 ");
 
+
+        [Test]
+        public void MappingUsingRecursiveMapperWithNullableArguments()
+            => DoTest(_mappingInformation,
+                new[]
+                {
+                    new PropertyMappingInformation(_mappingInformation)
+                        .MapFrom("Property", true, false)
+                        .MapTo("Property", false, false)
+                        .UsingResolver("Resolver", "Namespace.Resolvers", new [] {
+                            new MethodInformation("argument", "double", true, "System", null)
+                        }),
+                    new PropertyMappingInformation(_mappingInformation)
+                        .MapFrom("NestedSource", true, false)
+                        .MapTo("NestedDestination", false, false)
+                        .UsingMapper(_sourceType.Object, _destinationType.Object)
+                        // the short circuit in UsingMapper does not work with mocked types
+                        .SetMappingInformation(_mappingInformation)
+                },
+                @"using System;
+using Namespace;
+using Namespace.Resolvers;
+
+#nullable enable
+
+namespace Namespace
+{
+    public static partial class SourceMapToExtensions
+    {
+        public static Destination MapToDestination(this Source self, double? resolverArgument)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self));
+            }
+            
+            var resolver = new Resolver(resolverArgument);
+            
+            var target = new Destination
+            {
+                Property = resolver.Resolve(self.Property),
+                NestedDestination = self.NestedSource?.MapToDestination(resolverArgument),
+            };
+            
+            return target;
+        }
+    }
+}
+");
+
         [Test]
         public void MappingUsingSubClasses()
         {
@@ -1385,8 +1650,8 @@ namespace Namespace
                 new[]
                 {
                     new PropertyMappingInformation(information)
-                        .MapFrom("DateTime", false)
-                        .MapTo("Date", false)
+                        .MapFrom("DateTime", false, false)
+                        .MapTo("Date", false, false)
                 },
                 @"using System;
 using Namespace;
@@ -1424,8 +1689,8 @@ namespace Namespace
                 new[]
                 {
                     new PropertyMappingInformation(information)
-                        .MapFrom("Items", true)
-                        .MapTo("Items", false)
+                        .MapFrom("Items", true, false)
+                        .MapTo("Items", false, false)
                         .AsCollection(DestinationCollectionType.List, "Destination.SubDestination.Item", "Namespace")
                 },
                 @"using System;

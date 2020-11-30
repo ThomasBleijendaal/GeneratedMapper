@@ -37,6 +37,8 @@ namespace Example
                     }}
             };
 
+            ;
+
             // important known limitation for source generators:
 
             // if this example is run inside the GeneratorMapper solution, intellisense will fail to 
@@ -46,7 +48,7 @@ namespace Example
             // if this example is run with GeneratorMapper as NuGet package, intellisense will work correctly
 
             Console.WriteLine(JsonSerializer.Serialize(source.MapToSimpleDestination(), new JsonSerializerOptions { WriteIndented = true }));
-            Console.WriteLine(JsonSerializer.Serialize(source.MapToComplexDestination(CultureInfo.CurrentCulture), new JsonSerializerOptions { WriteIndented = true }));
+            Console.WriteLine(JsonSerializer.Serialize(source.MapToComplexDestination(default, CultureInfo.CurrentCulture), new JsonSerializerOptions { WriteIndented = true }));
         }
     }
 }

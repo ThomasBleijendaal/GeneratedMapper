@@ -20,9 +20,12 @@ namespace GeneratedMapper.Builders
         {
             string sourceExpression;
 
+            var sourceCanBeNull = _information.SourcePropertyIsNullable || (!_information.SourcePropertyIsNullable && !_information.SourcePropertyIsValueType);
+            var destinationCanHandleNull = _information.DestinationPropertyIsNullable;
+
             // only really throw when destination property can't handle a null
-            var throwWhenNull = (_information.BelongsToMapping.ConfigurationValues.Customizations.ThrowWhenNotNullablePropertyIsNull && !_information.DestinationPropertyIsNullable)
-                ? $@" ?? throw new Exception(""{_information.BelongsToMapping.SourceType.Name} -> {_information.BelongsToMapping.DestinationType.Name}: Property '{_information.SourcePropertyName}' is null while not nullable."")"
+            var throwWhenNull = _information.BelongsToMapping.ConfigurationValues.Customizations.ThrowWhenNotNullablePropertyIsNull && sourceCanBeNull && !destinationCanHandleNull
+                ? $@" ?? throw new Exception(""{_information.BelongsToMapping.SourceType.Name} -> {_information.BelongsToMapping.DestinationType.Name}: Property '{_information.SourcePropertyName}' is null."")"
                 : string.Empty;
 
             if (_information.CollectionType != null)
