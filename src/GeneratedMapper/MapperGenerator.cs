@@ -53,6 +53,7 @@ namespace GeneratedMapper
         private static List<MappingInformation> FindMappings(GeneratorExecutionContext context)
         {
             var extensionMethods = FindExtensionMethods(context);
+            var customizations = FindMapperCustomizations(context);
 
             var parser = new MappingAttributeParser(context, new PropertyParser(context, new ConstructorParser(context), extensionMethods));
 
@@ -65,7 +66,7 @@ namespace GeneratedMapper
 
                 foreach (var candidateTypeNode in attributeReceiver.Candidates)
                 {
-                    var configurationValues = new ConfigurationValues(context, candidateTypeNode.SyntaxTree);
+                    var configurationValues = new ConfigurationValues(context, candidateTypeNode.SyntaxTree, customizations);
 
                     var model = context.Compilation.GetSemanticModel(candidateTypeNode.SyntaxTree);
                     if (model.GetDeclaredSymbol(candidateTypeNode) is ITypeSymbol candidateTypeSymbol)
@@ -106,6 +107,42 @@ namespace GeneratedMapper
             return foundExtensionMethods;
         }
 
+        private static MapperCustomizations FindMapperCustomizations(GeneratorExecutionContext context)
+        {
+            var customizations = new MapperCustomizations();
+
+            if (context.SyntaxReceiver is MapAttributeReceiver attributeReceiver)
+            {
+                if (attributeReceiver.ConfigurationAttribute != null)
+                {
+                    var model = context.Compilation.GetSemanticModel(attributeReceiver.ConfigurationAttribute.SyntaxTree);
+                    if (model.GetDeclaredSymbol(attributeReceiver.ConfigurationAttribute) is AttributeData configuration)
+                    {
+                        foreach (var argument in configuration.NamedArguments)
+                        {
+                            switch (argument.Key)
+                            {
+                                case nameof(MapperCustomizations.NamespacesToInclude):
+                                    if (argument.Value.Value is string[] namespaces)
+                                    {
+                                        customizations.NamespacesToInclude = namespaces;
+                                    }
+                                    break;
+
+                                case nameof(MapperCustomizations.ThrowWhenNotNullablePropertyIsNull):
+                                    if (argument.Value.Value is bool throwWhenNotNull) {
+                                        customizations.ThrowWhenNotNullablePropertyIsNull = throwWhenNotNull;
+                                    }
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return customizations;
+        }
+
         private static void ResolvePendingNestedMappings(IEnumerable<MappingInformation> mappings)
         {
             bool resolvedSomething;
@@ -118,7 +155,7 @@ namespace GeneratedMapper
                     .Where(x => x.RequiresMappingInformationOfMapper && x.MappingInformationOfMapperToUse == null))
                 {
                     var mappingInformationToFind = mappings
-                        .FirstOrDefault(x => x.SourceType.Equals(mapping.MapperFromType, SymbolEqualityComparer.Default) && 
+                        .FirstOrDefault(x => x.SourceType.Equals(mapping.MapperFromType, SymbolEqualityComparer.Default) &&
                             x.DestinationType.Equals(mapping.MapperToType, SymbolEqualityComparer.Default));
 
                     // TODO: the check if its fully resolved can be an issue when the mappings are dependent on each other, like A -> B -> A etc.

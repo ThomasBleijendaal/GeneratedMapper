@@ -6,7 +6,9 @@ namespace Example.Sources
     public class Company
     {
         public Guid Id { get; set; }
+
         public string Name { get; set; }
+
         public double Revenue { get; set; }
 
         public DateTime StartDate { get; set; }

@@ -52,8 +52,8 @@ namespace GeneratedMapper.Parsers
             var destinationProperty = mappingInformation.MappingType == MappingType.MapFrom ? attributedTypeProperty : targetTypeProperty;
 
             var propertyMapping = new PropertyMappingInformation(mappingInformation)
-                .MapFrom(sourceProperty.Name, sourceProperty.NullableAnnotation == NullableAnnotation.Annotated)
-                .MapTo(destinationProperty.Name, destinationProperty.NullableAnnotation == NullableAnnotation.Annotated);
+                .MapFrom(sourceProperty.Name, sourceProperty.NullableAnnotation == NullableAnnotation.Annotated, sourceProperty.Type.IsValueType)
+                .MapTo(destinationProperty.Name, destinationProperty.NullableAnnotation == NullableAnnotation.Annotated, destinationProperty.Type.IsValueType);
 
             try
             {

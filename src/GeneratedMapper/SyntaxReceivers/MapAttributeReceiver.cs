@@ -12,6 +12,8 @@ namespace GeneratedMapper.SyntaxReceivers
 
         public List<TypeDeclarationSyntax> ClassesWithExtensionMethods { get; } = new List<TypeDeclarationSyntax>();
 
+        public AttributeSyntax? ConfigurationAttribute { get; private set; }
+
         public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
         {
             if (syntaxNode is TypeDeclarationSyntax typeDeclarationSyntax)
@@ -31,6 +33,14 @@ namespace GeneratedMapper.SyntaxReceivers
                 if (hasExtensionMethod)
                 {
                     ClassesWithExtensionMethods.Add(typeDeclarationSyntax);
+                }
+            }
+
+            if (syntaxNode is AttributeListSyntax attributeListSyntax)
+            {
+                if (attributeListSyntax.Target.IsKind(SyntaxKind.AssemblyKeyword))
+                {
+                    ConfigurationAttribute ??= attributeListSyntax.Attributes.FirstOrDefault(x => x.Name.ToString().Contains("MapperGeneratorConfiguration"));
                 }
             }
         }

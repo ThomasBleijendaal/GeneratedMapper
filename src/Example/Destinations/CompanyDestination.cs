@@ -14,6 +14,8 @@ namespace Example.Destinations
 
         [MapWith("Name", "LimitLength")]
         public string Name { get; set; }
+
+        [MapWith(typeof(MultiplierResolver))]
         public double Revenue { get; set; }
 
         [MapWith(typeof(DateResolver))]
