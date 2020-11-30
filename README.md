@@ -5,6 +5,8 @@ Compile-time object-to-object mapper generator which generates extension methods
 Install-Package GeneratedMapper
 ```
 
+(Sometimes VS2019 needs to be restarted after adding the package)
+
 ## Bad informercial
 
 How often do you have a certain model like..
