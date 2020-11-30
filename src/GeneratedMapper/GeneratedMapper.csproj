@@ -5,7 +5,7 @@
     <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.9.4-preview</Version>
+    <Version>0.9.5-preview</Version>
     <Authors>Thomas Bleijendaal</Authors>
     <Company>Thomas Bleijendaal</Company>
     <Product>Generated Mapper</Product>
@@ -34,11 +34,6 @@
 
   <ItemGroup>
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\GeneratedMapper.Abstractions\GeneratedMapper.Abstractions.csproj" />
-    <ProjectReference Include="..\GeneratedMapper.Attributes\GeneratedMapper.Attributes.csproj" />
   </ItemGroup>
 
   <ItemGroup>

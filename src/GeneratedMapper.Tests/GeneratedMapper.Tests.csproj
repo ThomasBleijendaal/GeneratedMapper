@@ -15,7 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\GeneratedMapper.Attributes\GeneratedMapper.Attributes.csproj" />
     <ProjectReference Include="..\GeneratedMapper\GeneratedMapper.csproj" />
   </ItemGroup>
 

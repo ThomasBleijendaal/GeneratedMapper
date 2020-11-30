@@ -13,8 +13,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\GeneratedMapper.Abstractions\GeneratedMapper.Abstractions.csproj" />
-    <ProjectReference Include="..\GeneratedMapper.Attributes\GeneratedMapper.Attributes.csproj" />
-    <ProjectReference Include="..\GeneratedMapper\GeneratedMapper.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\GeneratedMapper\GeneratedMapper.csproj" OutputItemType="Analyzer" />
   </ItemGroup>
 </Project>

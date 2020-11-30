@@ -7,14 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GeneratedMapper", "Generate
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example", "Example\Example.csproj", "{DB250D82-B2D0-4C42-8473-1E9C17CCE8BE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GeneratedMapper.Attributes", "GeneratedMapper.Attributes\GeneratedMapper.Attributes.csproj", "{D3F95CB2-61F5-4104-97C6-709693EE2788}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GeneratedMapper.Tests", "GeneratedMapper.Tests\GeneratedMapper.Tests.csproj", "{D884F1AA-8E2E-4ACF-9F0E-CDF69ADBD374}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GeneratedMapper.Abstractions", "GeneratedMapper.Abstractions\GeneratedMapper.Abstractions.csproj", "{E6E1F19B-9441-4B67-9865-6D5683C84BFB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7F355CCA-D20A-4C1A-AE50-9DD134018A39}"
 	ProjectSection(SolutionItems) = preProject
+		..\.github\workflows\dotnetcore.yml = ..\.github\workflows\dotnetcore.yml
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
@@ -32,18 +29,10 @@ Global
 		{DB250D82-B2D0-4C42-8473-1E9C17CCE8BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DB250D82-B2D0-4C42-8473-1E9C17CCE8BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DB250D82-B2D0-4C42-8473-1E9C17CCE8BE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D3F95CB2-61F5-4104-97C6-709693EE2788}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D3F95CB2-61F5-4104-97C6-709693EE2788}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D3F95CB2-61F5-4104-97C6-709693EE2788}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D3F95CB2-61F5-4104-97C6-709693EE2788}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D884F1AA-8E2E-4ACF-9F0E-CDF69ADBD374}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D884F1AA-8E2E-4ACF-9F0E-CDF69ADBD374}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D884F1AA-8E2E-4ACF-9F0E-CDF69ADBD374}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D884F1AA-8E2E-4ACF-9F0E-CDF69ADBD374}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E6E1F19B-9441-4B67-9865-6D5683C84BFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E6E1F19B-9441-4B67-9865-6D5683C84BFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E6E1F19B-9441-4B67-9865-6D5683C84BFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E6E1F19B-9441-4B67-9865-6D5683C84BFB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
