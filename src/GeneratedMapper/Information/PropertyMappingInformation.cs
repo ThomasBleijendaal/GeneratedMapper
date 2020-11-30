@@ -162,6 +162,9 @@ namespace GeneratedMapper.Information
             return messages.Count == 0;
         }
 
-        public bool RequiresNullableContext => SourcePropertyIsNullable && (CollectionType != default || RequiresMappingInformationOfMapper);
+        public bool RequiresNullableContext => 
+            CollectionType != default || 
+            RequiresMappingInformationOfMapper || 
+            !string.IsNullOrEmpty(SourcePropertyMethodToCall);
     }
 }

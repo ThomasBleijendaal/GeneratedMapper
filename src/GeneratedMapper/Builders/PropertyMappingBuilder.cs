@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using GeneratedMapper.Enums;
 using GeneratedMapper.Information;
@@ -17,9 +18,13 @@ namespace GeneratedMapper.Builders
 
         public string? InitializerString(string sourceInstanceName)
         {
-            var safePropagation = _information.SourcePropertyIsNullable ? "?" : "";
-
             string sourceExpression;
+
+            // only really throw when destination property can't handle a null
+            var throwWhenNull = (_information.BelongsToMapping.ConfigurationValues.Customizations.ThrowWhenNotNullablePropertyIsNull && !_information.DestinationPropertyIsNullable)
+                ? $@" ?? throw new Exception(""{_information.BelongsToMapping.SourceType.Name} -> {_information.BelongsToMapping.DestinationType.Name}: Property '{_information.SourcePropertyName}' is null while not nullable."")"
+                : string.Empty;
+
             if (_information.CollectionType != null)
             {
                 var enumerationMethod = _information.CollectionType == DestinationCollectionType.List ? ".ToList()"
@@ -28,56 +33,48 @@ namespace GeneratedMapper.Builders
 
                 var optionalEmptyCollectionCreation = !_information.DestinationPropertyIsNullable && _information.SourcePropertyIsNullable
                     ? $" ?? Enumerable.Empty<{_information.DestinationCollectionItemTypeName}>(){enumerationMethod}"
-                    : "";
+                    : throwWhenNull;
 
                 if (_information.MappingInformationOfMapperToUse != null)
                 {
-                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}{safePropagation}.Select(element => element.MapTo{_information.MappingInformationOfMapperToUse.DestinationType.Name}({GetMappingArguments()})){enumerationMethod}{optionalEmptyCollectionCreation}";
+                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}?.Select(element => element.MapTo{_information.MappingInformationOfMapperToUse.DestinationType.Name}({GetMappingArguments()})){enumerationMethod}{optionalEmptyCollectionCreation}";
                 }
                 else if (_information.SourcePropertyMethodToCall != null)
                 {
-                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}{safePropagation}.Select(element => element.{_information.SourcePropertyMethodToCall}()){enumerationMethod}{optionalEmptyCollectionCreation}";
+                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}?.Select(element => element.{_information.SourcePropertyMethodToCall}()){enumerationMethod}{optionalEmptyCollectionCreation}";
                 }
                 else if (_information.ResolverTypeToUse != null)
                 {
-                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}{safePropagation}.Select(element => {_information.ResolverInstanceName}.Resolve(element)){enumerationMethod}{optionalEmptyCollectionCreation}";
+                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}?.Select(element => {_information.ResolverInstanceName}.Resolve(element)){enumerationMethod}{optionalEmptyCollectionCreation}";
                 }
                 else
                 {
-                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}{safePropagation}{enumerationMethod}{optionalEmptyCollectionCreation}";
+                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}?{enumerationMethod}{optionalEmptyCollectionCreation}";
                 }
             }
             else
             {
+                var safePropagation = _information.SourcePropertyIsNullable ? "?" : "";
+
                 if (_information.MappingInformationOfMapperToUse != null)
                 {
-                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}{safePropagation}.MapTo{_information.MappingInformationOfMapperToUse.DestinationType.Name}({GetMappingArguments()})";
+                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}{safePropagation}.MapTo{_information.MappingInformationOfMapperToUse.DestinationType.Name}({GetMappingArguments()}){throwWhenNull}";
                 }
                 else if (_information.SourcePropertyMethodToCall != null)
                 {
-                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}{safePropagation}.{_information.SourcePropertyMethodToCall}()";
+                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}{safePropagation}.{_information.SourcePropertyMethodToCall}(){throwWhenNull}";
                 }
                 else if (_information.ResolverTypeToUse != null)
                 {
-                    sourceExpression = $"{_information.ResolverInstanceName}.Resolve({sourceInstanceName}.{_information.SourcePropertyName})";
+                    sourceExpression = $"{_information.ResolverInstanceName}.Resolve({sourceInstanceName}.{_information.SourcePropertyName}{throwWhenNull})";
                 }
                 else
                 {
-                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}";
+                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}{throwWhenNull}";
                 }
             }
 
-            string optionalThrow;
-            if (_information.BelongsToMapping.ConfigurationValues.Customizations.ThrowWhenNotNullablePropertyIsNull)
-            {
-                optionalThrow = string.Empty;// $" ?? throw "
-            }
-            else
-            {
-                optionalThrow = string.Empty;
-            }
-
-            return $"{_information.DestinationPropertyName} = {sourceExpression}{optionalThrow},";
+            return $"{_information.DestinationPropertyName} = {sourceExpression},";
         }
 
         public string? PreConstructionInitialization()

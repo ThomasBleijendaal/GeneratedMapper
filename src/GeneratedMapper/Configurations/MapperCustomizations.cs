@@ -2,7 +2,7 @@
 {
     internal sealed class MapperCustomizations
     {
-        public bool ThrowWhenNotNullablePropertyIsNull { get; set; }
+        public bool ThrowWhenNotNullablePropertyIsNull { get; set; } = true;
         public string[] NamespacesToInclude { get; set; } = new string[0];
     }
 }
