@@ -2,7 +2,6 @@
 using GeneratedMapper.Configurations;
 using GeneratedMapper.Enums;
 using GeneratedMapper.Information;
-using GeneratedMapper.Mappings;
 using Microsoft.CodeAnalysis;
 using Moq;
 using NUnit.Framework;
@@ -34,15 +33,19 @@ namespace GeneratedMapper.Tests
 
             _sourceType.Setup(x => x.Name).Returns("Source");
             _sourceType.Setup(x => x.ContainingNamespace).Returns(@namespace.Object);
+            _sourceType.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace.Source");
             _destinationType.Setup(x => x.Name).Returns("Destination");
             _destinationType.Setup(x => x.ContainingNamespace).Returns(@namespace.Object);
+            _destinationType.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace.Destination");
 
             _nestedSourceType.Setup(x => x.Name).Returns("SourceObject");
             _nestedSourceType.Setup(x => x.ContainingNamespace).Returns(@namespace.Object);
+            _nestedSourceType.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace.SourceObject");
             _nestedDestinationType.Setup(x => x.Name).Returns("DestinationObject");
             _nestedDestinationType.Setup(x => x.ContainingNamespace).Returns(@namespace.Object);
+            _nestedDestinationType.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace.DestinationObject");
 
-            _mappingInformation = new MappingInformation(_attributeData.Object, _values);
+            _mappingInformation = new MappingInformation(_attributeData.Object, _values).MapFrom(_sourceType.Object).MapTo(_destinationType.Object);
             _nestedMappingInformation = new MappingInformation(_attributeData.Object, _values).MapFrom(_sourceType.Object).MapTo(_destinationType.Object);
             _validBase = new PropertyMappingInformation(_mappingInformation).MapFrom("x", false, false).MapTo("x", false, false);
         }
@@ -116,10 +119,10 @@ namespace GeneratedMapper.Tests
         public void ValidBaseAsCollectionUsingMapper() => DoTest(true, _validBase.AsCollection(DestinationCollectionType.Array, "x").UsingMapper(_nestedSourceType.Object, _nestedDestinationType.Object).SetMappingInformation(_nestedMappingInformation));
         
         [Test]
-        public void ValidBaseAsCollectionUsingMethod() => DoTest(true, _validBase.AsCollection(DestinationCollectionType.Array, "x").UsingMethod("x", "x"));
+        public void ValidBaseAsCollectionUsingMethod() => DoTest(true, _validBase.AsCollection(DestinationCollectionType.Array, "x").UsingMethod("x", "x", Enumerable.Empty<ParameterInformation>()));
         
         [Test]
-        public void ValidBaseAsCollectionUsingResolver() => DoTest(true, _validBase.AsCollection(DestinationCollectionType.Array, "x").UsingResolver("x", "x", Enumerable.Empty<ArgumentInformation>()));
+        public void ValidBaseAsCollectionUsingResolver() => DoTest(true, _validBase.AsCollection(DestinationCollectionType.Array, "x").UsingResolver("x", "x", Enumerable.Empty<ParameterInformation>()));
 
         [Test]
         public void ValidBaseUsingMapperWithoutMappingInformation() => DoTest(false, _validBase.UsingMapper(_nestedSourceType.Object, _nestedDestinationType.Object));
@@ -128,22 +131,22 @@ namespace GeneratedMapper.Tests
         public void ValidBaseUsingMapperWithMappingInformation() => DoTest(true, _validBase.UsingMapper(_nestedSourceType.Object, _nestedDestinationType.Object).SetMappingInformation(_nestedMappingInformation));
 
         [Test]
-        public void ValidBaseUsingResolver() => DoTest(true, _validBase.UsingResolver("x", "x", Enumerable.Empty<ArgumentInformation>()));
+        public void ValidBaseUsingResolver() => DoTest(true, _validBase.UsingResolver("x", "x", Enumerable.Empty<ParameterInformation>()));
         
         [Test]
-        public void ValidBaseUsingMethodWithoutNamespace() => DoTest(true, _validBase.UsingMethod("x", default));
+        public void ValidBaseUsingMethodWithoutNamespace() => DoTest(true, _validBase.UsingMethod("x", default, Enumerable.Empty<ParameterInformation>()));
         
         [Test]
-        public void ValidBaseUsingMethodWithNamespace() => DoTest(true, _validBase.UsingMethod("x", "x"));
+        public void ValidBaseUsingMethodWithNamespace() => DoTest(true, _validBase.UsingMethod("x", "x", Enumerable.Empty<ParameterInformation>()));
 
         [Test]
-        public void ValidBaseUsingResolverWithoutConstructorParametersAndUsingMethod() => DoTest(false, _validBase.UsingResolver("x", "x", Enumerable.Empty<ArgumentInformation>()).UsingMethod("x", "x"));
+        public void ValidBaseUsingResolverWithoutConstructorParametersAndUsingMethod() => DoTest(false, _validBase.UsingResolver("x", "x", Enumerable.Empty<ParameterInformation>()).UsingMethod("x", "x", Enumerable.Empty<ParameterInformation>()));
         
         [Test]
-        public void ValidBaseUsingResolverWithConstructorParametersAndUsingMapperWithMappingInformation() => DoTest(false, _validBase.UsingResolver("x", "x", Enumerable.Empty<ArgumentInformation>()).UsingMapper(_nestedSourceType.Object, _nestedDestinationType.Object).SetMappingInformation(_nestedMappingInformation));
+        public void ValidBaseUsingResolverWithConstructorParametersAndUsingMapperWithMappingInformation() => DoTest(false, _validBase.UsingResolver("x", "x", Enumerable.Empty<ParameterInformation>()).UsingMapper(_nestedSourceType.Object, _nestedDestinationType.Object).SetMappingInformation(_nestedMappingInformation));
         
         [Test]
-        public void ValidBaseUsingMethodAndUsingMapperWithMappingInformation() => DoTest(false, _validBase.UsingMethod("x", "x").UsingMapper(_nestedSourceType.Object, _nestedDestinationType.Object).SetMappingInformation(_nestedMappingInformation));
+        public void ValidBaseUsingMethodAndUsingMapperWithMappingInformation() => DoTest(false, _validBase.UsingMethod("x", "x", Enumerable.Empty<ParameterInformation>()).UsingMapper(_nestedSourceType.Object, _nestedDestinationType.Object).SetMappingInformation(_nestedMappingInformation));
 
         [Test]
         public void ValidBaseUsingRecursiveMapper() => DoTest(true, _validBase.UsingMapper(_nestedSourceType.Object, _nestedDestinationType.Object).SetMappingInformation(_mappingInformation));

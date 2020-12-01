@@ -48,7 +48,7 @@ namespace Example
             // if this example is run with GeneratorMapper as NuGet package, intellisense will work correctly
 
             Console.WriteLine(JsonSerializer.Serialize(source.MapToSimpleDestination(), new JsonSerializerOptions { WriteIndented = true }));
-            Console.WriteLine(JsonSerializer.Serialize(source.MapToComplexDestination(new[] { 1.2, 1.3 }, CultureInfo.CurrentCulture), new JsonSerializerOptions { WriteIndented = true }));
+            Console.WriteLine(JsonSerializer.Serialize(source.MapToComplexDestination(10, new[] { 1.2, 1.3 }, CultureInfo.CurrentCulture), new JsonSerializerOptions { WriteIndented = true }));
         }
     }
 }

@@ -4,7 +4,6 @@ using System.Linq;
 using GeneratedMapper.Enums;
 using GeneratedMapper.Extensions;
 using GeneratedMapper.Helpers;
-using GeneratedMapper.Mappings;
 using Microsoft.CodeAnalysis;
 
 namespace GeneratedMapper.Information
@@ -50,15 +49,19 @@ namespace GeneratedMapper.Information
         }
 
         public string? SourcePropertyMethodToCall { get; private set; }
+        public IEnumerable<ParameterInformation>? SourcePropertyMethodParameters { get; private set; }
 
-        public PropertyMappingInformation UsingMethod(string method, string? methodNamespace)
+        public PropertyMappingInformation UsingMethod(string method, string? methodNamespace, IEnumerable<ParameterInformation> methodParameters)
         {
             SourcePropertyMethodToCall = method;
+            SourcePropertyMethodParameters = methodParameters;
 
             if (methodNamespace != null)
             {
                 _namespacesRequired.Add(methodNamespace);
             }
+
+            _namespacesRequired.AddRange(methodParameters.Where(x => !string.IsNullOrWhiteSpace(x.DefaultValue)).Select(x => x.Namespace));
 
             return this;
         }
@@ -98,9 +101,9 @@ namespace GeneratedMapper.Information
 
         public string? ResolverTypeToUse { get; private set; }
         public string? ResolverInstanceName { get; private set; }
-        public IEnumerable<ArgumentInformation>? ResolverConstructorParameters { get; private set; }
+        public IEnumerable<ParameterInformation>? ResolverConstructorParameters { get; private set; }
 
-        public PropertyMappingInformation UsingResolver(string resolverTypeName, string resolverFullName, IEnumerable<ArgumentInformation> constructorParameters)
+        public PropertyMappingInformation UsingResolver(string resolverTypeName, string resolverFullName, IEnumerable<ParameterInformation> constructorParameters)
         {
             ResolverInstanceName = resolverTypeName.ToFirstLetterLower();
             ResolverTypeToUse = resolverFullName;
@@ -126,9 +129,9 @@ namespace GeneratedMapper.Information
 
         public IEnumerable<string> NamespacesUsed => _namespacesRequired;
 
-        public IEnumerable<ArgumentInformation> MapArgumentsRequired
+        public IEnumerable<ParameterInformation> MapParametersRequired
             => this.DoRecursionSafe(
-                mapping => mapping.ResolverConstructorParameters?.Select(argument => argument.CopyWithPrefix(mapping.ResolverInstanceName!)) ?? Enumerable.Empty<ArgumentInformation>(),
+                mapping => mapping.AllParameters.Select(argument => argument.CopyWithPrefix(mapping.ResolverInstanceName!)) ?? Enumerable.Empty<ParameterInformation>(),
                 mapping => mapping.MappingInformationOfMapperToUse?.Mappings);
 
         public bool TryValidateMapping(AttributeData attributeData, out IEnumerable<Diagnostic> diagnostics)
@@ -162,9 +165,32 @@ namespace GeneratedMapper.Information
             return messages.Count == 0;
         }
 
-        public bool RequiresNullableContext => 
-            CollectionType != default || 
-            RequiresMappingInformationOfMapper || 
+        public bool RequiresNullableContext =>
+            CollectionType != default ||
+            RequiresMappingInformationOfMapper ||
             !string.IsNullOrEmpty(SourcePropertyMethodToCall);
+
+
+        public IEnumerable<ParameterInformation> AllParameters
+        {
+            get
+            {
+                if (SourcePropertyMethodParameters != null)
+                {
+                    foreach (var parameter in SourcePropertyMethodParameters)
+                    {
+                        yield return parameter;
+                    }
+                }
+
+                if (ResolverConstructorParameters != null)
+                {
+                    foreach (var parameter in ResolverConstructorParameters)
+                    {
+                        yield return parameter;
+                    }
+                }
+            }
+        }
     }
 }

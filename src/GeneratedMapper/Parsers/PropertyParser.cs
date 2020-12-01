@@ -22,12 +22,12 @@ namespace GeneratedMapper.Parsers
         private readonly INamedTypeSymbol _mapToAttribute;
         private readonly INamedTypeSymbol _mapFromAttribute;
 
-        private readonly ConstructorParser _constructorParser;
+        private readonly ParameterParser _parameterParser;
         private readonly List<ExtensionMethodInformation> _extensionMethods;
 
         public PropertyParser(
             GeneratorExecutionContext context, 
-            ConstructorParser constructorParser,
+            ParameterParser parameterParser,
             List<ExtensionMethodInformation> extensionMethods)
         {
             _enumerableType = context.Compilation.GetTypeByMetadataName("System.Collections.IEnumerable") ?? throw new InvalidOperationException("Cannot find System.Collections.IEnumerable");
@@ -38,7 +38,7 @@ namespace GeneratedMapper.Parsers
 
             _mapToAttribute = context.Compilation.GetTypeByMetadataName(typeof(MapToAttribute).FullName) ?? throw new InvalidOperationException("Cannot find MapToAttribute");
             _mapFromAttribute = context.Compilation.GetTypeByMetadataName(typeof(MapFromAttribute).FullName) ?? throw new InvalidOperationException("Cannot find MapFromAttribute");
-            _constructorParser = constructorParser;
+            _parameterParser = parameterParser;
             _extensionMethods = extensionMethods;
         }
 
@@ -64,7 +64,7 @@ namespace GeneratedMapper.Parsers
                 {
                     propertyMapping.UsingResolver(resolverType.Name,
                         resolverType.ToDisplayString(),
-                        _constructorParser.ParseConstructorParameters(resolverType));
+                        _parameterParser.ParseConstructorParameters(resolverType));
                 }
 
                 // MapTo / MapFrom on sub property type
@@ -89,19 +89,20 @@ namespace GeneratedMapper.Parsers
 
                 if (mapWithAttribute?.ConstructorArgument<string>(1) is string propertyMethodToCall)
                 {
-                    // TODO: remove this limitation of only accepting methods without parameters?
+                    // TODO: what about calling method on array item? that is a different type
                     if (sourceProperty.Type is INamedTypeSymbol namedSourcePropertyType &&
                         namedSourcePropertyType.GetMembers(propertyMethodToCall)
                             .OfType<IMethodSymbol>()
-                            .Any(x => x.Parameters.Length == 0)) 
+                            .OrderBy(x => x.Parameters.Length)
+                            .FirstOrDefault() is IMethodSymbol sourcePropertyMethod) 
                     {
-                        propertyMapping.UsingMethod(propertyMethodToCall, default);
+                        propertyMapping.UsingMethod(propertyMethodToCall, default, _parameterParser.ParseMethodParameters(sourcePropertyMethod.Parameters));
                     }
                     else if (_extensionMethods.FirstOrDefault(extensionMethod => extensionMethod.MethodName == propertyMethodToCall &&
                         sourceProperty.Type.Equals(extensionMethod.AcceptsType, SymbolEqualityComparer.Default) &&
                         destinationProperty.Type.Equals(extensionMethod.ReturnsType, SymbolEqualityComparer.Default)) is ExtensionMethodInformation extensionMethod)
                     {
-                        propertyMapping.UsingMethod(propertyMethodToCall, extensionMethod.PartOfType.ContainingNamespace.ToDisplayString());
+                        propertyMapping.UsingMethod(propertyMethodToCall, extensionMethod.PartOfType.ContainingNamespace.ToDisplayString(), extensionMethod.Parameters);
                     }
                     else
                     {

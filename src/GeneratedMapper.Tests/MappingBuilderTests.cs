@@ -3,7 +3,6 @@ using GeneratedMapper.Builders;
 using GeneratedMapper.Configurations;
 using GeneratedMapper.Enums;
 using GeneratedMapper.Information;
-using GeneratedMapper.Mappings;
 using Microsoft.CodeAnalysis;
 using Moq;
 using NUnit.Framework;
@@ -491,7 +490,6 @@ namespace Namespace
 ");
         }
 
-
         [Test]
         public void MappingThreePropertiesFromSourceToDestination()
             => DoTest(_mappingInformation,
@@ -563,7 +561,7 @@ namespace Namespace
             => DoTest(_mappingInformation,
                 new[]
                 {
-                    new PropertyMappingInformation(_mappingInformation).MapFrom("Count", false, false).MapTo("Count", false, false).UsingMethod("ToString", default)
+                    new PropertyMappingInformation(_mappingInformation).MapFrom("Count", false, false).MapTo("Count", false, false).UsingMethod("ToString", default, Enumerable.Empty<ParameterInformation>())
                 },
                 @"using System;
 
@@ -592,11 +590,50 @@ namespace Namespace
 ");
 
         [Test]
+        public void MappingPropertyToStringWithArgumentsFromSourceToDestination()
+            => DoTest(_mappingInformation,
+                new[]
+                {
+                    new PropertyMappingInformation(_mappingInformation)
+                        .MapFrom("Count", false, false)
+                        .MapTo("Count", false, false)
+                        .UsingMethod("ToString", "Namespace.Extensions", new [] {
+                            new ParameterInformation("format", "string", "System", false, default)
+                        })
+                },
+                @"using System;
+using Namespace.Extensions;
+
+#nullable enable
+
+namespace Namespace
+{
+    public static partial class SourceMapToExtensions
+    {
+        public static Namespace.Destination MapToDestination(this Namespace.Source self, string format)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
+            }
+            
+            var target = new Namespace.Destination
+            {
+                Count = self.Count.ToString(format),
+            };
+            
+            return target;
+        }
+    }
+}
+");
+
+        [Test]
         public void MappingNullablePropertyToStringFromSourceToDestination()
             => DoTest(_mappingInformation,
                 new[]
                 {
-                    new PropertyMappingInformation(_mappingInformation).MapFrom("Count", true, false).MapTo("Count", false, false).UsingMethod("ToString", default)
+                    new PropertyMappingInformation(_mappingInformation).MapFrom("Count", true, false).MapTo("Count", false, false).UsingMethod("ToString", default, Enumerable.Empty<ParameterInformation>())
                 },
                 @"using System;
 
@@ -632,7 +669,7 @@ namespace Namespace
                     new PropertyMappingInformation(_mappingInformation)
                         .MapFrom("Parameter", false, false)
                         .MapTo("ResolvedParameter", false, false)
-                        .UsingResolver("Resolver", "Namespace.Resolvers.Resolver", Enumerable.Empty<ArgumentInformation>())
+                        .UsingResolver("Resolver", "Namespace.Resolvers.Resolver", Enumerable.Empty<ParameterInformation>())
                 },
                 @"using System;
 
@@ -669,7 +706,7 @@ namespace Namespace
                         .MapFrom("Parameter", false, false)
                         .MapTo("ResolvedParameter", false, false)
                         .UsingResolver("SomeResolver", "Namespace.Resolvers.SomeResolver", new [] {
-                            new ArgumentInformation("randomService", "Namespace.Services.IRandomService", "Namespace.Services", false, default)
+                            new ParameterInformation("randomService", "Namespace.Services.IRandomService", "Namespace.Services", false, default)
                         })
                 },
                 @"using System;
@@ -707,7 +744,7 @@ namespace Namespace
                         .MapFrom("Parameter", false, false)
                         .MapTo("ResolvedParameter", false, false)
                         .UsingResolver("SomeResolver", "Namespace.Resolvers.SomeResolver", new [] {
-                            new ArgumentInformation("randomService", "Namespace.Services.IRandomService?", "Namespace.Services", true, default)
+                            new ParameterInformation("randomService", "Namespace.Services.IRandomService?", "Namespace.Services", true, default)
                         })
                 },
                 @"using System;
@@ -745,13 +782,13 @@ namespace Namespace
                         .MapFrom("Parameter1", false, false)
                         .MapTo("ResolvedParameter1", false, false)
                         .UsingResolver("SomeResolver1", "Namespace.Resolvers1.SomeResolver1", new [] {
-                            new ArgumentInformation("randomService1", "Namespace.Services1.IRandomService1", "Namespace.Services", false, default)
+                            new ParameterInformation("randomService1", "Namespace.Services1.IRandomService1", "Namespace.Services", false, default)
                         }),
                     new PropertyMappingInformation(_mappingInformation)
                         .MapFrom("Parameter2", false, false)
                         .MapTo("ResolvedParameter2", false, false)
                         .UsingResolver("SomeResolver2", "Namespace.Resolvers2.SomeResolver2", new [] {
-                            new ArgumentInformation("randomService2", "Namespace.Services2.IRandomService2", "Namespace.Services", false, default)
+                            new ParameterInformation("randomService2", "Namespace.Services2.IRandomService2", "Namespace.Services", false, default)
                         })
                 },
                 @"using System;
@@ -792,13 +829,13 @@ namespace Namespace
                         .MapFrom("Parameter1", false, false)
                         .MapTo("ResolvedParameter1", false, false)
                         .UsingResolver("SomeResolver", "Namespace.Resolvers.SomeResolver", new [] {
-                            new ArgumentInformation("randomService", "Namespace.Services.IRandomService", "Namespace.Services", false, default)
+                            new ParameterInformation("randomService", "Namespace.Services.IRandomService", "Namespace.Services", false, default)
                         }),
                     new PropertyMappingInformation(_mappingInformation)
                         .MapFrom("Parameter2", false, false)
                         .MapTo("ResolvedParameter2", false, false)
                         .UsingResolver("SomeResolver", "Namespace.Resolvers.SomeResolver", new [] {
-                            new ArgumentInformation("randomService", "Namespace.Services.IRandomService", "Namespace.Services", false, default)
+                            new ParameterInformation("randomService", "Namespace.Services.IRandomService", "Namespace.Services", false, default)
                         })
                 },
                 @"using System;
@@ -837,7 +874,7 @@ namespace Namespace
                         .MapFrom("Collection", false, false)
                         .MapTo("Collection", false, false)
                         .AsCollection(DestinationCollectionType.List, "Namespace.Collections.CollectionItem")
-                        .UsingMethod("ToItem", "Namespace.Collections")
+                        .UsingMethod("ToItem", "Namespace.Collections", Enumerable.Empty<ParameterInformation>())
                 },
                 @"using System;
 using System.Linq;
@@ -950,11 +987,11 @@ namespace Namespace
                         .MapFrom("Collection", true, false)
                         .MapTo("Collection", false, false)
                         .AsCollection(DestinationCollectionType.Array, "Namespace.Collections.CollectionItem")
-                        .UsingMethod("MapToCollectionItem", "Namespace.Collections")
+                        .UsingMethod("MapToCollectionItem", "Namespace.Collections", Enumerable.Empty<ParameterInformation>())
                 },
                 @"using System;
 using System.Linq;
-using Namespace.Collections;'
+using Namespace.Collections;
 
 #nullable enable
 
@@ -990,7 +1027,7 @@ namespace Namespace
                         .MapTo("Collection", false, false)
                         .AsCollection(DestinationCollectionType.Array, "Namespace.Collections.CollectionItem")
                         .UsingResolver("CollectionResolver", "Namespace.Resolvers.CollectionResolver", new [] {
-                            new ArgumentInformation("cultureInfo", "System.Globalization.CultureInfo", "System.Globalization", false, "CultureInfo.InvariantCulture")
+                            new ParameterInformation("cultureInfo", "System.Globalization.CultureInfo", "System.Globalization", false, "CultureInfo.InvariantCulture")
                         })
                 },
                 @"using System;
@@ -1265,7 +1302,7 @@ namespace Namespace
                                 .MapTo("Name", false, false)
                                 .UsingResolver("SomeResolver", "Namespace.Resolvers.SomeResolver", new[]
                                 {
-                                    new ArgumentInformation("cultureInfo", "System.Globalization.CultureInfo", "System.Globalization", false, "CultureInfo.InvariantCulture")
+                                    new ParameterInformation("cultureInfo", "System.Globalization.CultureInfo", "System.Globalization", false, "CultureInfo.InvariantCulture")
                                 })))
                 },
                 @"using System;
@@ -1314,7 +1351,7 @@ namespace Namespace
                                 .MapTo("Name", false, false)
                                 .UsingResolver("SomeResolver", "Namespace.Resolvers.SomeResolver", new[]
                                 {
-                                    new ArgumentInformation("cultureInfo", "System.Globalization.CultureInfo?", "System.Globalization", true, "CultureInfo.InvariantCulture")
+                                    new ParameterInformation("cultureInfo", "System.Globalization.CultureInfo?", "System.Globalization", true, "CultureInfo.InvariantCulture")
                                 })))
                 },
                 @"using System;
@@ -1364,7 +1401,7 @@ namespace Namespace
                                 .MapTo("Name", false, false)
                                 .UsingResolver("SomeResolver", "Namespace.Resolvers.SomeResolver", new[]
                                 {
-                                    new ArgumentInformation("cultureInfo", "System.Globalization.CultureInfo", "System.Globalization", false, "CultureInfo.InvariantCulture")
+                                    new ParameterInformation("cultureInfo", "System.Globalization.CultureInfo", "System.Globalization", false, "CultureInfo.InvariantCulture")
                                 })))
                 },
                 @"using System;
@@ -1415,16 +1452,16 @@ namespace Namespace
                                 .MapTo("Name1", false, false)
                                 .UsingResolver("SomeResolver", "Namespace.Resolvers.SomeResolver", new[]
                                 {
-                                    new ArgumentInformation("someInt", "int", "System", false, default),
-                                    new ArgumentInformation("cultureInfo", "System.Globalization.CultureInfo", "System.Globalization", false, "CultureInfo.InvariantCulture"),
+                                    new ParameterInformation("someInt", "int", "System", false, default),
+                                    new ParameterInformation("cultureInfo", "System.Globalization.CultureInfo", "System.Globalization", false, "CultureInfo.InvariantCulture"),
                                 }))
                             .AddProperty(new PropertyMappingInformation(_mappingInformation)
                                 .MapFrom("Name2", false, false)
                                 .MapTo("Name2", false, false)
                                 .UsingResolver("SomeResolver", "Namespace.Resolvers.SomeResolver", new[]
                                 {
-                                    new ArgumentInformation("someInt", "int", "System", false, default),
-                                    new ArgumentInformation("cultureInfo", "System.Globalization.CultureInfo", "System.Globalization", false, "CultureInfo.InvariantCulture")
+                                    new ParameterInformation("someInt", "int", "System", false, default),
+                                    new ParameterInformation("cultureInfo", "System.Globalization.CultureInfo", "System.Globalization", false, "CultureInfo.InvariantCulture")
                                 })))
                 },
                 @"using System;
@@ -1505,7 +1542,7 @@ namespace Namespace
                         .MapTo("Date", false, false)
                         .UsingResolver("DateTimeResolver", "Namespace.Resolvers.DateTimeResolver", new []
                         {
-                            new ArgumentInformation("cultureInfo", "System.Globalization.CultureInfo", "System.Globalization", false, default)
+                            new ParameterInformation("cultureInfo", "System.Globalization.CultureInfo", "System.Globalization", false, default)
                         }),
                     new PropertyMappingInformation(_mappingInformation)
                         .MapFrom("NestedSource", true, false)
@@ -1553,7 +1590,7 @@ namespace Namespace
                         .MapFrom("Property", true, false)
                         .MapTo("Property", false, false)
                         .UsingResolver("Resolver", "Namespace.Resolvers.Resolver", new [] {
-                            new ArgumentInformation("argument", "double?", "System", true, null)
+                            new ParameterInformation("argument", "double?", "System", true, null)
                         }),
                     new PropertyMappingInformation(_mappingInformation)
                         .MapFrom("NestedSource", true, false)
@@ -1596,8 +1633,7 @@ namespace Namespace
         public void MappingUsingDeepMapperWithNullableArguments()
         {
             // source -> subsource -> subsubsource
-            // 
-
+            
             // subsubsource
             var subSubNamespace = new Mock<INamespaceSymbol>();
             subSubNamespace.Setup(x => x.Name).Returns("Sub");
@@ -1622,9 +1658,16 @@ namespace Namespace
                 .MapTo("SubSubDestinationProperty", false, false)
                 .UsingResolver("SubSubResolver", "Namespace.Sub.Sub.Resolvers.SubSubResolver", new[]
                 {
-                    new ArgumentInformation("argument", "Namespace.Sub.Sub.Resolvers.Types.SubSubType", "Namespace.Sub.Sub.Resolvers.Types", false, default)
+                    new ParameterInformation("argument", "Namespace.Sub.Sub.Resolvers.Types.SubSubType", "Namespace.Sub.Sub.Resolvers.Types", false, default)
                 }));
 
+            subSubSourceMapping.AddProperty(new PropertyMappingInformation(subSubSourceMapping)
+                .MapFrom("SubSubSourceProperty2", false, false)
+                .MapTo("SubSubDestinationProperty2", false, false)
+                .UsingMethod("ToString", "System", new[]
+                {
+                    new ParameterInformation("format", "string", "System", false, default)
+                }));
 
             // subsource
             var subNamespace = new Mock<INamespaceSymbol>();
@@ -1650,7 +1693,15 @@ namespace Namespace
                 .MapTo("SubDestinationProperty", false, false)
                 .UsingResolver("SubResolver", "Namespace.Sub.Resolvers.SubResolver", new[]
                 {
-                    new ArgumentInformation("argument", "Namespace.Sub.Resolvers.Types.SubType", "Namespace.Sub.Resolvers.Types", false, default)
+                    new ParameterInformation("argument", "Namespace.Sub.Resolvers.Types.SubType", "Namespace.Sub.Resolvers.Types", false, default)
+                }));
+
+            subSourceMapping.AddProperty(new PropertyMappingInformation(subSourceMapping)
+                .MapFrom("SubSourceProperty2", false, false)
+                .MapTo("SubDestinationProperty2", false, false)
+                .UsingMethod("ToString", "System", new[]
+                {
+                    new ParameterInformation("format", "string", "System", false, default)
                 }));
 
             subSourceMapping.AddProperty(new PropertyMappingInformation(subSourceMapping)
@@ -1659,7 +1710,6 @@ namespace Namespace
                 .UsingMapper(subSubSourceType.Object, subSubDestinationType.Object)
                 .SetMappingInformation(subSubSourceMapping)); 
             
-
             // source
             var @namespace = new Mock<INamespaceSymbol>();
             @namespace.Setup(x => x.Name).Returns("Namespace");
@@ -1684,7 +1734,15 @@ namespace Namespace
                 .MapTo("DestinationProperty", false, false)
                 .UsingResolver("Resolver", "Namespace.Resolvers.Resolver", new[]
                 {
-                    new ArgumentInformation("argument", "Namespace.Resolvers.Types.Type", "Namespace.Resolvers.Types", false, default)
+                    new ParameterInformation("argument", "Namespace.Resolvers.Types.Type", "Namespace.Resolvers.Types", false, default)
+                }));
+
+            sourceMapping.AddProperty(new PropertyMappingInformation(sourceMapping)
+                .MapFrom("SourceProperty2", false, false)
+                .MapTo("DestinationProperty2", false, false)
+                .UsingMethod("ToString", "System", new[]
+                {
+                    new ParameterInformation("format", "string", "System", false, default)
                 }));
 
             sourceMapping.AddProperty(new PropertyMappingInformation(sourceMapping)
@@ -1705,7 +1763,7 @@ namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Namespace.Destination MapToDestination(this Namespace.Source self, Namespace.Resolvers.Types.Type resolverArgument, Namespace.Sub.Resolvers.Types.SubType subResolverArgument, Namespace.Sub.Sub.Resolvers.Types.SubSubType subSubResolverArgument)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self, Namespace.Resolvers.Types.Type resolverArgument, string format, Namespace.Sub.Resolvers.Types.SubType subResolverArgument, Namespace.Sub.Sub.Resolvers.Types.SubSubType subSubResolverArgument)
         {
             if (self is null)
             {
@@ -1717,7 +1775,8 @@ namespace Namespace
             var target = new Namespace.Destination
             {
                 DestinationProperty = resolver.Resolve(self.SourceProperty),
-                SubDestination = self.SubSource.MapToSubDestination(subResolverArgument, subSubResolverArgument),
+                DestinationProperty2 = self.SourceProperty2.ToString(format),
+                SubDestination = self.SubSource.MapToSubDestination(subResolverArgument, format, subSubResolverArgument),
             };
             
             return target;

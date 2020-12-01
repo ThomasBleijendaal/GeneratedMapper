@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
 
 namespace GeneratedMapper.Information
 {
@@ -26,6 +27,15 @@ namespace GeneratedMapper.Information
         public ExtensionMethodInformation Returns(ITypeSymbol type)
         {
             ReturnsType = type;
+
+            return this;
+        }
+
+        public IEnumerable<ParameterInformation> Parameters { get; private set; } = default!;
+
+        public ExtensionMethodInformation HasParameters(IEnumerable<ParameterInformation> parameters)
+        {
+            Parameters = parameters;
 
             return this;
         }

@@ -66,7 +66,7 @@ namespace GeneratedMapper.Builders
             indentWriter.Indent++;
 
             var mapArguments = new[] { $"this {_information.SourceType.ToDisplayString()} {SourceInstanceName}" }
-                .Union(_propertyMappingBuilders.SelectMany(x => x.MapArgumentsRequired().Select(x => x.ToMethodParameter(""))).Distinct());
+                .Union(_propertyMappingBuilders.SelectMany(x => x.MapArgumentsRequired().Select(x => x.ToMethodParameter(string.Empty))).Distinct());
 
             indentWriter.WriteLine($"public static {_information.DestinationType.ToDisplayString()} MapTo{_information.DestinationType.Name}({string.Join(", ", mapArguments)})");
             indentWriter.WriteLine("{");
