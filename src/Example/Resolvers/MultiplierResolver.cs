@@ -1,14 +1,16 @@
-﻿namespace Example.Resolvers
+﻿using System.Linq;
+
+namespace Example.Resolvers
 {
     public class MultiplierResolver
     {
-        private readonly double _multiplier;
+        private readonly double[] _multipliers;
 
-        public MultiplierResolver(double multiplier = 1234.5678)
+        public MultiplierResolver(double[]? multipliers)
         {
-            _multiplier = multiplier;
+            _multipliers = multipliers ?? new[] { 1.0 };
         }
 
-        public double Resolve(double nr) => nr * _multiplier;
+        public double Resolve(double nr) => nr * (_multipliers.Sum());
     }
 }

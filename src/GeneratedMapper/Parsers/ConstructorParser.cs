@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using GeneratedMapper.Exceptions;
+using GeneratedMapper.Helpers;
 using GeneratedMapper.Mappings;
 using Microsoft.CodeAnalysis;
 
@@ -43,10 +45,14 @@ namespace GeneratedMapper.Parsers
                         }
                     }
 
+                    var @namespace = parameter.Type is IArrayTypeSymbol arrayParameter
+                        ? arrayParameter.ElementType.ContainingNamespace.ToDisplayString()
+                        : parameter.Type.ContainingNamespace.ToDisplayString();
+
                     constructorArguments.Add(new ArgumentInformation(
                         parameter.Name,
                         parameter.Type.ToDisplayString(),
-                        parameter.Type.ContainingNamespace.ToDisplayString(),
+                        @namespace,
                         parameter.NullableAnnotation == NullableAnnotation.Annotated,
                         defaultValueString));
                 }
