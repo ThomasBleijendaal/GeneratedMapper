@@ -54,6 +54,7 @@ namespace GeneratedMapper.Parsers
 
                 mappingInformation.MapFrom(sourceType).MapTo(destinationType);
 
+                // TODO: flag exclusions that are not found in target
                 var destinationPropertyExclusions = TargetPropertiesToIgnore(attributedType, mappingInformation.AttributeIndex);
 
                 var targetProperties = targetType!

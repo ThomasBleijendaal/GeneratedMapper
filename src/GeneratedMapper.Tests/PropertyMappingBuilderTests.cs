@@ -98,28 +98,28 @@ namespace GeneratedMapper.Tests
         public void NotNullableValueTypeToNotNullableValueType() => DoTest(true, new PropertyMappingInformation(_mappingInformation).MapFrom("x", false, true).MapTo("x", false, true));
 
         [Test]
-        public void SimpleMapperAsCollection() => DoTest(true, new PropertyMappingInformation(_mappingInformation).MapFrom("x", false, false).MapTo("x", false, false).AsCollection(DestinationCollectionType.Array, "x", "x"));
+        public void SimpleMapperAsCollection() => DoTest(true, new PropertyMappingInformation(_mappingInformation).MapFrom("x", false, false).MapTo("x", false, false).AsCollection(DestinationCollectionType.Array, "x"));
         
         [Test]
-        public void NotNullableToNullableAsCollection() => DoTest(true, new PropertyMappingInformation(_mappingInformation).MapFrom("x", false, false).MapTo("x", true, false).AsCollection(DestinationCollectionType.Array, "x", "x"));
+        public void NotNullableToNullableAsCollection() => DoTest(true, new PropertyMappingInformation(_mappingInformation).MapFrom("x", false, false).MapTo("x", true, false).AsCollection(DestinationCollectionType.Array, "x"));
         
         [Test]
-        public void NullableToNotNullableAsCollection() => DoTest(true, new PropertyMappingInformation(_mappingInformation).MapFrom("x", true, false).MapTo("x", false, false).AsCollection(DestinationCollectionType.Array, "x", "x"));
+        public void NullableToNotNullableAsCollection() => DoTest(true, new PropertyMappingInformation(_mappingInformation).MapFrom("x", true, false).MapTo("x", false, false).AsCollection(DestinationCollectionType.Array, "x"));
         
         [Test]
-        public void NullableToNullableAsCollection() => DoTest(true, new PropertyMappingInformation(_mappingInformation).MapFrom("x", true, false).MapTo("x", true, false).AsCollection(DestinationCollectionType.Array, "x", "x"));
+        public void NullableToNullableAsCollection() => DoTest(true, new PropertyMappingInformation(_mappingInformation).MapFrom("x", true, false).MapTo("x", true, false).AsCollection(DestinationCollectionType.Array, "x"));
 
         [Test]
-        public void ValidBaseAsCollectionWithoutMapping() => DoTest(true, _validBase.AsCollection(DestinationCollectionType.Array, "x", "x"));
+        public void ValidBaseAsCollectionWithoutMapping() => DoTest(true, _validBase.AsCollection(DestinationCollectionType.Array, "x"));
         
         [Test]
-        public void ValidBaseAsCollectionUsingMapper() => DoTest(true, _validBase.AsCollection(DestinationCollectionType.Array, "x", "x").UsingMapper(_nestedSourceType.Object, _nestedDestinationType.Object).SetMappingInformation(_nestedMappingInformation));
+        public void ValidBaseAsCollectionUsingMapper() => DoTest(true, _validBase.AsCollection(DestinationCollectionType.Array, "x").UsingMapper(_nestedSourceType.Object, _nestedDestinationType.Object).SetMappingInformation(_nestedMappingInformation));
         
         [Test]
-        public void ValidBaseAsCollectionUsingMethod() => DoTest(true, _validBase.AsCollection(DestinationCollectionType.Array, "x", "x").UsingMethod("x", "x"));
+        public void ValidBaseAsCollectionUsingMethod() => DoTest(true, _validBase.AsCollection(DestinationCollectionType.Array, "x").UsingMethod("x", "x"));
         
         [Test]
-        public void ValidBaseAsCollectionUsingResolver() => DoTest(true, _validBase.AsCollection(DestinationCollectionType.Array, "x", "x").UsingResolver("x", "x", Enumerable.Empty<MethodInformation>()));
+        public void ValidBaseAsCollectionUsingResolver() => DoTest(true, _validBase.AsCollection(DestinationCollectionType.Array, "x").UsingResolver("x", "x", Enumerable.Empty<ArgumentInformation>()));
 
         [Test]
         public void ValidBaseUsingMapperWithoutMappingInformation() => DoTest(false, _validBase.UsingMapper(_nestedSourceType.Object, _nestedDestinationType.Object));
@@ -128,7 +128,7 @@ namespace GeneratedMapper.Tests
         public void ValidBaseUsingMapperWithMappingInformation() => DoTest(true, _validBase.UsingMapper(_nestedSourceType.Object, _nestedDestinationType.Object).SetMappingInformation(_nestedMappingInformation));
 
         [Test]
-        public void ValidBaseUsingResolver() => DoTest(true, _validBase.UsingResolver("x", "x", Enumerable.Empty<MethodInformation>()));
+        public void ValidBaseUsingResolver() => DoTest(true, _validBase.UsingResolver("x", "x", Enumerable.Empty<ArgumentInformation>()));
         
         [Test]
         public void ValidBaseUsingMethodWithoutNamespace() => DoTest(true, _validBase.UsingMethod("x", default));
@@ -137,10 +137,10 @@ namespace GeneratedMapper.Tests
         public void ValidBaseUsingMethodWithNamespace() => DoTest(true, _validBase.UsingMethod("x", "x"));
 
         [Test]
-        public void ValidBaseUsingResolverWithoutConstructorParametersAndUsingMethod() => DoTest(false, _validBase.UsingResolver("x", "x", Enumerable.Empty<MethodInformation>()).UsingMethod("x", "x"));
+        public void ValidBaseUsingResolverWithoutConstructorParametersAndUsingMethod() => DoTest(false, _validBase.UsingResolver("x", "x", Enumerable.Empty<ArgumentInformation>()).UsingMethod("x", "x"));
         
         [Test]
-        public void ValidBaseUsingResolverWithConstructorParametersAndUsingMapperWithMappingInformation() => DoTest(false, _validBase.UsingResolver("x", "x", Enumerable.Empty<MethodInformation>()).UsingMapper(_nestedSourceType.Object, _nestedDestinationType.Object).SetMappingInformation(_nestedMappingInformation));
+        public void ValidBaseUsingResolverWithConstructorParametersAndUsingMapperWithMappingInformation() => DoTest(false, _validBase.UsingResolver("x", "x", Enumerable.Empty<ArgumentInformation>()).UsingMapper(_nestedSourceType.Object, _nestedDestinationType.Object).SetMappingInformation(_nestedMappingInformation));
         
         [Test]
         public void ValidBaseUsingMethodAndUsingMapperWithMappingInformation() => DoTest(false, _validBase.UsingMethod("x", "x").UsingMapper(_nestedSourceType.Object, _nestedDestinationType.Object).SetMappingInformation(_nestedMappingInformation));

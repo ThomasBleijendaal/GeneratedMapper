@@ -7,9 +7,9 @@ namespace Example.Resolvers
     {
         private readonly CultureInfo _cultureInfo;
 
-        public DateResolver(CultureInfo cultureInfo)
+        public DateResolver(CultureInfo? cultureInfo)
         {
-            _cultureInfo = cultureInfo;
+            _cultureInfo = cultureInfo ?? CultureInfo.InvariantCulture;
         }
 
         public string Resolve(DateTime date) => date.ToString(_cultureInfo);

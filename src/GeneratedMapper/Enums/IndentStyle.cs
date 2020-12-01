@@ -1,8 +1,8 @@
-﻿namespace GeneratedMapper.Configurations
+﻿namespace GeneratedMapper.Enums
 {
     public enum IndentStyle
     {
-        Tab, 
+        Tab,
         Space
     }
 }

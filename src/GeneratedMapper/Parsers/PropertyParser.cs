@@ -63,7 +63,7 @@ namespace GeneratedMapper.Parsers
                 if (mapWithAttribute is not null && GetMapWithResolverType(mapWithAttribute) is INamedTypeSymbol resolverType)
                 {
                     propertyMapping.UsingResolver(resolverType.Name,
-                        resolverType.ContainingNamespace.ToDisplayString(),
+                        resolverType.ToDisplayString(),
                         _constructorParser.ParseConstructorParameters(resolverType));
                 }
 
@@ -105,7 +105,7 @@ namespace GeneratedMapper.Parsers
                     }
                     else
                     {
-                        throw new ParseException(DiagnosticsHelper.CannotFindMethod(mappingInformation.AttributeData, mappingInformation.SourceType.Name, sourceProperty.Name!, propertyMethodToCall));
+                        throw new ParseException(DiagnosticsHelper.CannotFindMethod(mappingInformation.AttributeData, mappingInformation.SourceType.ToDisplayString(), sourceProperty.Name!, propertyMethodToCall));
                     }
                 }
             }
@@ -188,8 +188,7 @@ namespace GeneratedMapper.Parsers
             {
                 propertyMapping.AsCollection(
                     listType, 
-                    destinationCollectionItemType.GetFullTypeName(), 
-                    destinationCollectionItemType.ContainingNamespace.ToDisplayString());
+                    destinationCollectionItemType.ToDisplayString());
             }
         }
     }

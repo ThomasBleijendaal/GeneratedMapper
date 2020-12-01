@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using GeneratedMapper.Configurations;
+using GeneratedMapper.Enums;
 using GeneratedMapper.Extensions;
 using GeneratedMapper.Information;
 using Microsoft.CodeAnalysis.Text;
@@ -31,11 +31,6 @@ namespace GeneratedMapper.Builders
                 _information.ConfigurationValues.IndentStyle == IndentStyle.Tab ? "\t" : new string(' ', (int)_information.ConfigurationValues.IndentSize));
 
             var usingStatements = new List<string>();
-
-            if (!_information.DestinationType.ContainingNamespace.IsGlobalNamespace)
-            {
-                usingStatements.Add($"using {_information.DestinationType.ContainingNamespace.ToDisplayString()};");
-            }
 
             usingStatements.AddRange(_propertyMappingBuilders
                 .SelectMany(map => map.NamespacesUsed())
@@ -70,10 +65,10 @@ namespace GeneratedMapper.Builders
             indentWriter.WriteLine("{");
             indentWriter.Indent++;
 
-            var mapArguments = new[] { $"this {_information.SourceType.GetFullTypeName()} {SourceInstanceName}" }
+            var mapArguments = new[] { $"this {_information.SourceType.ToDisplayString()} {SourceInstanceName}" }
                 .Union(_propertyMappingBuilders.SelectMany(x => x.MapArgumentsRequired().Select(x => x.ToMethodParameter(""))).Distinct());
 
-            indentWriter.WriteLine($"public static {_information.DestinationType.GetFullTypeName()} MapTo{_information.DestinationType.Name}({string.Join(", ", mapArguments)})");
+            indentWriter.WriteLine($"public static {_information.DestinationType.ToDisplayString()} MapTo{_information.DestinationType.Name}({string.Join(", ", mapArguments)})");
             indentWriter.WriteLine("{");
             indentWriter.Indent++;
 
@@ -82,7 +77,7 @@ namespace GeneratedMapper.Builders
                 indentWriter.WriteLine($"if ({SourceInstanceName} is null)");
                 indentWriter.WriteLine("{");
                 indentWriter.Indent++;
-                indentWriter.WriteLine("throw new ArgumentNullException(nameof(self));");
+                indentWriter.WriteLine($@"throw new ArgumentNullException(nameof(self), ""{_information.SourceType.ToDisplayString()} -> {_information.DestinationType.ToDisplayString()}: Source is null."");");
                 indentWriter.Indent--;
                 indentWriter.WriteLine("}");
                 indentWriter.WriteLine();
@@ -90,7 +85,7 @@ namespace GeneratedMapper.Builders
 
             indentWriter.WriteLines(WriteMappingCode(map => map.PreConstructionInitialization()), true);
 
-            indentWriter.WriteLine($"var {TargetInstanceName} = new {_information.DestinationType.GetFullTypeName()}");
+            indentWriter.WriteLine($"var {TargetInstanceName} = new {_information.DestinationType.ToDisplayString()}");
             indentWriter.WriteLine("{");
             indentWriter.Indent++;
 

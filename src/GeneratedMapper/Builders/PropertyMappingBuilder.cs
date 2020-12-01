@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using GeneratedMapper.Enums;
+using GeneratedMapper.Extensions;
 using GeneratedMapper.Information;
 using GeneratedMapper.Mappings;
 
@@ -25,7 +26,7 @@ namespace GeneratedMapper.Builders
 
             // only really throw when destination property can't handle a null
             var throwWhenNull = _information.BelongsToMapping.ConfigurationValues.Customizations.ThrowWhenNotNullablePropertyIsNull && sourceCanBeNull && !destinationCanHandleNull
-                ? $@" ?? throw new Exception(""{_information.BelongsToMapping.SourceType.Name} -> {_information.BelongsToMapping.DestinationType.Name}: Property '{_information.SourcePropertyName}' is null."")"
+                ? $@" ?? throw new Exception(""{_information.BelongsToMapping.SourceType.ToDisplayString()} -> {_information.BelongsToMapping.DestinationType.ToDisplayString()}: Property '{_information.SourcePropertyName}' is null."")"
                 : string.Empty;
 
             if (_information.CollectionType != null)
@@ -92,7 +93,7 @@ namespace GeneratedMapper.Builders
 
         public IEnumerable<string> NamespacesUsed() => _information.NamespacesUsed;
 
-        public IEnumerable<MethodInformation> MapArgumentsRequired() => _information.MapArgumentsRequired;
+        public IEnumerable<ArgumentInformation> MapArgumentsRequired() => _information.MapArgumentsRequired;
 
         private string GetResolverArguments()
         {

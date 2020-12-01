@@ -1,4 +1,5 @@
 ﻿using System;
+using GeneratedMapper.Enums;
 using Microsoft.CodeAnalysis;
 
 namespace GeneratedMapper.Configurations
@@ -21,12 +22,8 @@ namespace GeneratedMapper.Configurations
         {
             var options = context.AnalyzerConfigOptions.GetOptions(tree);
 
-            IndentStyle = options.TryGetValue(IndentStyleKey, out var indentStyle) ?
-                (Enum.TryParse<IndentStyle>(indentStyle, out var indentStyleValue) ? indentStyleValue : IndentStyleDefaultValue) :
-                IndentStyleDefaultValue;
-            IndentSize = options.TryGetValue(IndentSizeKey, out var indentSize) ?
-                (uint.TryParse(indentSize, out var indentSizeValue) ? indentSizeValue : IndentSizeDefaultValue) :
-                IndentSizeDefaultValue;
+            IndentStyle = options.TryGetValue(IndentStyleKey, out var indentStyle) && Enum.TryParse<IndentStyle>(indentStyle, out var indentStyleValue) ? indentStyleValue : IndentStyleDefaultValue;
+            IndentSize = options.TryGetValue(IndentSizeKey, out var indentSize) && uint.TryParse(indentSize, out var indentSizeValue) ? indentSizeValue : IndentSizeDefaultValue;
 
             Customizations = customizations;
         }

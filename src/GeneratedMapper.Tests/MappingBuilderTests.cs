@@ -39,22 +39,28 @@ namespace GeneratedMapper.Tests
             namespaceOfNestedTypes.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace.Nested");
 
             _sourceType.Setup(x => x.Name).Returns("Source");
+            _sourceType.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace.Source");
             _sourceType.Setup(x => x.ContainingNamespace).Returns(@namespace.Object);
             _destinationType.Setup(x => x.Name).Returns("Destination");
+            _destinationType.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace.Destination");
             _destinationType.Setup(x => x.ContainingNamespace).Returns(@namespace.Object);
 
             _nestedSourceType.Setup(x => x.Name).Returns("SourceObject");
             _nestedSourceType.Setup(x => x.ContainingNamespace).Returns(namespaceOfNestedTypes.Object);
+            _nestedSourceType.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace.SourceObject");
             _nestedDestinationType.Setup(x => x.Name).Returns("DestinationObject");
             _nestedDestinationType.Setup(x => x.ContainingNamespace).Returns(namespaceOfNestedTypes.Object);
+            _nestedDestinationType.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace.DestinationObject");
 
             _containedSourceType.Setup(x => x.Name).Returns("SubSource");
             _containedSourceType.Setup(x => x.ContainingNamespace).Returns(@namespace.Object);
             _containedSourceType.Setup(x => x.ContainingType).Returns(_sourceType.Object);
+            _containedSourceType.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace.Source.SubSource");
 
             _containedDestinationType.Setup(x => x.Name).Returns("SubDestination");
             _containedDestinationType.Setup(x => x.ContainingNamespace).Returns(@namespace.Object);
             _containedDestinationType.Setup(x => x.ContainingType).Returns(_destinationType.Object);
+            _containedDestinationType.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace.Destination.SubDestination");
 
             _mappingInformation = new MappingInformation(_attributeData.Object, _values)
                 .MapFrom(_sourceType.Object)
@@ -81,20 +87,19 @@ namespace GeneratedMapper.Tests
                     new PropertyMappingInformation(_mappingInformation).MapFrom("Name", false, false).MapTo("Name", false, false)
                 },
                 @"using System;
-using Namespace;
 
 namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
                 Name = self.Name,
             };
@@ -126,20 +131,19 @@ namespace Namespace
                 @"using System;
 using Hard.To.Recognize.Namespace;
 using Hidden.Namespace;
-using Namespace;
 
 namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
                 Name = self.Name,
             };
@@ -169,22 +173,21 @@ namespace Namespace
                     new PropertyMappingInformation(mappingInformation).MapFrom("Name", true, false).MapTo("Name", false, false)
                 },
                 @"using System;
-using Namespace;
 
 namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
-                Name = self.Name ?? throw new Exception(""Source -> Destination: Property 'Name' is null.""),
+                Name = self.Name ?? throw new Exception(""Namespace.Source -> Namespace.Destination: Property 'Name' is null.""),
             };
             
             return target;
@@ -212,20 +215,19 @@ namespace Namespace
                     new PropertyMappingInformation(mappingInformation).MapFrom("Name", true, false).MapTo("Name", true, false)
                 },
                 @"using System;
-using Namespace;
 
 namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
                 Name = self.Name,
             };
@@ -255,20 +257,19 @@ namespace Namespace
                     new PropertyMappingInformation(mappingInformation).MapFrom("Name", false, false).MapTo("Name", true, false)
                 },
                 @"using System;
-using Namespace;
 
 namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
                 Name = self.Name,
             };
@@ -298,22 +299,21 @@ namespace Namespace
                     new PropertyMappingInformation(mappingInformation).MapFrom("Name", false, false).MapTo("Name", false, false)
                 },
                 @"using System;
-using Namespace;
 
 namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
-                Name = self.Name ?? throw new Exception(""Source -> Destination: Property 'Name' is null.""),
+                Name = self.Name ?? throw new Exception(""Namespace.Source -> Namespace.Destination: Property 'Name' is null.""),
             };
             
             return target;
@@ -322,7 +322,6 @@ namespace Namespace
 }
 ");
         }
-
 
         [Test]
         public void MappingSingleNullableValueTypePropertyFromSourceToDestinationWithThrowIfNullOnNotNullableValueTypeProperty()
@@ -342,22 +341,21 @@ namespace Namespace
                     new PropertyMappingInformation(mappingInformation).MapFrom("Name", true, true).MapTo("Name", false, true)
                 },
                 @"using System;
-using Namespace;
 
 namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
-                Name = self.Name ?? throw new Exception(""Source -> Destination: Property 'Name' is null.""),
+                Name = self.Name ?? throw new Exception(""Namespace.Source -> Namespace.Destination: Property 'Name' is null.""),
             };
             
             return target;
@@ -385,20 +383,19 @@ namespace Namespace
                     new PropertyMappingInformation(mappingInformation).MapFrom("Name", true, true).MapTo("Name", true, true)
                 },
                 @"using System;
-using Namespace;
 
 namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
                 Name = self.Name,
             };
@@ -428,20 +425,19 @@ namespace Namespace
                     new PropertyMappingInformation(mappingInformation).MapFrom("Name", false, true).MapTo("Name", true, true)
                 },
                 @"using System;
-using Namespace;
 
 namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
                 Name = self.Name,
             };
@@ -471,20 +467,19 @@ namespace Namespace
                     new PropertyMappingInformation(mappingInformation).MapFrom("Name", false, true).MapTo("Name", false, true)
                 },
                 @"using System;
-using Namespace;
 
 namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
                 Name = self.Name,
             };
@@ -507,20 +502,19 @@ namespace Namespace
                     new PropertyMappingInformation(_mappingInformation).MapFrom("Content", false, false).MapTo("Content", false, false)
                 },
                 @"using System;
-using Namespace;
 
 namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
                 Name = self.Name,
                 Title = self.Title,
@@ -541,20 +535,19 @@ namespace Namespace
                     new PropertyMappingInformation(_mappingInformation).MapFrom("Name", false, false).MapTo("Nom", false, false)
                 },
                 @"using System;
-using Namespace;
 
 namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
                 Nom = self.Name,
             };
@@ -573,7 +566,6 @@ namespace Namespace
                     new PropertyMappingInformation(_mappingInformation).MapFrom("Count", false, false).MapTo("Count", false, false).UsingMethod("ToString", default)
                 },
                 @"using System;
-using Namespace;
 
 #nullable enable
 
@@ -581,14 +573,14 @@ namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
                 Count = self.Count.ToString(),
             };
@@ -607,7 +599,6 @@ namespace Namespace
                     new PropertyMappingInformation(_mappingInformation).MapFrom("Count", true, false).MapTo("Count", false, false).UsingMethod("ToString", default)
                 },
                 @"using System;
-using Namespace;
 
 #nullable enable
 
@@ -615,14 +606,14 @@ namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
                 Count = self.Count?.ToString(),
             };
@@ -638,26 +629,27 @@ namespace Namespace
             => DoTest(_mappingInformation,
                 new[]
                 {
-                    new PropertyMappingInformation(_mappingInformation).MapFrom("Parameter", false, false).MapTo("ResolvedParameter", false, false).UsingResolver("Resolver", "Namespace.Resolvers", Enumerable.Empty<MethodInformation>())
+                    new PropertyMappingInformation(_mappingInformation)
+                        .MapFrom("Parameter", false, false)
+                        .MapTo("ResolvedParameter", false, false)
+                        .UsingResolver("Resolver", "Namespace.Resolvers.Resolver", Enumerable.Empty<ArgumentInformation>())
                 },
                 @"using System;
-using Namespace;
-using Namespace.Resolvers;
 
 namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var resolver = new Resolver();
+            var resolver = new Namespace.Resolvers.Resolver();
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
                 ResolvedParameter = resolver.Resolve(self.Parameter),
             };
@@ -676,29 +668,26 @@ namespace Namespace
                     new PropertyMappingInformation(_mappingInformation)
                         .MapFrom("Parameter", false, false)
                         .MapTo("ResolvedParameter", false, false)
-                        .UsingResolver("SomeResolver", "Namespace.Resolvers", new [] {
-                            new MethodInformation("randomService", "IRandomService", false, "Namespace.Services", default)
+                        .UsingResolver("SomeResolver", "Namespace.Resolvers.SomeResolver", new [] {
+                            new ArgumentInformation("randomService", "Namespace.Services.IRandomService", "Namespace.Services", false, default)
                         })
                 },
                 @"using System;
-using Namespace;
-using Namespace.Resolvers;
-using Namespace.Services;
 
 namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self, IRandomService someResolverRandomService)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self, Namespace.Services.IRandomService someResolverRandomService)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var someResolver = new SomeResolver(someResolverRandomService);
+            var someResolver = new Namespace.Resolvers.SomeResolver(someResolverRandomService);
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
                 ResolvedParameter = someResolver.Resolve(self.Parameter),
             };
@@ -717,29 +706,26 @@ namespace Namespace
                     new PropertyMappingInformation(_mappingInformation)
                         .MapFrom("Parameter", false, false)
                         .MapTo("ResolvedParameter", false, false)
-                        .UsingResolver("SomeResolver", "Namespace.Resolvers", new [] {
-                            new MethodInformation("randomService", "IRandomService", true, "Namespace.Services", default)
+                        .UsingResolver("SomeResolver", "Namespace.Resolvers.SomeResolver", new [] {
+                            new ArgumentInformation("randomService", "Namespace.Services.IRandomService?", "Namespace.Services", true, default)
                         })
                 },
                 @"using System;
-using Namespace;
-using Namespace.Resolvers;
-using Namespace.Services;
 
 namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self, IRandomService? someResolverRandomService)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self, Namespace.Services.IRandomService? someResolverRandomService)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var someResolver = new SomeResolver(someResolverRandomService);
+            var someResolver = new Namespace.Resolvers.SomeResolver(someResolverRandomService);
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
                 ResolvedParameter = someResolver.Resolve(self.Parameter),
             };
@@ -758,39 +744,34 @@ namespace Namespace
                     new PropertyMappingInformation(_mappingInformation)
                         .MapFrom("Parameter1", false, false)
                         .MapTo("ResolvedParameter1", false, false)
-                        .UsingResolver("SomeResolver1", "Namespace.Resolvers1", new [] {
-                            new MethodInformation("randomService1", "IRandomService1", false,"Namespace.Services1", default)
+                        .UsingResolver("SomeResolver1", "Namespace.Resolvers1.SomeResolver1", new [] {
+                            new ArgumentInformation("randomService1", "Namespace.Services1.IRandomService1", "Namespace.Services", false, default)
                         }),
                     new PropertyMappingInformation(_mappingInformation)
                         .MapFrom("Parameter2", false, false)
                         .MapTo("ResolvedParameter2", false, false)
-                        .UsingResolver("SomeResolver2", "Namespace.Resolvers2", new [] {
-                            new MethodInformation("randomService2", "IRandomService2", false,"Namespace.Services2", default)
+                        .UsingResolver("SomeResolver2", "Namespace.Resolvers2.SomeResolver2", new [] {
+                            new ArgumentInformation("randomService2", "Namespace.Services2.IRandomService2", "Namespace.Services", false, default)
                         })
                 },
                 @"using System;
-using Namespace;
-using Namespace.Resolvers1;
-using Namespace.Resolvers2;
-using Namespace.Services1;
-using Namespace.Services2;
 
 namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self, IRandomService1 someResolver1RandomService1, IRandomService2 someResolver2RandomService2)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self, Namespace.Services1.IRandomService1 someResolver1RandomService1, Namespace.Services2.IRandomService2 someResolver2RandomService2)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var someResolver1 = new SomeResolver1(someResolver1RandomService1);
+            var someResolver1 = new Namespace.Resolvers1.SomeResolver1(someResolver1RandomService1);
             
-            var someResolver2 = new SomeResolver2(someResolver2RandomService2);
+            var someResolver2 = new Namespace.Resolvers2.SomeResolver2(someResolver2RandomService2);
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
                 ResolvedParameter1 = someResolver1.Resolve(self.Parameter1),
                 ResolvedParameter2 = someResolver2.Resolve(self.Parameter2),
@@ -810,35 +791,32 @@ namespace Namespace
                     new PropertyMappingInformation(_mappingInformation)
                         .MapFrom("Parameter1", false, false)
                         .MapTo("ResolvedParameter1", false, false)
-                        .UsingResolver("SomeResolver", "Namespace.Resolvers", new [] {
-                            new MethodInformation("randomService", "IRandomService", false, "Namespace.Services", default)
+                        .UsingResolver("SomeResolver", "Namespace.Resolvers.SomeResolver", new [] {
+                            new ArgumentInformation("randomService", "Namespace.Services.IRandomService", "Namespace.Services", false, default)
                         }),
                     new PropertyMappingInformation(_mappingInformation)
                         .MapFrom("Parameter2", false, false)
                         .MapTo("ResolvedParameter2", false, false)
-                        .UsingResolver("SomeResolver", "Namespace.Resolvers", new [] {
-                            new MethodInformation("randomService", "IRandomService", false, "Namespace.Services", default)
+                        .UsingResolver("SomeResolver", "Namespace.Resolvers.SomeResolver", new [] {
+                            new ArgumentInformation("randomService", "Namespace.Services.IRandomService", "Namespace.Services", false, default)
                         })
                 },
                 @"using System;
-using Namespace;
-using Namespace.Resolvers;
-using Namespace.Services;
 
 namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self, IRandomService someResolverRandomService)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self, Namespace.Services.IRandomService someResolverRandomService)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var someResolver = new SomeResolver(someResolverRandomService);
+            var someResolver = new Namespace.Resolvers.SomeResolver(someResolverRandomService);
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
                 ResolvedParameter1 = someResolver.Resolve(self.Parameter1),
                 ResolvedParameter2 = someResolver.Resolve(self.Parameter2),
@@ -858,12 +836,11 @@ namespace Namespace
                     new PropertyMappingInformation(_mappingInformation)
                         .MapFrom("Collection", false, false)
                         .MapTo("Collection", false, false)
-                        .AsCollection(DestinationCollectionType.List, "CollectionItem", "Namespace.Collections")
+                        .AsCollection(DestinationCollectionType.List, "Namespace.Collections.CollectionItem")
                         .UsingMethod("ToItem", "Namespace.Collections")
                 },
                 @"using System;
 using System.Linq;
-using Namespace;
 using Namespace.Collections;
 
 #nullable enable
@@ -872,14 +849,14 @@ namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
                 Collection = self.Collection?.Select(element => element.ToItem()).ToList(),
             };
@@ -898,12 +875,10 @@ namespace Namespace
                     new PropertyMappingInformation(_mappingInformation)
                         .MapFrom("Collection", true, false)
                         .MapTo("Collection", false, false)
-                        .AsCollection(DestinationCollectionType.Array, "CollectionItem", "Namespace.Collections")
+                        .AsCollection(DestinationCollectionType.Array, "Namespace.Collections.CollectionItem")
                 },
                 @"using System;
 using System.Linq;
-using Namespace;
-using Namespace.Collections;
 
 #nullable enable
 
@@ -911,16 +886,16 @@ namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
-                Collection = self.Collection?.ToArray() ?? Enumerable.Empty<CollectionItem>().ToArray(),
+                Collection = self.Collection?.ToArray() ?? Enumerable.Empty<Namespace.Collections.CollectionItem>().ToArray(),
             };
             
             return target;
@@ -937,12 +912,10 @@ namespace Namespace
                     new PropertyMappingInformation(_mappingInformation)
                         .MapFrom("Collection", false, false)
                         .MapTo("Collection", false, false)
-                        .AsCollection(DestinationCollectionType.Array, "CollectionItem", "Namespace.Collections")
+                        .AsCollection(DestinationCollectionType.Array, "Namespace.Collections.CollectionItem")
                 },
                 @"using System;
 using System.Linq;
-using Namespace;
-using Namespace.Collections;
 
 #nullable enable
 
@@ -950,14 +923,14 @@ namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
                 Collection = self.Collection?.ToArray(),
             };
@@ -976,13 +949,12 @@ namespace Namespace
                     new PropertyMappingInformation(_mappingInformation)
                         .MapFrom("Collection", true, false)
                         .MapTo("Collection", false, false)
-                        .AsCollection(DestinationCollectionType.Array, "CollectionItem", "Namespace.Collections")
+                        .AsCollection(DestinationCollectionType.Array, "Namespace.Collections.CollectionItem")
                         .UsingMethod("MapToCollectionItem", "Namespace.Collections")
                 },
                 @"using System;
 using System.Linq;
-using Namespace;
-using Namespace.Collections;
+using Namespace.Collections;'
 
 #nullable enable
 
@@ -990,16 +962,16 @@ namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
-                Collection = self.Collection?.Select(element => element.MapToCollectionItem()).ToArray() ?? Enumerable.Empty<CollectionItem>().ToArray(),
+                Collection = self.Collection?.Select(element => element.MapToCollectionItem()).ToArray() ?? Enumerable.Empty<Namespace.Collections.CollectionItem>().ToArray(),
             };
             
             return target;
@@ -1016,17 +988,14 @@ namespace Namespace
                     new PropertyMappingInformation(_mappingInformation)
                         .MapFrom("Collection", true, false)
                         .MapTo("Collection", false, false)
-                        .AsCollection(DestinationCollectionType.Array, "CollectionItem", "Namespace.Collections")
-                        .UsingResolver("CollectionResolver", "Namespace.Resolvers", new [] {
-                            new MethodInformation("cultureInfo", "CultureInfo", false, "System.Globalization", "CultureInfo.InvariantCulture")
+                        .AsCollection(DestinationCollectionType.Array, "Namespace.Collections.CollectionItem")
+                        .UsingResolver("CollectionResolver", "Namespace.Resolvers.CollectionResolver", new [] {
+                            new ArgumentInformation("cultureInfo", "System.Globalization.CultureInfo", "System.Globalization", false, "CultureInfo.InvariantCulture")
                         })
                 },
                 @"using System;
 using System.Globalization;
 using System.Linq;
-using Namespace;
-using Namespace.Collections;
-using Namespace.Resolvers;
 
 #nullable enable
 
@@ -1034,18 +1003,18 @@ namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self, CultureInfo collectionResolverCultureInfo = CultureInfo.InvariantCulture)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self, System.Globalization.CultureInfo collectionResolverCultureInfo = CultureInfo.InvariantCulture)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var collectionResolver = new CollectionResolver(collectionResolverCultureInfo);
+            var collectionResolver = new Namespace.Resolvers.CollectionResolver(collectionResolverCultureInfo);
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
-                Collection = self.Collection?.Select(element => collectionResolver.Resolve(element)).ToArray() ?? Enumerable.Empty<CollectionItem>().ToArray(),
+                Collection = self.Collection?.Select(element => collectionResolver.Resolve(element)).ToArray() ?? Enumerable.Empty<Namespace.Collections.CollectionItem>().ToArray(),
             };
             
             return target;
@@ -1069,11 +1038,10 @@ namespace Namespace
             DoTest(mappingInformation,
                 new[]
                 {
-                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", true, false).MapTo("Name", true, false).AsCollection(DestinationCollectionType.Array, "DestinationItem", "Namespace")
+                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", true, false).MapTo("Name", true, false).AsCollection(DestinationCollectionType.Array, "Namespace.DestinationItem")
                 },
                 @"using System;
 using System.Linq;
-using Namespace;
 
 #nullable enable
 
@@ -1081,14 +1049,14 @@ namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
                 Name = self.Name?.ToArray(),
             };
@@ -1115,11 +1083,10 @@ namespace Namespace
             DoTest(mappingInformation,
                 new[]
                 {
-                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", true, false).MapTo("Name", false, false).AsCollection(DestinationCollectionType.Array, "DestinationItem", "Namespace")
+                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", true, false).MapTo("Name", false, false).AsCollection(DestinationCollectionType.Array, "Namespace.DestinationItem")
                 },
                 @"using System;
 using System.Linq;
-using Namespace;
 
 #nullable enable
 
@@ -1127,16 +1094,16 @@ namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
-                Name = self.Name?.ToArray() ?? Enumerable.Empty<DestinationItem>().ToArray(),
+                Name = self.Name?.ToArray() ?? Enumerable.Empty<Namespace.DestinationItem>().ToArray(),
             };
             
             return target;
@@ -1161,11 +1128,10 @@ namespace Namespace
             DoTest(mappingInformation,
                 new[]
                 {
-                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", false, false).MapTo("Name", true, false).AsCollection(DestinationCollectionType.Array, "DestinationItem", "Namespace")
+                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", false, false).MapTo("Name", true, false).AsCollection(DestinationCollectionType.Array, "Namespace.DestinationItem")
                 },
                 @"using System;
 using System.Linq;
-using Namespace;
 
 #nullable enable
 
@@ -1173,14 +1139,14 @@ namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
                 Name = self.Name?.ToArray(),
             };
@@ -1207,11 +1173,10 @@ namespace Namespace
             DoTest(mappingInformation,
                 new[]
                 {
-                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", false, false).MapTo("Name", false, false).AsCollection(DestinationCollectionType.Array, "DestinationItem", "Namespace")
+                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", false, false).MapTo("Name", false, false).AsCollection(DestinationCollectionType.Array, "Namespace.DestinationItem")
                 },
                 @"using System;
 using System.Linq;
-using Namespace;
 
 #nullable enable
 
@@ -1219,16 +1184,16 @@ namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
-                Name = self.Name?.ToArray() ?? throw new Exception(""Source -> Destination: Property 'Name' is null.""),
+                Name = self.Name?.ToArray() ?? throw new Exception(""Namespace.Source -> Namespace.Destination: Property 'Name' is null.""),
             };
             
             return target;
@@ -1256,7 +1221,6 @@ namespace Namespace
                                 .MapTo("Name", false, false)))
                 },
                 @"using System;
-using Namespace;
 using Namespace.Nested;
 
 #nullable enable
@@ -1265,14 +1229,14 @@ namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
                 NestedObject = self.NestedObject?.MapToDestinationObject(),
             };
@@ -1299,16 +1263,14 @@ namespace Namespace
                             .AddProperty(new PropertyMappingInformation(_mappingInformation)
                                 .MapFrom("Name", false, false)
                                 .MapTo("Name", false, false)
-                                .UsingResolver("SomeResolver", "Namespace.Resolvers", new[]
+                                .UsingResolver("SomeResolver", "Namespace.Resolvers.SomeResolver", new[]
                                 {
-                                    new MethodInformation("cultureInfo", "CultureInfo", false, "System.Globalization", "CultureInfo.InvariantCulture")
+                                    new ArgumentInformation("cultureInfo", "System.Globalization.CultureInfo", "System.Globalization", false, "CultureInfo.InvariantCulture")
                                 })))
                 },
                 @"using System;
 using System.Globalization;
-using Namespace;
 using Namespace.Nested;
-using Namespace.Resolvers;
 
 #nullable enable
 
@@ -1316,14 +1278,14 @@ namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self, CultureInfo someResolverCultureInfo = CultureInfo.InvariantCulture)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self, System.Globalization.CultureInfo someResolverCultureInfo = CultureInfo.InvariantCulture)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
                 NestedObject = self.NestedObject?.MapToDestinationObject(someResolverCultureInfo),
             };
@@ -1350,16 +1312,14 @@ namespace Namespace
                             .AddProperty(new PropertyMappingInformation(_mappingInformation)
                                 .MapFrom("Name", false, false)
                                 .MapTo("Name", false, false)
-                                .UsingResolver("SomeResolver", "Namespace.Resolvers", new[]
+                                .UsingResolver("SomeResolver", "Namespace.Resolvers.SomeResolver", new[]
                                 {
-                                    new MethodInformation("cultureInfo", "CultureInfo", true, "System.Globalization", "CultureInfo.InvariantCulture")
+                                    new ArgumentInformation("cultureInfo", "System.Globalization.CultureInfo?", "System.Globalization", true, "CultureInfo.InvariantCulture")
                                 })))
                 },
                 @"using System;
 using System.Globalization;
-using Namespace;
 using Namespace.Nested;
-using Namespace.Resolvers;
 
 #nullable enable
 
@@ -1367,14 +1327,14 @@ namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self, CultureInfo? someResolverCultureInfo = CultureInfo.InvariantCulture)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self, System.Globalization.CultureInfo? someResolverCultureInfo = CultureInfo.InvariantCulture)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
                 NestedObject = self.NestedObject?.MapToDestinationObject(someResolverCultureInfo),
             };
@@ -1393,7 +1353,7 @@ namespace Namespace
                     new PropertyMappingInformation(_mappingInformation)
                         .MapFrom("NestedObject", true, false)
                         .MapTo("NestedObject", false, false)
-                        .AsCollection(DestinationCollectionType.Enumerable, "DestinationObject", "Namespace")
+                        .AsCollection(DestinationCollectionType.Enumerable, "Namespace.Nested.DestinationObject")
                         .UsingMapper(_nestedSourceType.Object, _nestedDestinationType.Object)
                         // this set mapper will be called by mapper generator
                         .SetMappingInformation(new MappingInformation(_attributeData.Object, _values)
@@ -1402,17 +1362,15 @@ namespace Namespace
                             .AddProperty(new PropertyMappingInformation(_mappingInformation)
                                 .MapFrom("Name", false, false)
                                 .MapTo("Name", false, false)
-                                .UsingResolver("SomeResolver", "Namespace.Resolvers", new[]
+                                .UsingResolver("SomeResolver", "Namespace.Resolvers.SomeResolver", new[]
                                 {
-                                    new MethodInformation("cultureInfo", "CultureInfo", false,"System.Globalization", "CultureInfo.InvariantCulture")
+                                    new ArgumentInformation("cultureInfo", "System.Globalization.CultureInfo", "System.Globalization", false, "CultureInfo.InvariantCulture")
                                 })))
                 },
                 @"using System;
 using System.Globalization;
 using System.Linq;
-using Namespace;
 using Namespace.Nested;
-using Namespace.Resolvers;
 
 #nullable enable
 
@@ -1420,16 +1378,16 @@ namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self, CultureInfo someResolverCultureInfo = CultureInfo.InvariantCulture)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self, System.Globalization.CultureInfo someResolverCultureInfo = CultureInfo.InvariantCulture)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
-                NestedObject = self.NestedObject?.Select(element => element.MapToDestinationObject(someResolverCultureInfo)) ?? Enumerable.Empty<DestinationObject>(),
+                NestedObject = self.NestedObject?.Select(element => element.MapToDestinationObject(someResolverCultureInfo)) ?? Enumerable.Empty<Namespace.Nested.DestinationObject>(),
             };
             
             return target;
@@ -1446,7 +1404,7 @@ namespace Namespace
                     new PropertyMappingInformation(_mappingInformation)
                         .MapFrom("NestedObject", true, false)
                         .MapTo("NestedObject", false, false)
-                        .AsCollection(DestinationCollectionType.Enumerable, "DestinationObject", "Namespace")
+                        .AsCollection(DestinationCollectionType.Enumerable, "Namespace.Nested.DestinationObject")
                         .UsingMapper(_nestedSourceType.Object, _nestedDestinationType.Object)
                         // this set mapper will be called by mapper generator
                         .SetMappingInformation(new MappingInformation(_attributeData.Object, _values)
@@ -1455,26 +1413,24 @@ namespace Namespace
                             .AddProperty(new PropertyMappingInformation(_mappingInformation)
                                 .MapFrom("Name1", false, false)
                                 .MapTo("Name1", false, false)
-                                .UsingResolver("SomeResolver", "Namespace.Resolvers", new[]
+                                .UsingResolver("SomeResolver", "Namespace.Resolvers.SomeResolver", new[]
                                 {
-                                    new MethodInformation("someInt", "int", false, "System", default),
-                                    new MethodInformation("cultureInfo", "CultureInfo", false, "System.Globalization", "CultureInfo.InvariantCulture"),
+                                    new ArgumentInformation("someInt", "int", "System", false, default),
+                                    new ArgumentInformation("cultureInfo", "System.Globalization.CultureInfo", "System.Globalization", false, "CultureInfo.InvariantCulture"),
                                 }))
                             .AddProperty(new PropertyMappingInformation(_mappingInformation)
                                 .MapFrom("Name2", false, false)
                                 .MapTo("Name2", false, false)
-                                .UsingResolver("SomeResolver", "Namespace.Resolvers", new[]
+                                .UsingResolver("SomeResolver", "Namespace.Resolvers.SomeResolver", new[]
                                 {
-                                    new MethodInformation("someInt", "int", false, "System", default),
-                                    new MethodInformation("cultureInfo", "CultureInfo", false,"System.Globalization", "CultureInfo.InvariantCulture")
+                                    new ArgumentInformation("someInt", "int", "System", false, default),
+                                    new ArgumentInformation("cultureInfo", "System.Globalization.CultureInfo", "System.Globalization", false, "CultureInfo.InvariantCulture")
                                 })))
                 },
                 @"using System;
 using System.Globalization;
 using System.Linq;
-using Namespace;
 using Namespace.Nested;
-using Namespace.Resolvers;
 
 #nullable enable
 
@@ -1482,16 +1438,16 @@ namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self, int someResolverSomeInt, CultureInfo someResolverCultureInfo = CultureInfo.InvariantCulture)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self, int someResolverSomeInt, System.Globalization.CultureInfo someResolverCultureInfo = CultureInfo.InvariantCulture)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
-                NestedObject = self.NestedObject?.Select(element => element.MapToDestinationObject(someResolverSomeInt, someResolverCultureInfo)) ?? Enumerable.Empty<DestinationObject>(),
+                NestedObject = self.NestedObject?.Select(element => element.MapToDestinationObject(someResolverSomeInt, someResolverCultureInfo)) ?? Enumerable.Empty<Namespace.Nested.DestinationObject>(),
             };
             
             return target;
@@ -1521,14 +1477,14 @@ namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
                 NestedDestination = self.NestedSource?.MapToDestination(),
             };
@@ -1547,9 +1503,9 @@ namespace Namespace
                     new PropertyMappingInformation(_mappingInformation)
                         .MapFrom("DateTime", false, false)
                         .MapTo("Date", false, false)
-                        .UsingResolver("DateTimeResolver", "Namespace.Resolvers", new []
+                        .UsingResolver("DateTimeResolver", "Namespace.Resolvers.DateTimeResolver", new []
                         {
-                            new MethodInformation("cultureInfo", "CultureInfo", false, "System.Globalization", default)
+                            new ArgumentInformation("cultureInfo", "System.Globalization.CultureInfo", "System.Globalization", false, default)
                         }),
                     new PropertyMappingInformation(_mappingInformation)
                         .MapFrom("NestedSource", true, false)
@@ -1559,9 +1515,7 @@ namespace Namespace
                         .SetMappingInformation(_mappingInformation)
                 },
                 @"using System;
-using System.Globalization;
 using Namespace;
-using Namespace.Resolvers;
 
 #nullable enable
 
@@ -1569,16 +1523,16 @@ namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self, CultureInfo dateTimeResolverCultureInfo)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self, System.Globalization.CultureInfo dateTimeResolverCultureInfo)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var dateTimeResolver = new DateTimeResolver(dateTimeResolverCultureInfo);
+            var dateTimeResolver = new Namespace.Resolvers.DateTimeResolver(dateTimeResolverCultureInfo);
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
                 Date = dateTimeResolver.Resolve(self.DateTime),
                 NestedDestination = self.NestedSource?.MapToDestination(dateTimeResolverCultureInfo),
@@ -1590,7 +1544,6 @@ namespace Namespace
 }
 ");
 
-
         [Test]
         public void MappingUsingRecursiveMapperWithNullableArguments()
             => DoTest(_mappingInformation,
@@ -1599,8 +1552,8 @@ namespace Namespace
                     new PropertyMappingInformation(_mappingInformation)
                         .MapFrom("Property", true, false)
                         .MapTo("Property", false, false)
-                        .UsingResolver("Resolver", "Namespace.Resolvers", new [] {
-                            new MethodInformation("argument", "double", true, "System", null)
+                        .UsingResolver("Resolver", "Namespace.Resolvers.Resolver", new [] {
+                            new ArgumentInformation("argument", "double?", "System", true, null)
                         }),
                     new PropertyMappingInformation(_mappingInformation)
                         .MapFrom("NestedSource", true, false)
@@ -1611,7 +1564,6 @@ namespace Namespace
                 },
                 @"using System;
 using Namespace;
-using Namespace.Resolvers;
 
 #nullable enable
 
@@ -1619,16 +1571,16 @@ namespace Namespace
 {
     public static partial class SourceMapToExtensions
     {
-        public static Destination MapToDestination(this Source self, double? resolverArgument)
+        public static Namespace.Destination MapToDestination(this Namespace.Source self, double? resolverArgument)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
             }
             
-            var resolver = new Resolver(resolverArgument);
+            var resolver = new Namespace.Resolvers.Resolver(resolverArgument);
             
-            var target = new Destination
+            var target = new Namespace.Destination
             {
                 Property = resolver.Resolve(self.Property),
                 NestedDestination = self.NestedSource?.MapToDestination(resolverArgument),
@@ -1639,6 +1591,143 @@ namespace Namespace
     }
 }
 ");
+
+        [Test]
+        public void MappingUsingDeepMapperWithNullableArguments()
+        {
+            // source -> subsource -> subsubsource
+            // 
+
+            // subsubsource
+            var subSubNamespace = new Mock<INamespaceSymbol>();
+            subSubNamespace.Setup(x => x.Name).Returns("Sub");
+            subSubNamespace.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace.Sub.Sub");
+
+            var subSubSourceType = new Mock<INamedTypeSymbol>();
+            subSubSourceType.Setup(x => x.Name).Returns("SubSubSource");
+            subSubSourceType.Setup(x => x.ContainingNamespace).Returns(subSubNamespace.Object);
+            subSubSourceType.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace.Sub.Sub.SubSubSource");
+
+            var subSubDestinationType = new Mock<INamedTypeSymbol>();
+            subSubDestinationType.Setup(x => x.Name).Returns("SubSubDestination");
+            subSubDestinationType.Setup(x => x.ContainingNamespace).Returns(subSubNamespace.Object);
+            subSubDestinationType.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace.Sub.Sub.SubSubDestination");
+
+            var subSubSourceMapping = new MappingInformation(_attributeData.Object, _values)
+                .MapFrom(subSubSourceType.Object)
+                .MapTo(subSubDestinationType.Object);
+
+            subSubSourceMapping.AddProperty(new PropertyMappingInformation(subSubSourceMapping)
+                .MapFrom("SubSubSourceProperty", false, false)
+                .MapTo("SubSubDestinationProperty", false, false)
+                .UsingResolver("SubSubResolver", "Namespace.Sub.Sub.Resolvers.SubSubResolver", new[]
+                {
+                    new ArgumentInformation("argument", "Namespace.Sub.Sub.Resolvers.Types.SubSubType", "Namespace.Sub.Sub.Resolvers.Types", false, default)
+                }));
+
+
+            // subsource
+            var subNamespace = new Mock<INamespaceSymbol>();
+            subNamespace.Setup(x => x.Name).Returns("Sub");
+            subNamespace.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace.Sub");
+
+            var subSourceType = new Mock<INamedTypeSymbol>();
+            subSourceType.Setup(x => x.Name).Returns("SubSource");
+            subSourceType.Setup(x => x.ContainingNamespace).Returns(subNamespace.Object);
+            subSourceType.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace.Sub.SubSource");
+
+            var subDestinationType = new Mock<INamedTypeSymbol>();
+            subDestinationType.Setup(x => x.Name).Returns("SubDestination");
+            subDestinationType.Setup(x => x.ContainingNamespace).Returns(subNamespace.Object);
+            subDestinationType.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace.Sub.SubDestination");
+
+            var subSourceMapping = new MappingInformation(_attributeData.Object, _values)
+                .MapFrom(subSourceType.Object)
+                .MapTo(subDestinationType.Object);
+
+            subSourceMapping.AddProperty(new PropertyMappingInformation(subSourceMapping)
+                .MapFrom("SubSourceProperty", false, false)
+                .MapTo("SubDestinationProperty", false, false)
+                .UsingResolver("SubResolver", "Namespace.Sub.Resolvers.SubResolver", new[]
+                {
+                    new ArgumentInformation("argument", "Namespace.Sub.Resolvers.Types.SubType", "Namespace.Sub.Resolvers.Types", false, default)
+                }));
+
+            subSourceMapping.AddProperty(new PropertyMappingInformation(subSourceMapping)
+                .MapFrom("SubSubSource", false, false)
+                .MapTo("SubSubDestination", false, false)
+                .UsingMapper(subSubSourceType.Object, subSubDestinationType.Object)
+                .SetMappingInformation(subSubSourceMapping)); 
+            
+
+            // source
+            var @namespace = new Mock<INamespaceSymbol>();
+            @namespace.Setup(x => x.Name).Returns("Namespace");
+            @namespace.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace");
+
+            var sourceType = new Mock<INamedTypeSymbol>();
+            sourceType.Setup(x => x.Name).Returns("Source");
+            sourceType.Setup(x => x.ContainingNamespace).Returns(@namespace.Object);
+            sourceType.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace.Source");
+
+            var destinationType = new Mock<INamedTypeSymbol>();
+            destinationType.Setup(x => x.Name).Returns("Destination");
+            destinationType.Setup(x => x.ContainingNamespace).Returns(@namespace.Object);
+            destinationType.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace.Destination");
+
+            var sourceMapping = new MappingInformation(_attributeData.Object, _values)
+                .MapFrom(sourceType.Object)
+                .MapTo(destinationType.Object);
+
+            sourceMapping.AddProperty(new PropertyMappingInformation(sourceMapping)
+                .MapFrom("SourceProperty", false, false)
+                .MapTo("DestinationProperty", false, false)
+                .UsingResolver("Resolver", "Namespace.Resolvers.Resolver", new[]
+                {
+                    new ArgumentInformation("argument", "Namespace.Resolvers.Types.Type", "Namespace.Resolvers.Types", false, default)
+                }));
+
+            sourceMapping.AddProperty(new PropertyMappingInformation(sourceMapping)
+                .MapFrom("SubSource", false, false)
+                .MapTo("SubDestination", false, false)
+                .UsingMapper(subSourceType.Object, subDestinationType.Object)
+                .SetMappingInformation(subSourceMapping));
+
+            var builder = new MappingBuilder(sourceMapping);
+
+            var expectedSource = @"using System;
+using Namespace.Sub;
+using Namespace.Sub.Sub;
+
+#nullable enable
+
+namespace Namespace
+{
+    public static partial class SourceMapToExtensions
+    {
+        public static Namespace.Destination MapToDestination(this Namespace.Source self, Namespace.Resolvers.Types.Type resolverArgument, Namespace.Sub.Resolvers.Types.SubType subResolverArgument, Namespace.Sub.Sub.Resolvers.Types.SubSubType subSubResolverArgument)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
+            }
+            
+            var resolver = new Namespace.Resolvers.Resolver(resolverArgument);
+            
+            var target = new Namespace.Destination
+            {
+                DestinationProperty = resolver.Resolve(self.SourceProperty),
+                SubDestination = self.SubSource.MapToSubDestination(subResolverArgument, subSubResolverArgument),
+            };
+            
+            return target;
+        }
+    }
+}
+";
+
+            Assert.AreEqual(expectedSource, builder.GenerateSourceText().ToString());
+        }
 
         [Test]
         public void MappingUsingSubClasses()
@@ -1654,20 +1743,19 @@ namespace Namespace
                         .MapTo("Date", false, false)
                 },
                 @"using System;
-using Namespace;
 
 namespace Namespace
 {
     public static partial class SubSourceMapToExtensions
     {
-        public static Destination.SubDestination MapToSubDestination(this Source.SubSource self)
+        public static Namespace.Destination.SubDestination MapToSubDestination(this Namespace.Source.SubSource self)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source.SubSource -> Namespace.Destination.SubDestination: Source is null."");
             }
             
-            var target = new Destination.SubDestination
+            var target = new Namespace.Destination.SubDestination
             {
                 Date = self.DateTime,
             };
@@ -1691,11 +1779,10 @@ namespace Namespace
                     new PropertyMappingInformation(information)
                         .MapFrom("Items", true, false)
                         .MapTo("Items", false, false)
-                        .AsCollection(DestinationCollectionType.List, "Destination.SubDestination.Item", "Namespace")
+                        .AsCollection(DestinationCollectionType.List, "Namespace.Destination.SubDestination.Item")
                 },
                 @"using System;
 using System.Linq;
-using Namespace;
 
 #nullable enable
 
@@ -1703,16 +1790,16 @@ namespace Namespace
 {
     public static partial class SubSourceMapToExtensions
     {
-        public static Destination.SubDestination MapToSubDestination(this Source.SubSource self)
+        public static Namespace.Destination.SubDestination MapToSubDestination(this Namespace.Source.SubSource self)
         {
             if (self is null)
             {
-                throw new ArgumentNullException(nameof(self));
+                throw new ArgumentNullException(nameof(self), ""Namespace.Source.SubSource -> Namespace.Destination.SubDestination: Source is null."");
             }
             
-            var target = new Destination.SubDestination
+            var target = new Namespace.Destination.SubDestination
             {
-                Items = self.Items?.ToList() ?? Enumerable.Empty<Destination.SubDestination.Item>().ToList(),
+                Items = self.Items?.ToList() ?? Enumerable.Empty<Namespace.Destination.SubDestination.Item>().ToList(),
             };
             
             return target;

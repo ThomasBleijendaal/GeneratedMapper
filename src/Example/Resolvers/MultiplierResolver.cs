@@ -4,7 +4,7 @@
     {
         private readonly double _multiplier;
 
-        public MultiplierResolver(double multiplier)
+        public MultiplierResolver(double multiplier = 1234.5678)
         {
             _multiplier = multiplier;
         }

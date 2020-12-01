@@ -76,10 +76,6 @@ namespace GeneratedMapper.Information
             MapperFromType = sourceType;
             MapperToType = destinationType;
 
-            // add these namespaces just to be sure
-            _namespacesRequired.Add(sourceType.ContainingNamespace.ToDisplayString());
-            _namespacesRequired.Add(destinationType.ContainingNamespace.ToDisplayString());
-
             // if the mapper is recursive, directly resolve it
             if (sourceType.Equals(BelongsToMapping.SourceType, SymbolEqualityComparer.Default) &&
                 destinationType.Equals(BelongsToMapping.DestinationType, SymbolEqualityComparer.Default))
@@ -94,6 +90,7 @@ namespace GeneratedMapper.Information
         {
             MappingInformationOfMapperToUse = information;
 
+            _namespacesRequired.Add(information.SourceType.ContainingNamespace.ToDisplayString());
             _namespacesRequired.AddRange(information.Mappings.SelectMany(x => x.NamespacesUsed));
 
             return this;
@@ -101,16 +98,15 @@ namespace GeneratedMapper.Information
 
         public string? ResolverTypeToUse { get; private set; }
         public string? ResolverInstanceName { get; private set; }
-        public IEnumerable<MethodInformation>? ResolverConstructorParameters { get; private set; }
+        public IEnumerable<ArgumentInformation>? ResolverConstructorParameters { get; private set; }
 
-        public PropertyMappingInformation UsingResolver(string resolverTypeName, string resolverNamespace, IEnumerable<MethodInformation> constructorParameters)
+        public PropertyMappingInformation UsingResolver(string resolverTypeName, string resolverFullName, IEnumerable<ArgumentInformation> constructorParameters)
         {
-            ResolverTypeToUse = resolverTypeName;
-            ResolverInstanceName = $"{resolverTypeName.Replace(".", "").ToFirstLetterLower()}";
+            ResolverInstanceName = resolverTypeName.ToFirstLetterLower();
+            ResolverTypeToUse = resolverFullName;
             ResolverConstructorParameters = constructorParameters;
 
-            _namespacesRequired.Add(resolverNamespace);
-            _namespacesRequired.AddRange(constructorParameters.Select(x => x.Namespace));
+            _namespacesRequired.AddRange(constructorParameters.Where(x => !string.IsNullOrWhiteSpace(x.DefaultValue)).Select(x => x.Namespace));
 
             return this;
         }
@@ -118,22 +114,21 @@ namespace GeneratedMapper.Information
         public DestinationCollectionType? CollectionType { get; private set; }
         public string? DestinationCollectionItemTypeName { get; private set; }
 
-        public PropertyMappingInformation AsCollection(DestinationCollectionType destinationCollectionType, string destinationItemTypeName, string destinationItemNamespace)
+        public PropertyMappingInformation AsCollection(DestinationCollectionType destinationCollectionType, string destinationItemTypeName)
         {
             CollectionType = destinationCollectionType;
             DestinationCollectionItemTypeName = destinationItemTypeName;
 
             _namespacesRequired.Add("System.Linq");
-            _namespacesRequired.Add(destinationItemNamespace);
 
             return this;
         }
 
         public IEnumerable<string> NamespacesUsed => _namespacesRequired;
 
-        public IEnumerable<MethodInformation> MapArgumentsRequired
+        public IEnumerable<ArgumentInformation> MapArgumentsRequired
             => this.DoRecursionSafe(
-                mapping => mapping.ResolverConstructorParameters?.Select(argument => argument.CopyWithPrefix(mapping.ResolverTypeToUse!)) ?? Enumerable.Empty<MethodInformation>(),
+                mapping => mapping.ResolverConstructorParameters?.Select(argument => argument.CopyWithPrefix(mapping.ResolverInstanceName!)) ?? Enumerable.Empty<ArgumentInformation>(),
                 mapping => mapping.MappingInformationOfMapperToUse?.Mappings);
 
         public bool TryValidateMapping(AttributeData attributeData, out IEnumerable<Diagnostic> diagnostics)
@@ -152,7 +147,7 @@ namespace GeneratedMapper.Information
 
             if (RequiresMappingInformationOfMapper && MappingInformationOfMapperToUse == null)
             {
-                messages.Add(DiagnosticsHelper.MissingMappingInformation(attributeData, MapperFromType?.Name, MapperToType?.Name));
+                messages.Add(DiagnosticsHelper.MissingMappingInformation(attributeData, MapperFromType?.ToDisplayString(), MapperToType?.ToDisplayString()));
             }
 
             if ((!string.IsNullOrWhiteSpace(ResolverTypeToUse) && !string.IsNullOrWhiteSpace(SourcePropertyMethodToCall)) ||

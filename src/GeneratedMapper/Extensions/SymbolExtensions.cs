@@ -36,8 +36,5 @@ namespace GeneratedMapper.Extensions
             var value = attribute.ConstructorArguments.ElementAtOrDefault(index).Value;
             return value is T t ? t : default;
         }
-
-        public static string GetFullTypeName(this ITypeSymbol type, string joinBy = ".")
-            => type.ContainingType == null ? type.Name : $"{GetFullTypeName(type.ContainingType, joinBy)}{joinBy}{type.Name}";
     }
 }

@@ -15,13 +15,12 @@ namespace GeneratedMapper.Parsers
             _stringType = context.Compilation.GetTypeByMetadataName("System.String") ?? throw new InvalidOperationException("Cannot find System.String");
         }
 
-        public IEnumerable<MethodInformation> ParseConstructorParameters(INamedTypeSymbol type)
+        public IEnumerable<ArgumentInformation> ParseConstructorParameters(INamedTypeSymbol type)
         {
-            var constructorArguments = new List<MethodInformation>();
+            var constructorArguments = new List<ArgumentInformation>();
 
             var resolverConstructor = type.Constructors
                 .Where(x => x.DeclaredAccessibility == Accessibility.Public)
-                .Where(x => x.Parameters.All(x => x.Type is INamedTypeSymbol))
                 .OrderBy(x => x.Parameters.Length)
                 .FirstOrDefault();
 
@@ -44,11 +43,11 @@ namespace GeneratedMapper.Parsers
                         }
                     }
 
-                    constructorArguments.Add(new MethodInformation(
+                    constructorArguments.Add(new ArgumentInformation(
                         parameter.Name,
-                        parameter.ToDisplayString(),
+                        parameter.Type.ToDisplayString(),
+                        parameter.Type.ContainingNamespace.ToDisplayString(),
                         parameter.NullableAnnotation == NullableAnnotation.Annotated,
-                        parameter.ContainingNamespace.ToDisplayString(),
                         defaultValueString));
                 }
             }

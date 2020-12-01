@@ -8,6 +8,8 @@ namespace GeneratedMapper.Extensions
         public static int GetIndex(this AttributeData attributeData)
         {
             var args = attributeData.NamedArguments;
+
+            // this check is for unit test which cannot easily inject other named arguments into attribute data
             if (args.IsDefault)
             {
                 return 0;

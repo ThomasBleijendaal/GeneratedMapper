@@ -7,10 +7,6 @@ namespace GeneratedMapper.Parsers
 {
     internal sealed class ExtensionMethodParser
     {
-        public ExtensionMethodParser()
-        {
-        }
-
         public List<ExtensionMethodInformation> ParseType(ITypeSymbol type)
         {
             var extensionMethods = new List<ExtensionMethodInformation>();

@@ -48,7 +48,7 @@ namespace GeneratedMapper.Information
 
             return this;
         }
-        
+
         public ITypeSymbol DestinationType { get; private set; } = default!;
 
         public MappingInformation MapTo(ITypeSymbol destinationType)
@@ -71,7 +71,7 @@ namespace GeneratedMapper.Information
                 x => x.Mappings,
                 x => x.Mappings.Select(x => x.MappingInformationOfMapperToUse))
             .All(x => !x.RequiresMappingInformationOfMapper || x.MappingInformationOfMapperToUse != null);
-        
+
         public bool TryValidate(out IEnumerable<Diagnostic> diagnostics)
         {
             if (!Mappings.Any())
@@ -79,8 +79,7 @@ namespace GeneratedMapper.Information
                 _diagnostics.Add(DiagnosticsHelper.EmptyMapper(AttributeData, SourceType.Name, DestinationType.Name));
             }
 
-            _diagnostics.AddRange(Mappings
-                .SelectMany(x => !x.TryValidateMapping(AttributeData, out var issues) ? issues : Enumerable.Empty<Diagnostic>()));
+            _diagnostics.AddRange(Mappings.SelectMany(x => !x.TryValidateMapping(AttributeData, out var issues) ? issues : Enumerable.Empty<Diagnostic>()));
 
             diagnostics = _diagnostics;
 
