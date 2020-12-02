@@ -12,7 +12,7 @@ namespace GeneratedMapper.Tests
 using GeneratedMapper.Attributes;
 
 namespace R {
-    public class Resolver() { public string Resolve(string input) { return input; } }
+    public class Resolver { public string Resolve(string input) { return input; } }
 }
 
 namespace A {
@@ -61,7 +61,7 @@ namespace A
 using GeneratedMapper.Attributes;
 
 namespace R {
-    public class Resolver() { public string Resolve(string input) { return input; } }
+    public class Resolver { public string Resolve(string input) { return input; } }
 }
 
 namespace A {
@@ -110,7 +110,7 @@ namespace A
 using GeneratedMapper.Attributes;
 
 namespace R {
-    public class Resolver() { public string Resolve(string input) { return input; } }
+    public class Resolver { public string Resolve(string input) { return input; } }
 }
 
 namespace A {
@@ -161,7 +161,7 @@ namespace A
 using GeneratedMapper.Attributes;
 
 namespace R {
-    public class Resolver() { public string Resolve(string input) { return input; } }
+    public class Resolver { public string Resolve(string input) { return input; } }
 }
 
 namespace A {
