@@ -93,6 +93,7 @@ namespace GeneratedMapper.Parsers
                     if (sourceProperty.Type is INamedTypeSymbol namedSourcePropertyType &&
                         namedSourcePropertyType.GetMembers(propertyMethodToCall)
                             .OfType<IMethodSymbol>()
+                            .Where(x => x.DeclaredAccessibility == Accessibility.Public && !x.IsStatic)
                             .OrderBy(x => x.Parameters.Length)
                             .FirstOrDefault() is IMethodSymbol sourcePropertyMethod) 
                     {

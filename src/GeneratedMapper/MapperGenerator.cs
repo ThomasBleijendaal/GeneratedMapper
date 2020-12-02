@@ -113,28 +113,31 @@ namespace GeneratedMapper
 
             if (context.SyntaxReceiver is MapAttributeReceiver attributeReceiver)
             {
-                if (attributeReceiver.ConfigurationAttribute != null)
-                {
-                    var model = context.Compilation.GetSemanticModel(attributeReceiver.ConfigurationAttribute.SyntaxTree);
-                    if (model.GetDeclaredSymbol(attributeReceiver.ConfigurationAttribute) is AttributeData configuration)
-                    {
-                        foreach (var argument in configuration.NamedArguments)
-                        {
-                            switch (argument.Key)
-                            {
-                                case nameof(MapperCustomizations.NamespacesToInclude):
-                                    if (argument.Value.Value is string[] namespaces)
-                                    {
-                                        customizations.NamespacesToInclude = namespaces;
-                                    }
-                                    break;
+                var assemblyAttributes = context.Compilation.Assembly.GetAttributes();
 
-                                case nameof(MapperCustomizations.ThrowWhenNotNullablePropertyIsNull):
-                                    if (argument.Value.Value is bool throwWhenNotNull) {
-                                        customizations.ThrowWhenNotNullablePropertyIsNull = throwWhenNotNull;
-                                    }
-                                    break;
-                            }
+                var configurationAttribute = context.Compilation.GetTypeByMetadataName(typeof(MapperGeneratorConfigurationAttribute).FullName);
+
+
+                var config = assemblyAttributes.FirstOrDefault(x => x.AttributeClass != null && x.AttributeClass.Equals(configurationAttribute, SymbolEqualityComparer.Default));
+                if (config != null)
+                {
+                    foreach (var argument in config.NamedArguments.Where(x => !x.Value.IsNull))
+                    {
+                        switch (argument.Key)
+                        {
+                            case nameof(MapperCustomizations.NamespacesToInclude):
+                                if (argument.Value.Values.Select(x => x.Value?.ToString() ?? string.Empty) is IEnumerable<string> namespaces)
+                                {
+                                    customizations.NamespacesToInclude = namespaces.ToArray();
+                                }
+                                break;
+
+                            case nameof(MapperCustomizations.ThrowWhenNotNullablePropertyIsNull):
+                                if (argument.Value.Value is bool throwWhenNotNull)
+                                {
+                                    customizations.ThrowWhenNotNullablePropertyIsNull = throwWhenNotNull;
+                                }
+                                break;
                         }
                     }
                 }
@@ -193,6 +196,5 @@ namespace GeneratedMapper
 
             return (null, null);
         }
-
     }
 }

@@ -22,7 +22,9 @@ namespace GeneratedMapper.Builders
             var destinationCanHandleNull = _information.DestinationPropertyIsNullable;
 
             // only really throw when destination property can't handle a null
-            var throwWhenNull = _information.BelongsToMapping.ConfigurationValues.Customizations.ThrowWhenNotNullablePropertyIsNull && sourceCanBeNull && !destinationCanHandleNull
+            var throwWhenNull = _information.BelongsToMapping.ConfigurationValues.Customizations.ThrowWhenNotNullablePropertyIsNull 
+                    && sourceCanBeNull 
+                    && !destinationCanHandleNull
                 ? $@" ?? throw new Exception(""{_information.BelongsToMapping.SourceType.ToDisplayString()} -> {_information.BelongsToMapping.DestinationType.ToDisplayString()}: Property '{_information.SourcePropertyName}' is null."")"
                 : string.Empty;
 
@@ -55,19 +57,28 @@ namespace GeneratedMapper.Builders
             }
             else
             {
-                var safePropagation = _information.SourcePropertyIsNullable ? "?" : "";
-
                 if (_information.MappingInformationOfMapperToUse != null)
                 {
-                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}{safePropagation}.MapTo{_information.MappingInformationOfMapperToUse.DestinationType.Name}({GetMappingArguments()}){throwWhenNull}";
+                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}?.MapTo{_information.MappingInformationOfMapperToUse.DestinationType.Name}({GetMappingArguments()}){throwWhenNull}";
                 }
                 else if (_information.SourcePropertyMethodToCall != null)
                 {
-                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}{safePropagation}.{_information.SourcePropertyMethodToCall}({GetMethodArguments()}){throwWhenNull}";
+                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}?.{_information.SourcePropertyMethodToCall}({GetMethodArguments()}){throwWhenNull}";
                 }
                 else if (_information.ResolverTypeToUse != null)
                 {
-                    sourceExpression = $"{_information.ResolverInstanceName}.Resolve({sourceInstanceName}.{_information.SourcePropertyName}{throwWhenNull})";
+                    if (!_information.SourcePropertyIsNullable && !_information.DestinationPropertyIsNullable)
+                    {
+                        sourceExpression = $"{_information.ResolverInstanceName}.Resolve({sourceInstanceName}.{_information.SourcePropertyName}{throwWhenNull})";
+                    }
+                    else if (!_information.DestinationPropertyIsNullable)
+                    {
+                        sourceExpression = $"{_information.ResolverInstanceName}.Resolve({sourceInstanceName}.{_information.SourcePropertyName}){throwWhenNull}";
+                    } 
+                    else
+                    {
+                        sourceExpression = $"{_information.ResolverInstanceName}.Resolve({sourceInstanceName}.{_information.SourcePropertyName})";
+                    }
                 }
                 else
                 {
