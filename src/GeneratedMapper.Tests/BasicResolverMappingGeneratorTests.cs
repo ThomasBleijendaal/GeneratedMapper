@@ -57,7 +57,7 @@ namespace A
         [Test]
         public void MapSinglePropertyFromSourceToDestination_WithNullableSource()
         {
-            GeneratorTestHelper.TestGeneratedCode(@"using System;
+            GeneratorTestHelper.TestReportedDiagnostics(@"using System;
 using GeneratedMapper.Attributes;
 
 namespace R {
@@ -75,32 +75,7 @@ namespace A {
 namespace B {
     public class B { public string Target { get; set; } }
 }
-}",
-@"using System;
-
-namespace A
-{
-    public static partial class AMapToExtensions
-    {
-        public static B.B MapToB(this A.A self)
-        {
-            if (self is null)
-            {
-                throw new ArgumentNullException(nameof(self), ""A.A -> B.B: Source is null."");
-            }
-            
-            var resolver = new R.Resolver();
-            
-            var target = new B.B
-            {
-                Target = resolver.Resolve(self.Name) ?? throw new Exception(""A.A -> B.B: Property 'Name' is null.""),
-            };
-            
-            return target;
-        }
-    }
-}
-");
+}", "GM0004");
         }
 
         [Test]

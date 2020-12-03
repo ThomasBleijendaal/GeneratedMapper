@@ -3,7 +3,7 @@ using NUnit.Framework;
 
 namespace GeneratedMapper.Tests
 {
-    public class BasicMapperMappingGeneratorTests
+    public class CollectionMappingGeneratorTests
     {
         [Test]
         public void MapSinglePropertyFromSourceToDestination()
@@ -13,16 +13,15 @@ using GeneratedMapper.Attributes;
 
 namespace A {
     [MapTo(typeof(B.B))]
-    public class A { 
-        public A Obj { get; set; } 
-    }
+    public class A { public string[] Prop { get; set; } }
 }
 
 namespace B {
-    public class B { public B Obj { get; set; } }
+    public class B { public string[] Prop { get; set; } }
 }
 }",
 @"using System;
+using System.Linq;
 
 #nullable enable
 
@@ -39,7 +38,7 @@ namespace A
             
             var target = new B.B
             {
-                Obj = self.Obj?.MapToB() ?? throw new Exception(""A.A -> B.B: Property 'Obj' is null.""),
+                Prop = self.Prop?.ToArray() ?? throw new Exception(""A.A -> B.B: Property 'Prop' is null.""),
             };
             
             return target;
@@ -52,20 +51,45 @@ namespace A
         [Test]
         public void MapSinglePropertyFromSourceToDestination_WithNullableSource()
         {
-            GeneratorTestHelper.TestReportedDiagnostics(@"using System;
+            GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
 namespace A {
     [MapTo(typeof(B.B))]
-    public class A { 
-        public A? Obj { get; set; } 
-    }
+    public class A { public string[]? Prop { get; set; } }
 }
 
 namespace B {
-    public class B { public B Obj { get; set; } }
+    public class B { public string[] Prop { get; set; } }
 }
-}", "GM0004");
+}",
+@"using System;
+using System.Linq;
+
+#nullable enable
+
+namespace A
+{
+    public static partial class AMapToExtensions
+    {
+        public static B.B MapToB(this A.A self)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self), ""A.A -> B.B: Source is null."");
+            }
+            
+            var target = new B.B
+            {
+                Prop = self.Prop?.ToArray() ?? Enumerable.Empty<string>().ToArray(),
+            };
+            
+            return target;
+        }
+    }
+}
+"
+);
         }
 
         [Test]
@@ -76,16 +100,15 @@ using GeneratedMapper.Attributes;
 
 namespace A {
     [MapTo(typeof(B.B))]
-    public class A { 
-        public A Obj { get; set; } 
-    }
+    public class A { public string[] Prop { get; set; } }
 }
 
 namespace B {
-    public class B { public B? Obj { get; set; } }
+    public class B { public string[]? Prop { get; set; } }
 }
 }",
 @"using System;
+using System.Linq;
 
 #nullable enable
 
@@ -102,7 +125,7 @@ namespace A
             
             var target = new B.B
             {
-                Obj = self.Obj?.MapToB(),
+                Prop = self.Prop?.ToArray(),
             };
             
             return target;
@@ -110,28 +133,25 @@ namespace A
     }
 }
 ");
+
         }
-
-
-
         [Test]
-        public void MapSinglePropertyFromSourceToDestination_WithNullables()
+        public void MapSinglePropertyFromSourceToDestination_WithNullableProperties()
         {
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
 namespace A {
     [MapTo(typeof(B.B))]
-    public class A { 
-        public A? Obj { get; set; } 
-    }
+    public class A { public string[]? Prop { get; set; } }
 }
 
 namespace B {
-    public class B { public B? Obj { get; set; } }
+    public class B { public string[]? Prop { get; set; } }
 }
 }",
 @"using System;
+using System.Linq;
 
 #nullable enable
 
@@ -148,7 +168,7 @@ namespace A
             
             var target = new B.B
             {
-                Obj = self.Obj?.MapToB(),
+                Prop = self.Prop?.ToArray(),
             };
             
             return target;
@@ -156,6 +176,7 @@ namespace A
     }
 }
 ");
+
         }
     }
 }

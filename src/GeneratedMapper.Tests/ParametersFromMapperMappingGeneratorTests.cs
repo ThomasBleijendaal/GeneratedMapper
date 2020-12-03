@@ -117,12 +117,12 @@ namespace A {
         public string Name { get; set; } 
 
         public A Obj1 { get; set; } 
-        public C Obj2 { get; set; } 
+        public C.C Obj2 { get; set; } 
     }
 }
 
 namespace B {
-    public class B { public string Target { get; set; } public B Obj1 { get; set; } public D Obj2 { get; set; } }
+    public class B { public string Target { get; set; } public B Obj1 { get; set; } public D.D Obj2 { get; set; } }
 }
 
 namespace C {
@@ -135,31 +135,7 @@ namespace D {
 }
 }",
 @"using System;
-
-#nullable enable
-
-namespace C
-{
-    public static partial class CMapToExtensions
-    {
-        public static D.D MapToD(this C.C self)
-        {
-            if (self is null)
-            {
-                throw new ArgumentNullException(nameof(self), ""C.C -> D.D: Source is null."");
-            }
-            
-            var target = new D.D
-            {
-                Obj2 = self.Obj2?.MapToD() ?? throw new Exception(""C.C -> D.D: Property 'Obj2' is null.""),
-            };
-            
-            return target;
-        }
-    }
-}
-",
-@"using System;
+using C;
 
 #nullable enable
 
@@ -178,7 +154,32 @@ namespace A
             {
                 Target = self.Name?.Substring(startIndex) ?? throw new Exception(""A.A -> B.B: Property 'Name' is null.""),
                 Obj1 = self.Obj1?.MapToB(startIndex) ?? throw new Exception(""A.A -> B.B: Property 'Obj1' is null.""),
-                Obj2 = self.Obj2?.MapToD(startIndex) ?? throw new Exception(""A.A -> B.B: Property 'Obj2' is null.""),
+                Obj2 = self.Obj2?.MapToD() ?? throw new Exception(""A.A -> B.B: Property 'Obj2' is null.""),
+            };
+            
+            return target;
+        }
+    }
+}
+",
+@"using System;
+
+#nullable enable
+
+namespace C
+{
+    public static partial class CMapToExtensions
+    {
+        public static D.D MapToD(this C.C self)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self), ""C.C -> D.D: Source is null."");
+            }
+            
+            var target = new D.D
+            {
+                Obj2 = self.Obj2?.MapToD() ?? throw new Exception(""C.C -> D.D: Property 'Obj2' is null.""),
             };
             
             return target;

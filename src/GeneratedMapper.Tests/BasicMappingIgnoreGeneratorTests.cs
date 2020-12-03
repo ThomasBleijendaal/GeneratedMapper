@@ -3,28 +3,24 @@ using NUnit.Framework;
 
 namespace GeneratedMapper.Tests
 {
-    public class BasicMapperMappingGeneratorTests
+    public class BasicMappingIgnoreGeneratorTests
     {
         [Test]
-        public void MapSinglePropertyFromSourceToDestination()
+        public void MapToIgnorePropertyInSource()
         {
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
 namespace A {
     [MapTo(typeof(B.B))]
-    public class A { 
-        public A Obj { get; set; } 
-    }
+    public class A { public string Name { get; set; } [Ignore]public string Title { get; set; } }
 }
 
 namespace B {
-    public class B { public B Obj { get; set; } }
+    public class B { public string Name { get; set; } }
 }
 }",
 @"using System;
-
-#nullable enable
 
 namespace A
 {
@@ -39,7 +35,7 @@ namespace A
             
             var target = new B.B
             {
-                Obj = self.Obj?.MapToB() ?? throw new Exception(""A.A -> B.B: Property 'Obj' is null.""),
+                Name = self.Name ?? throw new Exception(""A.A -> B.B: Property 'Name' is null.""),
             };
             
             return target;
@@ -50,44 +46,22 @@ namespace A
         }
 
         [Test]
-        public void MapSinglePropertyFromSourceToDestination_WithNullableSource()
-        {
-            GeneratorTestHelper.TestReportedDiagnostics(@"using System;
-using GeneratedMapper.Attributes;
-
-namespace A {
-    [MapTo(typeof(B.B))]
-    public class A { 
-        public A? Obj { get; set; } 
-    }
-}
-
-namespace B {
-    public class B { public B Obj { get; set; } }
-}
-}", "GM0004");
-        }
-
-        [Test]
-        public void MapSinglePropertyFromSourceToDestination_WithNullableDestination()
+        public void MapToIgnorePropertyInDestination()
         {
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
 namespace A {
     [MapTo(typeof(B.B))]
-    public class A { 
-        public A Obj { get; set; } 
-    }
+    [IgnoreInTarget(""Title"")]
+    public class A { public string Name { get; set; } }
 }
 
 namespace B {
-    public class B { public B? Obj { get; set; } }
+    public class B { public string Name { get; set; } public string Title { get; set; }}
 }
 }",
 @"using System;
-
-#nullable enable
 
 namespace A
 {
@@ -102,7 +76,7 @@ namespace A
             
             var target = new B.B
             {
-                Obj = self.Obj?.MapToB(),
+                Name = self.Name ?? throw new Exception(""A.A -> B.B: Property 'Name' is null.""),
             };
             
             return target;
@@ -112,28 +86,23 @@ namespace A
 ");
         }
 
-
-
         [Test]
-        public void MapSinglePropertyFromSourceToDestination_WithNullables()
+        public void MapFromIgnorePropertyInSource()
         {
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
 namespace A {
-    [MapTo(typeof(B.B))]
-    public class A { 
-        public A? Obj { get; set; } 
-    }
+    public class A { public string Name { get; set; } public string Title { get; set; } }
 }
 
 namespace B {
-    public class B { public B? Obj { get; set; } }
+    [MapFrom(typeof(A.A))]
+    [IgnoreInTarget(""Title"")]
+    public class B { public string Name { get; set; } }
 }
 }",
 @"using System;
-
-#nullable enable
 
 namespace A
 {
@@ -148,7 +117,47 @@ namespace A
             
             var target = new B.B
             {
-                Obj = self.Obj?.MapToB(),
+                Name = self.Name ?? throw new Exception(""A.A -> B.B: Property 'Name' is null.""),
+            };
+            
+            return target;
+        }
+    }
+}
+");
+        }
+
+        [Test]
+        public void MapFromIgnorePropertyInDestination()
+        {
+            GeneratorTestHelper.TestGeneratedCode(@"using System;
+using GeneratedMapper.Attributes;
+
+namespace A {
+    public class A { public string Name { get; set; } }
+}
+
+namespace B {
+    [MapFrom(typeof(A.A))]
+    public class B { public string Name { get; set; } [Ignore]public string Title { get; set; }}
+}
+}",
+@"using System;
+
+namespace A
+{
+    public static partial class AMapToExtensions
+    {
+        public static B.B MapToB(this A.A self)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self), ""A.A -> B.B: Source is null."");
+            }
+            
+            var target = new B.B
+            {
+                Name = self.Name ?? throw new Exception(""A.A -> B.B: Property 'Name' is null.""),
             };
             
             return target;

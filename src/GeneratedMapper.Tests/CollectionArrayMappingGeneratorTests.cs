@@ -1,28 +1,29 @@
-﻿using GeneratedMapper.Tests.Helpers;
+﻿using System.Collections.Generic;
+using GeneratedMapper.Tests.Helpers;
 using NUnit.Framework;
 
 namespace GeneratedMapper.Tests
 {
-    public class BasicMapperMappingGeneratorTests
+    public class CollectionArrayVariantsMappingGeneratorTests
     {
         [Test]
-        public void MapSinglePropertyFromSourceToDestination()
+        public void MapArrayToEnumerable()
         {
             GeneratorTestHelper.TestGeneratedCode(@"using System;
+using System.Collections.Generic;
 using GeneratedMapper.Attributes;
 
 namespace A {
     [MapTo(typeof(B.B))]
-    public class A { 
-        public A Obj { get; set; } 
-    }
+    public class A { public string[] Prop { get; set; } }
 }
 
 namespace B {
-    public class B { public B Obj { get; set; } }
+    public class B { public IEnumerable<string> Prop { get; set; } }
 }
 }",
 @"using System;
+using System.Linq;
 
 #nullable enable
 
@@ -39,7 +40,7 @@ namespace A
             
             var target = new B.B
             {
-                Obj = self.Obj?.MapToB() ?? throw new Exception(""A.A -> B.B: Property 'Obj' is null.""),
+                Prop = self.Prop ?? throw new Exception(""A.A -> B.B: Property 'Prop' is null.""),
             };
             
             return target;
@@ -48,44 +49,25 @@ namespace A
 }
 ");
         }
-
+        
         [Test]
-        public void MapSinglePropertyFromSourceToDestination_WithNullableSource()
-        {
-            GeneratorTestHelper.TestReportedDiagnostics(@"using System;
-using GeneratedMapper.Attributes;
-
-namespace A {
-    [MapTo(typeof(B.B))]
-    public class A { 
-        public A? Obj { get; set; } 
-    }
-}
-
-namespace B {
-    public class B { public B Obj { get; set; } }
-}
-}", "GM0004");
-        }
-
-        [Test]
-        public void MapSinglePropertyFromSourceToDestination_WithNullableDestination()
+        public void MapArrayToArray()
         {
             GeneratorTestHelper.TestGeneratedCode(@"using System;
+using System.Collections.Generic;
 using GeneratedMapper.Attributes;
 
 namespace A {
     [MapTo(typeof(B.B))]
-    public class A { 
-        public A Obj { get; set; } 
-    }
+    public class A { public string[] Prop { get; set; } }
 }
 
 namespace B {
-    public class B { public B? Obj { get; set; } }
+    public class B { public string[] Prop { get; set; } }
 }
 }",
 @"using System;
+using System.Linq;
 
 #nullable enable
 
@@ -102,36 +84,35 @@ namespace A
             
             var target = new B.B
             {
-                Obj = self.Obj?.MapToB(),
+                Prop = self.Prop?.ToArray() ?? throw new Exception(""A.A -> B.B: Property 'Prop' is null.""),
             };
             
             return target;
         }
     }
 }
-");
+"
+);
         }
 
-
-
         [Test]
-        public void MapSinglePropertyFromSourceToDestination_WithNullables()
+        public void MapArrayToList()
         {
             GeneratorTestHelper.TestGeneratedCode(@"using System;
+using System.Collections.Generic;
 using GeneratedMapper.Attributes;
 
 namespace A {
     [MapTo(typeof(B.B))]
-    public class A { 
-        public A? Obj { get; set; } 
-    }
+    public class A { public string[] Prop { get; set; } }
 }
 
 namespace B {
-    public class B { public B? Obj { get; set; } }
+    public class B { public List<string> Prop { get; set; } }
 }
 }",
 @"using System;
+using System.Linq;
 
 #nullable enable
 
@@ -148,7 +129,7 @@ namespace A
             
             var target = new B.B
             {
-                Obj = self.Obj?.MapToB(),
+                Prop = self.Prop?.ToList() ?? throw new Exception(""A.A -> B.B: Property 'Prop' is null.""),
             };
             
             return target;
@@ -156,6 +137,51 @@ namespace A
     }
 }
 ");
+
+        }
+        [Test]
+        public void MapArrayToReadOnlyList()
+        {
+            GeneratorTestHelper.TestGeneratedCode(@"using System;
+using System.Collections.Generic;
+using GeneratedMapper.Attributes;
+
+namespace A {
+    [MapTo(typeof(B.B))]
+    public class A { public string[] Prop { get; set; } }
+}
+
+namespace B {
+    public class B { public IReadOnlyList<string> Prop { get; set; } }
+}
+}",
+@"using System;
+using System.Linq;
+
+#nullable enable
+
+namespace A
+{
+    public static partial class AMapToExtensions
+    {
+        public static B.B MapToB(this A.A self)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self), ""A.A -> B.B: Source is null."");
+            }
+            
+            var target = new B.B
+            {
+                Prop = self.Prop?.ToList() ?? throw new Exception(""A.A -> B.B: Property 'Prop' is null.""),
+            };
+            
+            return target;
+        }
+    }
+}
+");
+
         }
     }
 }

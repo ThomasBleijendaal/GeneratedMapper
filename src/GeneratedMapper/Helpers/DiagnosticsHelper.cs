@@ -7,7 +7,7 @@ namespace GeneratedMapper.Helpers
     {
         private static DiagStruct _noParameterlessConstructor = new()
         {
-            Id = "GM001",
+            Id = "GM0001",
             Title = "Type has no parameterless constructor.",
             Message = "The destination type must have a public, parameterless constructor.",
             Severity = DiagnosticSeverity.Error
@@ -15,7 +15,7 @@ namespace GeneratedMapper.Helpers
 
         private static DiagStruct _unrecognizedTypes = new()
         {
-            Id = "GM002",
+            Id = "GM0002",
             Title = "Source or target type cannot be recognized",
             Message = "The source or target type cannot be correctly recognized as INamedTypeSymbol.",
             Severity = DiagnosticSeverity.Error
@@ -23,7 +23,7 @@ namespace GeneratedMapper.Helpers
 
         private static DiagStruct _unmappableProperty = new()
         {
-            Id = "GM003",
+            Id = "GM0003",
             Title = "Property cannot be mapped",
             Message = "The type '{0}' contains the property '{1}' which cannot be found in type '{2}'. Either correct the mapping with [MapWith] or [Ignore] the property, or fix the Index of the attribute.",
             Severity = DiagnosticSeverity.Error
@@ -31,7 +31,7 @@ namespace GeneratedMapper.Helpers
 
         private static DiagStruct _incorrectNullablity = new()
         {
-            Id = "GM004",
+            Id = "GM0004",
             Title = "Property cannot be mapped",
             Message = "The source contains the property '{0}' which does not match the nullablity of property '{1} in type the destination.",
             Severity = DiagnosticSeverity.Error
@@ -39,7 +39,7 @@ namespace GeneratedMapper.Helpers
 
         private static DiagStruct _leftOverProperty = new()
         {
-            Id = "GM005",
+            Id = "GM0005",
             Title = "Property cannot be mapped",
             Message = "The type '{0}' contains the property '{1}' which does not have a mapping to a property from type '{2}'. Either correct the mapping with [MapWith] or [IgnoreInTarget] the property, or fix the Index of the attribute.",
             Severity = DiagnosticSeverity.Error
@@ -47,7 +47,7 @@ namespace GeneratedMapper.Helpers
 
         private static DiagStruct _cannotFindType = new()
         {
-            Id = "GM006",
+            Id = "GM0006",
             Title = "Type cannot be found",
             Message = "The type '{0}' cannot be found.",
             Severity = DiagnosticSeverity.Error
@@ -55,7 +55,7 @@ namespace GeneratedMapper.Helpers
 
         private static DiagStruct _cannotFindConstructorArgumentType = new()
         {
-            Id = "GM007",
+            Id = "GM0007",
             Title = "Type cannot be found of constructor parameter",
             Message = "The parameter '{0}' on the constructor of type '{1}' cannot be recognized correctly.",
             Severity = DiagnosticSeverity.Error
@@ -63,7 +63,7 @@ namespace GeneratedMapper.Helpers
 
         private static DiagStruct _unmappableEnumerableProperty = new()
         {
-            Id = "GM008",
+            Id = "GM0008",
             Title = "Property cannot be mapped",
             Message = "The type '{0}' contains the enumerable property '{1}' which cannot be mapped to property '{2}' in type '{3}'. Either correct the mapping with [MapWith] or [Ignore] the property.",
             Severity = DiagnosticSeverity.Error
@@ -71,7 +71,7 @@ namespace GeneratedMapper.Helpers
 
         private static DiagStruct _subClassHasIncompatibleMapper = new()
         {
-            Id = "GM009",
+            Id = "GM0009",
             Title = "Property cannot be mapped",
             Message = "The type of property '{0}' does not have a compatible [MapTo] attribute indicating it can be mapped to type '{1}'.",
             Severity = DiagnosticSeverity.Error
@@ -79,7 +79,7 @@ namespace GeneratedMapper.Helpers
 
         private static DiagStruct _missingMappingInformation = new()
         {
-            Id = "GM010",
+            Id = "GM0010",
             Title = "Property cannot be mapped",
             Message = "The mapper for mapping type '{0}' to type '{1}' cannot be found.",
             Severity = DiagnosticSeverity.Error
@@ -87,15 +87,15 @@ namespace GeneratedMapper.Helpers
 
         private static DiagStruct _conflictingMappingInformation = new()
         {
-            Id = "GM011",
+            Id = "GM0011",
             Title = "Property cannot be mapped",
-            Message = "The property '{0}' has multiple mappings for the same target type.",
+            Message = "The property '{0}' has multiple mappings for the same target type, or source property type does not match destination property type.",
             Severity = DiagnosticSeverity.Error
         };
 
         private static DiagStruct _emptyMapper = new()
         {
-            Id = "GM012",
+            Id = "GM0012",
             Title = "Mapper is empty",
             Message = "The mapper for mapping type '{0}' to type '{1}' does not contain any mappings. Remove the [MapFrom/MapTo] attribute or do not [Ignore] all properties.",
             Severity = DiagnosticSeverity.Error
@@ -106,6 +106,14 @@ namespace GeneratedMapper.Helpers
             Id = "GM0013",
             Title = "Method cannot be found",
             Message = "The method '{2}' for a property '{1}' of type '{0}' was specified using a [MapWith] but cannot be found.",
+            Severity = DiagnosticSeverity.Error
+        };
+
+        private static DiagStruct _cannotFindPropertyToIgnore = new()
+        {
+            Id = "GM0014",
+            Title = "Method cannot be found",
+            Message = "The property '{1}' of type '{0}' was specified using a [IgnoreInTarget] but cannot be found.",
             Severity = DiagnosticSeverity.Error
         };
 
@@ -135,6 +143,8 @@ namespace GeneratedMapper.Helpers
             => GetDiagnostic(_conflictingMappingInformation, attributeData, sourceProperty);
         public static Diagnostic EmptyMapper(AttributeData attributeData, string sourceType, string destinationType)
             => GetDiagnostic(_emptyMapper, attributeData, sourceType, destinationType);
+        public static Diagnostic MissingIgnoreInTarget(AttributeData attributeData, string targetType, string targetProperty)
+            => GetDiagnostic(_cannotFindPropertyToIgnore, attributeData, targetType, targetProperty);
 
         public static Diagnostic Debug(Exception ex) => Debug($"{ex.Message } -- {ex.StackTrace.Replace("\n", "--").Replace("\r", "")}");
 

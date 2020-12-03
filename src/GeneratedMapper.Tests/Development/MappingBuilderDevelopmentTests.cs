@@ -7,9 +7,9 @@ using Microsoft.CodeAnalysis;
 using Moq;
 using NUnit.Framework;
 
-namespace GeneratedMapper.Tests
+namespace GeneratedMapper.Tests.Development
 {
-    internal class MappingBuilderTests
+    internal class MappingBuilderDevelopmentTests
     {
         private readonly ConfigurationValues _values = new ConfigurationValues(IndentStyle.Space, 4, new MapperCustomizations { ThrowWhenNotNullablePropertyIsNull = false });
 
@@ -115,7 +115,7 @@ namespace Namespace
             var customizations = new MapperCustomizations
             {
                 ThrowWhenNotNullablePropertyIsNull = false,
-                NamespacesToInclude = new [] { "Hard.To.Recognize.Namespace", "Hidden.Namespace" }
+                NamespacesToInclude = new[] { "Hard.To.Recognize.Namespace", "Hidden.Namespace" }
             };
 
             var mappingInformation = new MappingInformation(_attributeData.Object, new ConfigurationValues(IndentStyle.Space, 4, customizations))
@@ -161,7 +161,7 @@ namespace Namespace
             {
                 ThrowWhenNotNullablePropertyIsNull = true
             };
-            
+
             var mappingInformation = new MappingInformation(_attributeData.Object, new ConfigurationValues(IndentStyle.Space, 4, customizations))
                 .MapFrom(_sourceType.Object)
                 .MapTo(_destinationType.Object);
@@ -548,78 +548,6 @@ namespace Namespace
             var target = new Namespace.Destination
             {
                 Nom = self.Name,
-            };
-            
-            return target;
-        }
-    }
-}
-");
-
-        [Test]
-        public void MappingPropertyToStringFromSourceToDestination()
-            => DoTest(_mappingInformation,
-                new[]
-                {
-                    new PropertyMappingInformation(_mappingInformation).MapFrom("Count", false, false).MapTo("Count", false, false).UsingMethod("ToString", default, Enumerable.Empty<ParameterInformation>())
-                },
-                @"using System;
-
-#nullable enable
-
-namespace Namespace
-{
-    public static partial class SourceMapToExtensions
-    {
-        public static Namespace.Destination MapToDestination(this Namespace.Source self)
-        {
-            if (self is null)
-            {
-                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
-            }
-            
-            var target = new Namespace.Destination
-            {
-                Count = self.Count.ToString(),
-            };
-            
-            return target;
-        }
-    }
-}
-");
-
-        [Test]
-        public void MappingPropertyToStringWithArgumentsFromSourceToDestination()
-            => DoTest(_mappingInformation,
-                new[]
-                {
-                    new PropertyMappingInformation(_mappingInformation)
-                        .MapFrom("Count", false, false)
-                        .MapTo("Count", false, false)
-                        .UsingMethod("ToString", "Namespace.Extensions", new [] {
-                            new ParameterInformation("format", "string", "System", false, default)
-                        })
-                },
-                @"using System;
-using Namespace.Extensions;
-
-#nullable enable
-
-namespace Namespace
-{
-    public static partial class SourceMapToExtensions
-    {
-        public static Namespace.Destination MapToDestination(this Namespace.Source self, string format)
-        {
-            if (self is null)
-            {
-                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
-            }
-            
-            var target = new Namespace.Destination
-            {
-                Count = self.Count.ToString(format),
             };
             
             return target;
@@ -1628,165 +1556,6 @@ namespace Namespace
     }
 }
 ");
-
-        [Test]
-        public void MappingUsingDeepMapperWithNullableArguments()
-        {
-            // source -> subsource -> subsubsource
-            
-            // subsubsource
-            var subSubNamespace = new Mock<INamespaceSymbol>();
-            subSubNamespace.Setup(x => x.Name).Returns("Sub");
-            subSubNamespace.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace.Sub.Sub");
-
-            var subSubSourceType = new Mock<INamedTypeSymbol>();
-            subSubSourceType.Setup(x => x.Name).Returns("SubSubSource");
-            subSubSourceType.Setup(x => x.ContainingNamespace).Returns(subSubNamespace.Object);
-            subSubSourceType.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace.Sub.Sub.SubSubSource");
-
-            var subSubDestinationType = new Mock<INamedTypeSymbol>();
-            subSubDestinationType.Setup(x => x.Name).Returns("SubSubDestination");
-            subSubDestinationType.Setup(x => x.ContainingNamespace).Returns(subSubNamespace.Object);
-            subSubDestinationType.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace.Sub.Sub.SubSubDestination");
-
-            var subSubSourceMapping = new MappingInformation(_attributeData.Object, _values)
-                .MapFrom(subSubSourceType.Object)
-                .MapTo(subSubDestinationType.Object);
-
-            subSubSourceMapping.AddProperty(new PropertyMappingInformation(subSubSourceMapping)
-                .MapFrom("SubSubSourceProperty", false, false)
-                .MapTo("SubSubDestinationProperty", false, false)
-                .UsingResolver("SubSubResolver", "Namespace.Sub.Sub.Resolvers.SubSubResolver", new[]
-                {
-                    new ParameterInformation("argument", "Namespace.Sub.Sub.Resolvers.Types.SubSubType", "Namespace.Sub.Sub.Resolvers.Types", false, default)
-                }));
-
-            subSubSourceMapping.AddProperty(new PropertyMappingInformation(subSubSourceMapping)
-                .MapFrom("SubSubSourceProperty2", false, false)
-                .MapTo("SubSubDestinationProperty2", false, false)
-                .UsingMethod("ToString", "System", new[]
-                {
-                    new ParameterInformation("format", "string", "System", false, default)
-                }));
-
-            // subsource
-            var subNamespace = new Mock<INamespaceSymbol>();
-            subNamespace.Setup(x => x.Name).Returns("Sub");
-            subNamespace.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace.Sub");
-
-            var subSourceType = new Mock<INamedTypeSymbol>();
-            subSourceType.Setup(x => x.Name).Returns("SubSource");
-            subSourceType.Setup(x => x.ContainingNamespace).Returns(subNamespace.Object);
-            subSourceType.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace.Sub.SubSource");
-
-            var subDestinationType = new Mock<INamedTypeSymbol>();
-            subDestinationType.Setup(x => x.Name).Returns("SubDestination");
-            subDestinationType.Setup(x => x.ContainingNamespace).Returns(subNamespace.Object);
-            subDestinationType.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace.Sub.SubDestination");
-
-            var subSourceMapping = new MappingInformation(_attributeData.Object, _values)
-                .MapFrom(subSourceType.Object)
-                .MapTo(subDestinationType.Object);
-
-            subSourceMapping.AddProperty(new PropertyMappingInformation(subSourceMapping)
-                .MapFrom("SubSourceProperty", false, false)
-                .MapTo("SubDestinationProperty", false, false)
-                .UsingResolver("SubResolver", "Namespace.Sub.Resolvers.SubResolver", new[]
-                {
-                    new ParameterInformation("argument", "Namespace.Sub.Resolvers.Types.SubType", "Namespace.Sub.Resolvers.Types", false, default)
-                }));
-
-            subSourceMapping.AddProperty(new PropertyMappingInformation(subSourceMapping)
-                .MapFrom("SubSourceProperty2", false, false)
-                .MapTo("SubDestinationProperty2", false, false)
-                .UsingMethod("ToString", "System", new[]
-                {
-                    new ParameterInformation("format", "string", "System", false, default)
-                }));
-
-            subSourceMapping.AddProperty(new PropertyMappingInformation(subSourceMapping)
-                .MapFrom("SubSubSource", false, false)
-                .MapTo("SubSubDestination", false, false)
-                .UsingMapper(subSubSourceType.Object, subSubDestinationType.Object)
-                .SetMappingInformation(subSubSourceMapping)); 
-            
-            // source
-            var @namespace = new Mock<INamespaceSymbol>();
-            @namespace.Setup(x => x.Name).Returns("Namespace");
-            @namespace.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace");
-
-            var sourceType = new Mock<INamedTypeSymbol>();
-            sourceType.Setup(x => x.Name).Returns("Source");
-            sourceType.Setup(x => x.ContainingNamespace).Returns(@namespace.Object);
-            sourceType.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace.Source");
-
-            var destinationType = new Mock<INamedTypeSymbol>();
-            destinationType.Setup(x => x.Name).Returns("Destination");
-            destinationType.Setup(x => x.ContainingNamespace).Returns(@namespace.Object);
-            destinationType.Setup(x => x.ToDisplayString(It.IsAny<SymbolDisplayFormat>())).Returns("Namespace.Destination");
-
-            var sourceMapping = new MappingInformation(_attributeData.Object, _values)
-                .MapFrom(sourceType.Object)
-                .MapTo(destinationType.Object);
-
-            sourceMapping.AddProperty(new PropertyMappingInformation(sourceMapping)
-                .MapFrom("SourceProperty", false, false)
-                .MapTo("DestinationProperty", false, false)
-                .UsingResolver("Resolver", "Namespace.Resolvers.Resolver", new[]
-                {
-                    new ParameterInformation("argument", "Namespace.Resolvers.Types.Type", "Namespace.Resolvers.Types", false, default)
-                }));
-
-            sourceMapping.AddProperty(new PropertyMappingInformation(sourceMapping)
-                .MapFrom("SourceProperty2", false, false)
-                .MapTo("DestinationProperty2", false, false)
-                .UsingMethod("ToString", "System", new[]
-                {
-                    new ParameterInformation("format", "string", "System", false, default)
-                }));
-
-            sourceMapping.AddProperty(new PropertyMappingInformation(sourceMapping)
-                .MapFrom("SubSource", false, false)
-                .MapTo("SubDestination", false, false)
-                .UsingMapper(subSourceType.Object, subDestinationType.Object)
-                .SetMappingInformation(subSourceMapping));
-
-            var builder = new MappingBuilder(sourceMapping);
-
-            var expectedSource = @"using System;
-using Namespace.Sub;
-using Namespace.Sub.Sub;
-
-#nullable enable
-
-namespace Namespace
-{
-    public static partial class SourceMapToExtensions
-    {
-        public static Namespace.Destination MapToDestination(this Namespace.Source self, Namespace.Resolvers.Types.Type resolverArgument, string format, Namespace.Sub.Resolvers.Types.SubType subResolverArgument, Namespace.Sub.Sub.Resolvers.Types.SubSubType subSubResolverArgument)
-        {
-            if (self is null)
-            {
-                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
-            }
-            
-            var resolver = new Namespace.Resolvers.Resolver(resolverArgument);
-            
-            var target = new Namespace.Destination
-            {
-                DestinationProperty = resolver.Resolve(self.SourceProperty),
-                DestinationProperty2 = self.SourceProperty2.ToString(format),
-                SubDestination = self.SubSource.MapToSubDestination(subResolverArgument, format, subSubResolverArgument),
-            };
-            
-            return target;
-        }
-    }
-}
-";
-
-            Assert.AreEqual(expectedSource, builder.GenerateSourceText().ToString());
-        }
 
         [Test]
         public void MappingUsingSubClasses()

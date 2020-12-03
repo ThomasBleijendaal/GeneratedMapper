@@ -30,9 +30,11 @@ namespace GeneratedMapper.Builders
 
             if (_information.CollectionType != null)
             {
+                // TODO: what if the element type is nullable?
+
                 var enumerationMethod = _information.CollectionType == DestinationCollectionType.List ? ".ToList()"
                     : _information.CollectionType == DestinationCollectionType.Array ? ".ToArray()"
-                    : "";
+                    : string.Empty;
 
                 var optionalEmptyCollectionCreation = !_information.DestinationPropertyIsNullable && _information.SourcePropertyIsNullable
                     ? $" ?? Enumerable.Empty<{_information.DestinationCollectionItemTypeName}>(){enumerationMethod}"
@@ -52,7 +54,7 @@ namespace GeneratedMapper.Builders
                 }
                 else
                 {
-                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}?{enumerationMethod}{optionalEmptyCollectionCreation}";
+                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}{(string.IsNullOrEmpty(enumerationMethod) ? string.Empty : $"?{enumerationMethod}")}{optionalEmptyCollectionCreation}";
                 }
             }
             else

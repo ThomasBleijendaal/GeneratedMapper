@@ -26,14 +26,14 @@ namespace GeneratedMapper.Parsers
         private readonly List<ExtensionMethodInformation> _extensionMethods;
 
         public PropertyParser(
-            GeneratorExecutionContext context, 
+            GeneratorExecutionContext context,
             ParameterParser parameterParser,
             List<ExtensionMethodInformation> extensionMethods)
         {
             _enumerableType = context.Compilation.GetTypeByMetadataName("System.Collections.IEnumerable") ?? throw new InvalidOperationException("Cannot find System.Collections.IEnumerable");
             _genericEnumerableType = context.Compilation.GetTypeByMetadataName("System.Collections.Generic.IEnumerable`1")?.ConstructUnboundGenericType() ?? throw new InvalidOperationException("Cannot find System.Collections.Generic.IEnumerable`1");
             _genericListlikeType = context.Compilation.GetTypeByMetadataName("System.Collections.Generic.ICollection`1")?.ConstructUnboundGenericType() ?? throw new InvalidOperationException("Cannot find System.Collections.Generic.ICollection`1");
-            _genericReadOnlyListlikeType = context.Compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyList`1")?.ConstructUnboundGenericType() ?? throw new InvalidOperationException("Cannot find System.Collections.Generic.IReadOnlyList`1");
+            _genericReadOnlyListlikeType = context.Compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyCollection`1")?.ConstructUnboundGenericType() ?? throw new InvalidOperationException("Cannot find System.Collections.Generic.IReadOnlyList`1");
             _stringType = context.Compilation.GetTypeByMetadataName("System.String") ?? throw new InvalidOperationException("Cannot find System.String");
 
             _mapToAttribute = context.Compilation.GetTypeByMetadataName(typeof(MapToAttribute).FullName) ?? throw new InvalidOperationException("Cannot find MapToAttribute");
@@ -57,8 +57,19 @@ namespace GeneratedMapper.Parsers
 
             try
             {
-                // general issues:
-                // TODO: what if the user wants to resolve something that also has a MapTo / MapFrom?
+                var sourcePropertyCollectionType = GetCollectionType(sourceProperty);
+                var destinationPropertyCollectionType = GetCollectionType(destinationProperty);
+
+                // check if property is collection to collection
+                var isCollectionToCollection = sourcePropertyCollectionType is ITypeSymbol && destinationPropertyCollectionType is ITypeSymbol;
+
+                var sourceTypeToUse = (isCollectionToCollection ? sourcePropertyCollectionType : sourceProperty.Type)!;
+                var destinationTypeToUse = (isCollectionToCollection ? destinationPropertyCollectionType : destinationProperty.Type)!;
+
+                if (isCollectionToCollection)
+                {
+                    MapPropertyAsCollection(propertyMapping, destinationProperty);
+                }
 
                 if (mapWithAttribute is not null && GetMapWithResolverType(mapWithAttribute) is INamedTypeSymbol resolverType)
                 {
@@ -67,41 +78,28 @@ namespace GeneratedMapper.Parsers
                         _parameterParser.ParseConstructorParameters(resolverType));
                 }
 
-                // MapTo / MapFrom on sub property type
-                if (destinationProperty.Type.HasAttribute(_mapFromAttribute, default, 0, sourceProperty.Type) ||
-                    sourceProperty.Type.HasAttribute(_mapToAttribute, default, 0, destinationProperty.Type))
+                if (destinationTypeToUse.HasAttribute(_mapFromAttribute, default, 0, sourceTypeToUse) ||
+                    sourceTypeToUse.HasAttribute(_mapToAttribute, default, 0, destinationTypeToUse))
                 {
-                    propertyMapping.UsingMapper(sourceProperty.Type, destinationProperty.Type);
+                    propertyMapping.UsingMapper(sourceTypeToUse, destinationTypeToUse);
                 }
 
-                // MapTo / MapFrom on collection element type
-                if (GetCollectionType(sourceProperty) is ITypeSymbol sourcePropertyCollectionType &&
-                    GetCollectionType(destinationProperty) is ITypeSymbol destinationPropertyCollectionType)
-                {
-                    MapPropertyAsCollection(propertyMapping, destinationProperty);
-
-                    if (destinationPropertyCollectionType.HasAttribute(_mapFromAttribute, default, 0, sourcePropertyCollectionType) ||
-                        sourcePropertyCollectionType.HasAttribute(_mapToAttribute, default, 0, destinationPropertyCollectionType))
-                    {
-                        propertyMapping.UsingMapper(sourcePropertyCollectionType, destinationPropertyCollectionType);
-                    }
-                }
 
                 if (mapWithAttribute?.ConstructorArgument<string>(1) is string propertyMethodToCall)
                 {
-                    // TODO: what about calling method on array item? that is a different type
-                    if (sourceProperty.Type is INamedTypeSymbol namedSourcePropertyType &&
+                    if (sourceTypeToUse is INamedTypeSymbol namedSourcePropertyType &&
                         namedSourcePropertyType.GetMembers(propertyMethodToCall)
                             .OfType<IMethodSymbol>()
                             .Where(x => x.DeclaredAccessibility == Accessibility.Public && !x.IsStatic)
+                            .Where(x => destinationTypeToUse.Equals(x.ReturnType, SymbolEqualityComparer.Default))
                             .OrderBy(x => x.Parameters.Length)
-                            .FirstOrDefault() is IMethodSymbol sourcePropertyMethod) 
+                            .FirstOrDefault() is IMethodSymbol sourcePropertyMethod)
                     {
                         propertyMapping.UsingMethod(propertyMethodToCall, default, _parameterParser.ParseMethodParameters(sourcePropertyMethod.Parameters));
                     }
                     else if (_extensionMethods.FirstOrDefault(extensionMethod => extensionMethod.MethodName == propertyMethodToCall &&
-                        sourceProperty.Type.Equals(extensionMethod.AcceptsType, SymbolEqualityComparer.Default) &&
-                        destinationProperty.Type.Equals(extensionMethod.ReturnsType, SymbolEqualityComparer.Default)) is ExtensionMethodInformation extensionMethod)
+                        sourceTypeToUse.Equals(extensionMethod.AcceptsType, SymbolEqualityComparer.Default) &&
+                        destinationTypeToUse.Equals(extensionMethod.ReturnsType, SymbolEqualityComparer.Default)) is ExtensionMethodInformation extensionMethod)
                     {
                         propertyMapping.UsingMethod(propertyMethodToCall, extensionMethod.PartOfType.ContainingNamespace.ToDisplayString(), extensionMethod.Parameters);
                     }
@@ -189,7 +187,7 @@ namespace GeneratedMapper.Parsers
             if (destinationCollectionItemType is not null)
             {
                 propertyMapping.AsCollection(
-                    listType, 
+                    listType,
                     destinationCollectionItemType.ToDisplayString());
             }
         }

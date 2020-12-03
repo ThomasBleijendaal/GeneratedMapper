@@ -3,7 +3,7 @@ using NUnit.Framework;
 
 namespace GeneratedMapper.Tests
 {
-    public class ParametersFromResolverMappingGeneratorTests
+    public class ParametersFromExtensionMethodMappingGeneratorTests
     {
         [Test]
         public void MapSinglePropertyFromSourceToDestination_SingleParameter()
@@ -11,40 +11,41 @@ namespace GeneratedMapper.Tests
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-namespace R {
-    public class Resolver { public Resolver(string arg1, string arg2) { } public string Resolve(string input) { return input; } }
+namespace Ex {
+    public static class StringExtensions { public static string ExtensionMethod(this string subject, int startIndex) { } }
 }
 
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 
-        [MapWith(typeof(R.Resolver))]
+        [MapWith(""Target"", ""ExtensionMethod"")]
         public string Name { get; set; } 
     }
 }
 
 namespace B {
-    public class B { public string Name { get; set; } }
+    public class B { public string Target { get; set; } }
 }
 }",
 @"using System;
+using Ex;
+
+#nullable enable
 
 namespace A
 {
     public static partial class AMapToExtensions
     {
-        public static B.B MapToB(this A.A self, string resolverArg1, string resolverArg2)
+        public static B.B MapToB(this A.A self, int startIndex)
         {
             if (self is null)
             {
                 throw new ArgumentNullException(nameof(self), ""A.A -> B.B: Source is null."");
             }
             
-            var resolver = new R.Resolver(resolverArg1, resolverArg2);
-            
             var target = new B.B
             {
-                Name = resolver.Resolve(self.Name ?? throw new Exception(""A.A -> B.B: Property 'Name' is null."")),
+                Target = self.Name?.ExtensionMethod(startIndex) ?? throw new Exception(""A.A -> B.B: Property 'Name' is null.""),
             };
             
             return target;
@@ -55,21 +56,22 @@ namespace A
         }
 
         [Test]
-        public void MapSinglePropertyFromSourceToDestination_MultipleParametersSameResolver()
+        public void MapSinglePropertyFromSourceToDestination_MultipleParametersSameMethod()
         {
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-namespace R {
-    public class Resolver { public Resolver(string arg1, string arg2) { } public string Resolve(string input) { return input; } }
+namespace Ex {
+    public static class StringExtensions { public static string ExtensionMethod(this string subject, int startIndex) { } }
 }
 
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 
-        [MapWith(""Target1"", typeof(R.Resolver))]
+        [MapWith(""Target1"", ""ExtensionMethod"")]
         public string Name1 { get; set; } 
-        [MapWith(""Target2"", typeof(R.Resolver))]
+
+        [MapWith(""Target2"", ""ExtensionMethod"")]
         public string Name2 { get; set; } 
     }
 }
@@ -79,24 +81,25 @@ namespace B {
 }
 }",
 @"using System;
+using Ex;
+
+#nullable enable
 
 namespace A
 {
     public static partial class AMapToExtensions
     {
-        public static B.B MapToB(this A.A self, string resolverArg1, string resolverArg2)
+        public static B.B MapToB(this A.A self, int startIndex)
         {
             if (self is null)
             {
                 throw new ArgumentNullException(nameof(self), ""A.A -> B.B: Source is null."");
             }
             
-            var resolver = new R.Resolver(resolverArg1, resolverArg2);
-            
             var target = new B.B
             {
-                Target1 = resolver.Resolve(self.Name1 ?? throw new Exception(""A.A -> B.B: Property 'Name1' is null."")),
-                Target2 = resolver.Resolve(self.Name2 ?? throw new Exception(""A.A -> B.B: Property 'Name2' is null."")),
+                Target1 = self.Name1?.ExtensionMethod(startIndex) ?? throw new Exception(""A.A -> B.B: Property 'Name1' is null.""),
+                Target2 = self.Name2?.ExtensionMethod(startIndex) ?? throw new Exception(""A.A -> B.B: Property 'Name2' is null.""),
             };
             
             return target;
@@ -108,22 +111,25 @@ namespace A
 
 
         [Test]
-        public void MapSinglePropertyFromSourceToDestination_MultipleParametersDifferentResolver()
+        public void MapSinglePropertyFromSourceToDestination_MultipleParametersDifferentMethod()
         {
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-namespace R {
-    public class Resolver1 { public Resolver1(string arg1, string arg2) { } public string Resolve(string input) { return input; } }
-    public class Resolver2 { public Resolver2(string arg1, string arg2) { } public string Resolve(string input) { return input; } }
+namespace Ex1 {
+    public static class StringExtensions1 { public static string ExtensionMethod1(this string subject, int startIndex) { } }
+}
+namespace Ex2 {
+    public static class StringExtensions2 { public static string ExtensionMethod2(this string subject, int start = 3, int? length = 10) { } }
 }
 
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 
-        [MapWith(""Target1"", typeof(R.Resolver1))]
+        [MapWith(""Target1"", ""ExtensionMethod1"")]
         public string Name1 { get; set; } 
-        [MapWith(""Target2"", typeof(R.Resolver2))]
+
+        [MapWith(""Target2"", ""ExtensionMethod2"")]
         public string Name2 { get; set; } 
     }
 }
@@ -133,26 +139,26 @@ namespace B {
 }
 }",
 @"using System;
+using Ex1;
+using Ex2;
+
+#nullable enable
 
 namespace A
 {
     public static partial class AMapToExtensions
     {
-        public static B.B MapToB(this A.A self, string resolver1Arg1, string resolver1Arg2, string resolver2Arg1, string resolver2Arg2)
+        public static B.B MapToB(this A.A self, int startIndex, int start = 3, int? length = 10)
         {
             if (self is null)
             {
                 throw new ArgumentNullException(nameof(self), ""A.A -> B.B: Source is null."");
             }
             
-            var resolver1 = new R.Resolver1(resolver1Arg1, resolver1Arg2);
-            
-            var resolver2 = new R.Resolver2(resolver2Arg1, resolver2Arg2);
-            
             var target = new B.B
             {
-                Target1 = resolver1.Resolve(self.Name1 ?? throw new Exception(""A.A -> B.B: Property 'Name1' is null."")),
-                Target2 = resolver2.Resolve(self.Name2 ?? throw new Exception(""A.A -> B.B: Property 'Name2' is null."")),
+                Target1 = self.Name1?.ExtensionMethod1(startIndex) ?? throw new Exception(""A.A -> B.B: Property 'Name1' is null.""),
+                Target2 = self.Name2?.ExtensionMethod2(start, length) ?? throw new Exception(""A.A -> B.B: Property 'Name2' is null.""),
             };
             
             return target;

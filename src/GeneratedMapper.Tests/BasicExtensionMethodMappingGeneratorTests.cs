@@ -3,7 +3,7 @@ using NUnit.Framework;
 
 namespace GeneratedMapper.Tests
 {
-    public class BasicMapperMappingGeneratorTests
+    public class BasicExtensionMethodMappingGeneratorTests
     {
         [Test]
         public void MapSinglePropertyFromSourceToDestination()
@@ -11,18 +11,24 @@ namespace GeneratedMapper.Tests
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
+namespace Ex {
+    public static class StringExtensions { public static string ExtensionMethod(this string subject) { } }
+}
+
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 
-        public A Obj { get; set; } 
+        [MapWith(""Target"", ""ExtensionMethod"")]
+        public string Name { get; set; } 
     }
 }
 
 namespace B {
-    public class B { public B Obj { get; set; } }
+    public class B { public string Target { get; set; } }
 }
 }",
 @"using System;
+using Ex;
 
 #nullable enable
 
@@ -39,7 +45,7 @@ namespace A
             
             var target = new B.B
             {
-                Obj = self.Obj?.MapToB() ?? throw new Exception(""A.A -> B.B: Property 'Obj' is null.""),
+                Target = self.Name?.ExtensionMethod() ?? throw new Exception(""A.A -> B.B: Property 'Name' is null.""),
             };
             
             return target;
@@ -55,15 +61,20 @@ namespace A
             GeneratorTestHelper.TestReportedDiagnostics(@"using System;
 using GeneratedMapper.Attributes;
 
+namespace Ex {
+    public static class StringExtensions { public static string ExtensionMethod(this string subject) { } }
+}
+
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 
-        public A? Obj { get; set; } 
+        [MapWith(""Target"", ""ExtensionMethod"")]
+        public string? Name { get; set; } 
     }
 }
 
 namespace B {
-    public class B { public B Obj { get; set; } }
+    public class B { public string Target { get; set; } }
 }
 }", "GM0004");
         }
@@ -74,18 +85,24 @@ namespace B {
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
+namespace Ex {
+    public static class StringExtensions { public static string ExtensionMethod(this string subject) { } }
+}
+
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 
-        public A Obj { get; set; } 
+        [MapWith(""Target"", ""ExtensionMethod"")]
+        public string Name { get; set; } 
     }
 }
 
 namespace B {
-    public class B { public B? Obj { get; set; } }
+    public class B { public string? Target { get; set; } }
 }
 }",
 @"using System;
+using Ex;
 
 #nullable enable
 
@@ -102,7 +119,7 @@ namespace A
             
             var target = new B.B
             {
-                Obj = self.Obj?.MapToB(),
+                Target = self.Name?.ExtensionMethod(),
             };
             
             return target;
@@ -120,18 +137,24 @@ namespace A
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
+namespace Ex {
+    public static class StringExtensions { public static string ExtensionMethod(this string subject) { } }
+}
+
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 
-        public A? Obj { get; set; } 
+        [MapWith(""Target"", ""ExtensionMethod"")]
+        public string? Name { get; set; } 
     }
 }
 
 namespace B {
-    public class B { public B? Obj { get; set; } }
+    public class B { public string? Target { get; set; } }
 }
 }",
 @"using System;
+using Ex;
 
 #nullable enable
 
@@ -148,7 +171,7 @@ namespace A
             
             var target = new B.B
             {
-                Obj = self.Obj?.MapToB(),
+                Target = self.Name?.ExtensionMethod(),
             };
             
             return target;

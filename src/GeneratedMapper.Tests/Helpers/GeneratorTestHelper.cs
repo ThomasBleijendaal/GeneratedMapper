@@ -9,7 +9,7 @@ namespace GeneratedMapper.Tests.Helpers
 {
     public static class GeneratorTestHelper
     {
-        private static (ImmutableArray<Diagnostic>, string) GetGeneratedOutput(string source)
+        private static (ImmutableArray<Diagnostic>, string[]) GetGeneratedOutput(string source)
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(source);
             var references = AppDomain.CurrentDomain.GetAssemblies()
@@ -27,16 +27,36 @@ namespace GeneratedMapper.Tests.Helpers
 
             var trees = outputCompilation.SyntaxTrees.ToList();
 
-            return (diagnostics, trees.Count != originalTreeCount ? trees[^1].ToString() : string.Empty);
+            return (diagnostics,
+                trees.Count != originalTreeCount
+                    ? trees.Skip(1).Select(x => x.ToString()).ToArray()
+                    : new string[0]);
         }
 
-        public static void TestGeneratedCode(string sourceText, string expectedOutputSourceText)
+        public static void TestGeneratedCode(string sourceText, params string[] expectedOutputSourceTexts)
         {
             var (diagnostics, output) = GetGeneratedOutput(sourceText);
-            Assert.AreEqual(0, diagnostics.Length);
-            Assert.AreEqual(expectedOutputSourceText, output);
+
+            for (var i = 0; i < expectedOutputSourceTexts.Length; i++)
+            {
+                Assert.AreEqual(expectedOutputSourceTexts[i], output[i]);
+            }
+
+            Assert.AreEqual(0, diagnostics.Length, string.Join(", ", diagnostics.Select(x => x.GetMessage())));
         }
 
-        // TODO: test diagnostics
+        public static void TestReportedDiagnostics(string sourceText, params string[] expectedDiagnosticErrors)
+        {
+            var (diagnostics, output) = GetGeneratedOutput(sourceText);
+
+            var errorCodes = diagnostics.Select(x => x.Id).ToArray();
+
+            Assert.AreEqual(expectedDiagnosticErrors.Length, diagnostics.Length);
+
+            foreach (var diagnostic in expectedDiagnosticErrors)
+            {
+                Assert.Contains(diagnostic, errorCodes);
+            }
+        }
     }
 }
