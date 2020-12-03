@@ -99,7 +99,7 @@ namespace A.B
             var target = new Z.Y.Y
             {
                 Property = self.Property,
-                Obj = self.Obj?.MapToX(resolverCultureInfo) ?? throw new Exception(""A.B.B -> Z.Y.Y: Property 'Obj' is null.""),
+                Obj = (self.Obj ?? throw new Exception(""A.B.B -> Z.Y.Y: Property 'Obj' is null."")).MapToX(resolverCultureInfo),
             };
             
             return target;
@@ -127,7 +127,7 @@ namespace A
             var target = new Z.Z
             {
                 Property = self.Property ?? throw new Exception(""A.A -> Z.Z: Property 'Property' is null.""),
-                Obj = self.Obj?.MapToY(resolverCultureInfo) ?? throw new Exception(""A.A -> Z.Z: Property 'Obj' is null.""),
+                Obj = (self.Obj ?? throw new Exception(""A.A -> Z.Z: Property 'Obj' is null."")).MapToY(resolverCultureInfo),
             };
             
             return target;

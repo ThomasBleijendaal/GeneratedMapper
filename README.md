@@ -74,4 +74,5 @@ Don't delay, generate your object-to-object mappers at compile-time today!
 
 ## More information
 
-Please review the Example project to find more examples.
+Please review the Example project to find more examples. The GeneratedMapper.Tests project contains
+a lot of unit tests which also show what's possible.

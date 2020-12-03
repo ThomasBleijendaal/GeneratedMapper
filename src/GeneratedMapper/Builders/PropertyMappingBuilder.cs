@@ -23,63 +23,72 @@ namespace GeneratedMapper.Builders
 
             // only really throw when destination property can't handle a null
             var throwWhenNull = _information.BelongsToMapping.ConfigurationValues.Customizations.ThrowWhenNotNullablePropertyIsNull 
-                    && sourceCanBeNull 
-                    && !destinationCanHandleNull
+                    && !_information.SourcePropertyIsValueType
+                    && !_information.SourcePropertyIsNullable
                 ? $@" ?? throw new Exception(""{_information.BelongsToMapping.SourceType.ToDisplayString()} -> {_information.BelongsToMapping.DestinationType.ToDisplayString()}: Property '{_information.SourcePropertyName}' is null."")"
                 : string.Empty;
 
             if (_information.CollectionType != null)
             {
+                var optionalEmptyCollectionCreation = !_information.DestinationPropertyIsNullable && _information.SourcePropertyIsNullable
+                    ? $" ?? Enumerable.Empty<{_information.SourceCollectionItemTypeName}>()"
+                    : string.Empty;
+
+                var safePropagation = destinationCanHandleNull && string.IsNullOrEmpty(throwWhenNull) && string.IsNullOrEmpty(optionalEmptyCollectionCreation) ? "?" : "";
+
+                var propertyRead = !string.IsNullOrEmpty(throwWhenNull) || !string.IsNullOrEmpty(optionalEmptyCollectionCreation)
+                    ? $"({sourceInstanceName}.{_information.SourcePropertyName}{throwWhenNull}{optionalEmptyCollectionCreation})"
+                    : $"{sourceInstanceName}.{_information.SourcePropertyName}";
+
                 // TODO: what if the element type is nullable?
 
                 var enumerationMethod = _information.CollectionType == DestinationCollectionType.List ? ".ToList()"
                     : _information.CollectionType == DestinationCollectionType.Array ? ".ToArray()"
                     : string.Empty;
 
-                var optionalEmptyCollectionCreation = !_information.DestinationPropertyIsNullable && _information.SourcePropertyIsNullable
-                    ? $" ?? Enumerable.Empty<{_information.DestinationCollectionItemTypeName}>(){enumerationMethod}"
-                    : throwWhenNull;
-
                 if (_information.MappingInformationOfMapperToUse != null)
                 {
-                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}?.Select(element => element.MapTo{_information.MappingInformationOfMapperToUse.DestinationType.Name}({GetMappingArguments()})){enumerationMethod}{optionalEmptyCollectionCreation}";
+                    sourceExpression = $"{propertyRead}{safePropagation}.Select(element => element.MapTo{_information.MappingInformationOfMapperToUse.DestinationType.Name}({GetMappingArguments()})){enumerationMethod}";
                 }
                 else if (_information.SourcePropertyMethodToCall != null)
                 {
-                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}?.Select(element => element.{_information.SourcePropertyMethodToCall}({GetMethodArguments()})){enumerationMethod}{optionalEmptyCollectionCreation}";
+                    sourceExpression = $"{propertyRead}{safePropagation}.Select(element => element.{_information.SourcePropertyMethodToCall}({GetMethodArguments()})){enumerationMethod}";
                 }
                 else if (_information.ResolverTypeToUse != null)
                 {
-                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}?.Select(element => {_information.ResolverInstanceName}.Resolve(element)){enumerationMethod}{optionalEmptyCollectionCreation}";
+                    sourceExpression = $"{propertyRead}{safePropagation}.Select(element => {_information.ResolverInstanceName}.Resolve(element)){enumerationMethod}";
                 }
                 else
                 {
-                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}{(string.IsNullOrEmpty(enumerationMethod) ? string.Empty : $"?{enumerationMethod}")}{optionalEmptyCollectionCreation}";
+                    sourceExpression = $"{propertyRead}{(string.IsNullOrEmpty(enumerationMethod) ? string.Empty : $"{safePropagation}{enumerationMethod}")}";
                 }
             }
             else
             {
-                var safePropagation = (!_information.SourcePropertyIsValueType || _information.SourcePropertyIsNullable) && 
-                    !(_information.DestinationPropertyIsValueType && !_information.DestinationPropertyIsNullable)
-                    ? "?" : "";
+                // if the destination can handle null, but the source promises it won't be null, its better to play it safe for the unexpected null
+                var safePropagation = destinationCanHandleNull ? "?" : "";
+
+                var propertyRead = sourceCanBeNull && !destinationCanHandleNull
+                   ? $"({sourceInstanceName}.{_information.SourcePropertyName}{throwWhenNull})"
+                   : $"{sourceInstanceName}.{_information.SourcePropertyName}";
 
                 if (_information.MappingInformationOfMapperToUse != null)
                 {
-                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}{safePropagation}.MapTo{_information.MappingInformationOfMapperToUse.DestinationType.Name}({GetMappingArguments()}){throwWhenNull}";
+                    sourceExpression = $"{propertyRead}{safePropagation}.MapTo{_information.MappingInformationOfMapperToUse.DestinationType.Name}({GetMappingArguments()})";
                 }
                 else if (_information.SourcePropertyMethodToCall != null)
                 {
-                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}{safePropagation}.{_information.SourcePropertyMethodToCall}({GetMethodArguments()}){throwWhenNull}";
+                    sourceExpression = $"{propertyRead}{safePropagation}.{_information.SourcePropertyMethodToCall}({GetMethodArguments()})";
                 }
                 else if (_information.ResolverTypeToUse != null)
                 {
                     if (!_information.SourcePropertyIsNullable && !_information.DestinationPropertyIsNullable)
                     {
-                        sourceExpression = $"{_information.ResolverInstanceName}.Resolve({sourceInstanceName}.{_information.SourcePropertyName}{throwWhenNull})";
+                        sourceExpression = $"{_information.ResolverInstanceName}.Resolve({propertyRead})";
                     }
                     else if (!_information.DestinationPropertyIsNullable)
                     {
-                        sourceExpression = $"{_information.ResolverInstanceName}.Resolve({sourceInstanceName}.{_information.SourcePropertyName}){throwWhenNull}";
+                        sourceExpression = $"{_information.ResolverInstanceName}.Resolve({sourceInstanceName}.{_information.SourcePropertyName})";
                     } 
                     else
                     {

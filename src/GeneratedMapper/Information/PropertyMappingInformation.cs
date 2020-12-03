@@ -115,12 +115,12 @@ namespace GeneratedMapper.Information
         }
 
         public DestinationCollectionType? CollectionType { get; private set; }
-        public string? DestinationCollectionItemTypeName { get; private set; }
+        public string? SourceCollectionItemTypeName { get; private set; }
 
-        public PropertyMappingInformation AsCollection(DestinationCollectionType destinationCollectionType, string destinationItemTypeName)
+        public PropertyMappingInformation AsCollection(DestinationCollectionType destinationCollectionType, string sourceItemTypeName)
         {
             CollectionType = destinationCollectionType;
-            DestinationCollectionItemTypeName = destinationItemTypeName;
+            SourceCollectionItemTypeName = sourceItemTypeName;
 
             _namespacesRequired.Add("System.Linq");
 

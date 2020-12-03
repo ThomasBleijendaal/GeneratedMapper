@@ -40,7 +40,7 @@ namespace A
             
             var target = new B.B
             {
-                Target = self.Name?.Substring(startIndex) ?? throw new Exception(""A.A -> B.B: Property 'Name' is null.""),
+                Target = (self.Name ?? throw new Exception(""A.A -> B.B: Property 'Name' is null."")).Substring(startIndex),
             };
             
             return target;
@@ -88,8 +88,8 @@ namespace A
             
             var target = new B.B
             {
-                Target1 = self.Name1?.Substring(startIndex) ?? throw new Exception(""A.A -> B.B: Property 'Name1' is null.""),
-                Target2 = self.Name2?.Substring(startIndex) ?? throw new Exception(""A.A -> B.B: Property 'Name2' is null.""),
+                Target1 = (self.Name1 ?? throw new Exception(""A.A -> B.B: Property 'Name1' is null."")).Substring(startIndex),
+                Target2 = (self.Name2 ?? throw new Exception(""A.A -> B.B: Property 'Name2' is null."")).Substring(startIndex),
             };
             
             return target;
@@ -138,8 +138,8 @@ namespace A
             
             var target = new B.B
             {
-                Target1 = self.Name1?.Substring(startIndex) ?? throw new Exception(""A.A -> B.B: Property 'Name1' is null.""),
-                Target2 = self.Name2.CompareTo(value) ?? throw new Exception(""A.A -> B.B: Property 'Name2' is null.""),
+                Target1 = (self.Name1 ?? throw new Exception(""A.A -> B.B: Property 'Name1' is null."")).Substring(startIndex),
+                Target2 = (self.Name2 ?? throw new Exception(""A.A -> B.B: Property 'Name2' is null."")).CompareTo(value),
             };
             
             return target;

@@ -38,7 +38,7 @@ namespace A
             
             var target = new B.B
             {
-                Prop = self.Prop?.ToArray() ?? throw new Exception(""A.A -> B.B: Property 'Prop' is null.""),
+                Prop = (self.Prop ?? throw new Exception(""A.A -> B.B: Property 'Prop' is null."")).ToArray(),
             };
             
             return target;
@@ -81,7 +81,7 @@ namespace A
             
             var target = new B.B
             {
-                Prop = self.Prop?.ToArray() ?? Enumerable.Empty<string>().ToArray(),
+                Prop = (self.Prop ?? Enumerable.Empty<string>()).ToArray(),
             };
             
             return target;
@@ -125,7 +125,7 @@ namespace A
             
             var target = new B.B
             {
-                Prop = self.Prop?.ToArray(),
+                Prop = (self.Prop ?? throw new Exception(""A.A -> B.B: Property 'Prop' is null."")).ToArray(),
             };
             
             return target;

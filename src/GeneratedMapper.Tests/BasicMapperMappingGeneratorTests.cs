@@ -39,7 +39,7 @@ namespace A
             
             var target = new B.B
             {
-                Obj = self.Obj?.MapToB() ?? throw new Exception(""A.A -> B.B: Property 'Obj' is null.""),
+                Obj = (self.Obj ?? throw new Exception(""A.A -> B.B: Property 'Obj' is null."")).MapToB(),
             };
             
             return target;
