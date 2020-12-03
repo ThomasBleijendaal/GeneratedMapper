@@ -76,7 +76,7 @@ namespace GeneratedMapper.Information
         {
             if (!Mappings.Any())
             {
-                _diagnostics.Add(DiagnosticsHelper.EmptyMapper(AttributeData, SourceType.Name, DestinationType.Name));
+                _diagnostics.Add(DiagnosticsHelper.EmptyMapper(AttributeData, SourceType?.Name ?? "-unknown-", DestinationType?.Name ?? "-unknown-"));
             }
 
             _diagnostics.AddRange(Mappings.SelectMany(x => !x.TryValidateMapping(AttributeData, out var issues) ? issues : Enumerable.Empty<Diagnostic>()));

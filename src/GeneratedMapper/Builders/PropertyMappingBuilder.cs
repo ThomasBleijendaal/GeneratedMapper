@@ -22,15 +22,19 @@ namespace GeneratedMapper.Builders
             var destinationCanHandleNull = _information.DestinationPropertyIsNullable;
 
             // only really throw when destination property can't handle a null
-            var throwWhenNull = _information.BelongsToMapping.ConfigurationValues.Customizations.ThrowWhenNotNullablePropertyIsNull && sourceCanBeNull && !destinationCanHandleNull
+            var throwWhenNull = _information.BelongsToMapping.ConfigurationValues.Customizations.ThrowWhenNotNullablePropertyIsNull 
+                    && sourceCanBeNull 
+                    && !destinationCanHandleNull
                 ? $@" ?? throw new Exception(""{_information.BelongsToMapping.SourceType.ToDisplayString()} -> {_information.BelongsToMapping.DestinationType.ToDisplayString()}: Property '{_information.SourcePropertyName}' is null."")"
                 : string.Empty;
 
             if (_information.CollectionType != null)
             {
+                // TODO: what if the element type is nullable?
+
                 var enumerationMethod = _information.CollectionType == DestinationCollectionType.List ? ".ToList()"
                     : _information.CollectionType == DestinationCollectionType.Array ? ".ToArray()"
-                    : "";
+                    : string.Empty;
 
                 var optionalEmptyCollectionCreation = !_information.DestinationPropertyIsNullable && _information.SourcePropertyIsNullable
                     ? $" ?? Enumerable.Empty<{_information.DestinationCollectionItemTypeName}>(){enumerationMethod}"
@@ -50,12 +54,14 @@ namespace GeneratedMapper.Builders
                 }
                 else
                 {
-                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}?{enumerationMethod}{optionalEmptyCollectionCreation}";
+                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}{(string.IsNullOrEmpty(enumerationMethod) ? string.Empty : $"?{enumerationMethod}")}{optionalEmptyCollectionCreation}";
                 }
             }
             else
             {
-                var safePropagation = _information.SourcePropertyIsNullable ? "?" : "";
+                var safePropagation = (!_information.SourcePropertyIsValueType || _information.SourcePropertyIsNullable) && 
+                    !(_information.DestinationPropertyIsValueType && !_information.DestinationPropertyIsNullable)
+                    ? "?" : "";
 
                 if (_information.MappingInformationOfMapperToUse != null)
                 {
@@ -67,7 +73,18 @@ namespace GeneratedMapper.Builders
                 }
                 else if (_information.ResolverTypeToUse != null)
                 {
-                    sourceExpression = $"{_information.ResolverInstanceName}.Resolve({sourceInstanceName}.{_information.SourcePropertyName}{throwWhenNull})";
+                    if (!_information.SourcePropertyIsNullable && !_information.DestinationPropertyIsNullable)
+                    {
+                        sourceExpression = $"{_information.ResolverInstanceName}.Resolve({sourceInstanceName}.{_information.SourcePropertyName}{throwWhenNull})";
+                    }
+                    else if (!_information.DestinationPropertyIsNullable)
+                    {
+                        sourceExpression = $"{_information.ResolverInstanceName}.Resolve({sourceInstanceName}.{_information.SourcePropertyName}){throwWhenNull}";
+                    } 
+                    else
+                    {
+                        sourceExpression = $"{_information.ResolverInstanceName}.Resolve({sourceInstanceName}.{_information.SourcePropertyName})";
+                    }
                 }
                 else
                 {

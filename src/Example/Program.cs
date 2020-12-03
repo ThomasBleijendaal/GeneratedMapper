@@ -43,12 +43,14 @@ namespace Example
 
             // if this example is run inside the GeneratorMapper solution, intellisense will fail to 
             //      load the GeneratorMapper.dll so these two methods will be flagged as missing --
-            //      the project still builds and runs correctly.
+            //      the project still builds and runs correctly. 
+            //      rebuild everything and restart VS will solve it, but a new build of the generator will not
+            //      be automatically loaded in VS.
 
             // if this example is run with GeneratorMapper as NuGet package, intellisense will work correctly
 
             Console.WriteLine(JsonSerializer.Serialize(source.MapToSimpleDestination(), new JsonSerializerOptions { WriteIndented = true }));
-            Console.WriteLine(JsonSerializer.Serialize(source.MapToComplexDestination(10, new[] { 1.2, 1.3 }, CultureInfo.CurrentCulture), new JsonSerializerOptions { WriteIndented = true }));
+            Console.WriteLine(JsonSerializer.Serialize(source.MapToComplexDestination(7, new[] { 1.2, 1.3 }, CultureInfo.CurrentCulture), new JsonSerializerOptions { WriteIndented = true }));
         }
     }
 }

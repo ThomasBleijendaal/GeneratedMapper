@@ -168,7 +168,7 @@ namespace GeneratedMapper.Information
         public bool RequiresNullableContext =>
             CollectionType != default ||
             RequiresMappingInformationOfMapper ||
-            !string.IsNullOrEmpty(SourcePropertyMethodToCall);
+            !string.IsNullOrEmpty(SourcePropertyMethodToCall) && !((SourcePropertyIsValueType && !SourcePropertyIsNullable) || (DestinationPropertyIsValueType && !DestinationPropertyIsNullable));
 
 
         public IEnumerable<ParameterInformation> AllParameters

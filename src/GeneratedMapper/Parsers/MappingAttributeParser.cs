@@ -54,13 +54,19 @@ namespace GeneratedMapper.Parsers
 
                 mappingInformation.MapFrom(sourceType).MapTo(destinationType);
 
-                // TODO: flag exclusions that are not found in target
                 var destinationPropertyExclusions = TargetPropertiesToIgnore(attributedType, mappingInformation.AttributeIndex);
 
-                var targetProperties = targetType!
+                var allTargetProperties = targetType!
                     .GetMembers()
                     .OfType<IPropertySymbol>()
-                    .Where(x => x.SetMethod is not null && x.SetMethod.DeclaredAccessibility == Accessibility.Public)
+                    .Where(x => x.SetMethod is not null && x.SetMethod.DeclaredAccessibility == Accessibility.Public);
+
+                foreach (var targetProperty in destinationPropertyExclusions.Where(name => !allTargetProperties.Any(target => target.Name == name)))
+                {
+                    mappingInformation.ReportIssue(DiagnosticsHelper.MissingIgnoreInTarget(attributeData, targetType.Name, targetProperty));
+                } 
+
+                var targetProperties = allTargetProperties
                     .Where(x => !destinationPropertyExclusions.Contains(x.Name))
                     .ToList();
 
@@ -84,7 +90,16 @@ namespace GeneratedMapper.Parsers
                             continue;
                         }
 
-                        mappingInformation.AddProperty(_propertyParser.ParseProperty(mappingInformation, mapWithAttribute, attributedTypeProperty, targetTypeProperty));
+                        var property = _propertyParser.ParseProperty(mappingInformation, mapWithAttribute, attributedTypeProperty, targetTypeProperty);
+
+                        if (mappingInformation.Mappings.Any(x => x.DestinationPropertyName == property.DestinationPropertyName))
+                        {
+                            mappingInformation.ReportIssue(DiagnosticsHelper.ConflictingMappingInformation(attributeData, property.SourcePropertyName!));
+                        }
+                        else
+                        {
+                            mappingInformation.AddProperty(property);
+                        }
 
                         processedTargetProperties.Add(targetTypeProperty);
                     }
