@@ -139,7 +139,7 @@ namespace A
             var target = new B.B
             {
                 Target1 = self.Name1?.Substring(startIndex) ?? throw new Exception(""A.A -> B.B: Property 'Name1' is null.""),
-                Target2 = self.Name2?.CompareTo(value) ?? throw new Exception(""A.A -> B.B: Property 'Name2' is null.""),
+                Target2 = self.Name2.CompareTo(value) ?? throw new Exception(""A.A -> B.B: Property 'Name2' is null.""),
             };
             
             return target;

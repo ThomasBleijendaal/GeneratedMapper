@@ -59,13 +59,17 @@ namespace GeneratedMapper.Builders
             }
             else
             {
+                var safePropagation = (!_information.SourcePropertyIsValueType || _information.SourcePropertyIsNullable) && 
+                    !(_information.DestinationPropertyIsValueType && !_information.DestinationPropertyIsNullable)
+                    ? "?" : "";
+
                 if (_information.MappingInformationOfMapperToUse != null)
                 {
-                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}?.MapTo{_information.MappingInformationOfMapperToUse.DestinationType.Name}({GetMappingArguments()}){throwWhenNull}";
+                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}{safePropagation}.MapTo{_information.MappingInformationOfMapperToUse.DestinationType.Name}({GetMappingArguments()}){throwWhenNull}";
                 }
                 else if (_information.SourcePropertyMethodToCall != null)
                 {
-                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}?.{_information.SourcePropertyMethodToCall}({GetMethodArguments()}){throwWhenNull}";
+                    sourceExpression = $"{sourceInstanceName}.{_information.SourcePropertyName}{safePropagation}.{_information.SourcePropertyMethodToCall}({GetMethodArguments()}){throwWhenNull}";
                 }
                 else if (_information.ResolverTypeToUse != null)
                 {

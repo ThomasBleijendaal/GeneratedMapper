@@ -105,7 +105,8 @@ namespace GeneratedMapper.Parsers
                     }
                     else
                     {
-                        throw new ParseException(DiagnosticsHelper.CannotFindMethod(mappingInformation.AttributeData, mappingInformation.SourceType.ToDisplayString(), sourceProperty.Name!, propertyMethodToCall));
+                        // probably an extension method beyond the vision of this generator -- the compiler will throw if it's invalid but we can't check it here
+                        propertyMapping.UsingMethod(propertyMethodToCall, default, Enumerable.Empty<ParameterInformation>());
                     }
                 }
             }

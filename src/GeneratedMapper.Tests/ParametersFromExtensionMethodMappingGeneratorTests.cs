@@ -117,7 +117,12 @@ namespace A
 using GeneratedMapper.Attributes;
 
 namespace Ex1 {
-    public static class StringExtensions1 { public static string ExtensionMethod1(this string subject, int startIndex) { } }
+    public static class StringExtensions1 { 
+        public static string ExtensionMethod1(this string subject, int startIndex) { } 
+
+        // the next overload is ignored because of complications
+        public static string ExtensionMethod1(this string subject, int startIndex, int overload) { } 
+    }
 }
 namespace Ex2 {
     public static class StringExtensions2 { public static string ExtensionMethod2(this string subject, int start = 3, int? length = 10) { } }

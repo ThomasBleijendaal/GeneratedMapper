@@ -115,7 +115,7 @@ using GeneratedMapper.Attributes;
 
 namespace R {
     public class Resolver1 { public Resolver1(string arg1, string arg2) { } public string Resolve(string input) { return input; } }
-    public class Resolver2 { public Resolver2(string arg1, string arg2) { } public string Resolve(string input) { return input; } }
+    public class Resolver2 { public Resolver2(string arg1, string? arg2 = ""default string"") { } public string Resolve(string input) { return input; } }
 }
 
 namespace A {
@@ -138,7 +138,7 @@ namespace A
 {
     public static partial class AMapToExtensions
     {
-        public static B.B MapToB(this A.A self, string resolver1Arg1, string resolver1Arg2, string resolver2Arg1, string resolver2Arg2)
+        public static B.B MapToB(this A.A self, string resolver1Arg1, string resolver1Arg2, string resolver2Arg1, string? resolver2Arg2 = ""default string"")
         {
             if (self is null)
             {

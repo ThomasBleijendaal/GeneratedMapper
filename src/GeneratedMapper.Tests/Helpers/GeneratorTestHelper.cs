@@ -37,12 +37,12 @@ namespace GeneratedMapper.Tests.Helpers
         {
             var (diagnostics, output) = GetGeneratedOutput(sourceText);
 
+            Assert.AreEqual(0, diagnostics.Length, string.Join(", ", diagnostics.Select(x => x.GetMessage())));
+
             for (var i = 0; i < expectedOutputSourceTexts.Length; i++)
             {
                 Assert.AreEqual(expectedOutputSourceTexts[i], output[i]);
             }
-
-            Assert.AreEqual(0, diagnostics.Length, string.Join(", ", diagnostics.Select(x => x.GetMessage())));
         }
 
         public static void TestReportedDiagnostics(string sourceText, params string[] expectedDiagnosticErrors)
@@ -51,7 +51,7 @@ namespace GeneratedMapper.Tests.Helpers
 
             var errorCodes = diagnostics.Select(x => x.Id).ToArray();
 
-            Assert.AreEqual(expectedDiagnosticErrors.Length, diagnostics.Length);
+            Assert.AreEqual(expectedDiagnosticErrors.Length, diagnostics.Length, $"Found messages: {string.Join(", ", errorCodes)}.");
 
             foreach (var diagnostic in expectedDiagnosticErrors)
             {
