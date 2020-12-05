@@ -56,26 +56,25 @@ namespace GeneratedMapper.Builders
                     : _information.CollectionType == DestinationCollectionType.Array ? ".ToArray()"
                     : string.Empty;
 
+                string selectExpression;
                 if (_information.MappingInformationOfMapperToUse != null && _information.MappingInformationOfMapperToUse.DestinationType != null)
                 {
-                    sourceExpression = $"{propertyRead}{safePropagationCollection}{optionalWhere}.Select(element => element{safePropagationElement}.MapTo{_information.MappingInformationOfMapperToUse.DestinationType.Name}({GetMappingArguments()})){enumerationMethod}";
+                    selectExpression = $".Select(element => element{safePropagationElement}.MapTo{_information.MappingInformationOfMapperToUse.DestinationType.Name}({GetMappingArguments()}))";
                 }
                 else if (_information.SourcePropertyMethodToCall != null)
                 {
-                    sourceExpression = $"{propertyRead}{safePropagationCollection}{optionalWhere}.Select(element => element{safePropagationElement}.{_information.SourcePropertyMethodToCall}({GetMethodArguments()})){enumerationMethod}";
+                    selectExpression = $".Select(element => element{safePropagationElement}.{_information.SourcePropertyMethodToCall}({GetMethodArguments()}))";
                 }
                 else if (_information.ResolverTypeToUse != null)
                 {
-                    sourceExpression = $"{propertyRead}{safePropagationCollection}{optionalWhere}.Select(element => {_information.ResolverInstanceName}.Resolve(element)){enumerationMethod}";
-                }
-                else if (!string.IsNullOrEmpty(enumerationMethod))
-                {
-                    sourceExpression = $"{propertyRead}{safePropagationCollection}{optionalWhere}{enumerationMethod}";
+                    selectExpression = $".Select(element => {_information.ResolverInstanceName}.Resolve(element))";
                 }
                 else
                 {
-                    sourceExpression = propertyRead;
+                    selectExpression = string.Empty;
                 }
+
+                sourceExpression = $"{propertyRead}{safePropagationCollection}{optionalWhere}{selectExpression}{enumerationMethod}";
             }
             else
             {

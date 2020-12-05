@@ -22,13 +22,16 @@ namespace Example
                     Name = "SourceCompanyName",
                     Revenue = 1234567,
                     StartDate = new DateTime(2020, 1, 1),
-                    SubCompanies = new List<Company>
+                    SubCompanies = new List<Company?>
                     {
                         new Company { Id = Guid.NewGuid(), Name = "SubCompany1", Revenue = 12, StartDate = new DateTime(2020, 2, 1) },
-                        new Company { Id = Guid.NewGuid(), Name = "SubCompany2", Revenue = 1234, StartDate = new DateTime(2020, 3, 1), SubCompanies = new List<Company>{
+                        default,
+                        new Company { Id = Guid.NewGuid(), Name = "SubCompany2", Revenue = 1234, StartDate = new DateTime(2020, 3, 1), SubCompanies = new List<Company?>{
                             new Company { Id = Guid.NewGuid(), Name = "SubCompany2a", Revenue = 123, StartDate = new DateTime(2020, 4, 1) },
+                            default,
                             new Company { Id = Guid.NewGuid(), Name = "SubCompany2b", Revenue = 234, StartDate = new DateTime(2020, 5, 1) },
-                        } },
+                        }},
+                        default
                     }
                 },
                 Metadata = new[] {
@@ -37,8 +40,6 @@ namespace Example
                         Data = Guid.NewGuid().ToString()
                     }}
             };
-
-            ;
 
             // important known limitation for source generators:
 
