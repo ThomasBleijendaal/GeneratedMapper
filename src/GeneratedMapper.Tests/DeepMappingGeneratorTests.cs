@@ -71,7 +71,7 @@ namespace A.B.C
             
             var target = new Z.Y.X.X
             {
-                Property = self.Property ?? throw new Exception(""A.B.C.C -> Z.Y.X.X: Property 'Property' is null.""),
+                Property = self.Property ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.B.C.C -> Z.Y.X.X: Property 'Property' is null.""),
                 Date = resolver.Resolve(self.Date),
             };
             
@@ -99,7 +99,7 @@ namespace A.B
             var target = new Z.Y.Y
             {
                 Property = self.Property,
-                Obj = (self.Obj ?? throw new Exception(""A.B.B -> Z.Y.Y: Property 'Obj' is null."")).MapToX(resolverCultureInfo),
+                Obj = (self.Obj ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.B.B -> Z.Y.Y: Property 'Obj' is null."")).MapToX(resolverCultureInfo),
             };
             
             return target;
@@ -126,8 +126,8 @@ namespace A
             
             var target = new Z.Z
             {
-                Property = self.Property ?? throw new Exception(""A.A -> Z.Z: Property 'Property' is null.""),
-                Obj = (self.Obj ?? throw new Exception(""A.A -> Z.Z: Property 'Obj' is null."")).MapToY(resolverCultureInfo),
+                Property = self.Property ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> Z.Z: Property 'Property' is null.""),
+                Obj = (self.Obj ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> Z.Z: Property 'Obj' is null."")).MapToY(resolverCultureInfo),
             };
             
             return target;

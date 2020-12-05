@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using GeneratedMapper.Enums;
+using GeneratedMapper.Exceptions;
 using GeneratedMapper.Information;
 
 namespace GeneratedMapper.Builders
@@ -18,6 +19,11 @@ namespace GeneratedMapper.Builders
         {
             string sourceExpression;
 
+            if (_information.BelongsToMapping.SourceType == null || _information.BelongsToMapping.DestinationType == null)
+            {
+                return $"// incorrect mapping information for {_information.SourcePropertyName} -> {_information.DestinationPropertyName}.";
+            }
+
             var sourceCanBeNull = _information.SourcePropertyIsNullable || (!_information.SourcePropertyIsNullable && !_information.SourcePropertyIsValueType);
             var destinationCanHandleNull = _information.DestinationPropertyIsNullable;
 
@@ -25,7 +31,7 @@ namespace GeneratedMapper.Builders
             var throwWhenNull = _information.BelongsToMapping.ConfigurationValues.Customizations.ThrowWhenNotNullablePropertyIsNull 
                     && !_information.SourcePropertyIsValueType
                     && !_information.SourcePropertyIsNullable
-                ? $@" ?? throw new Exception(""{_information.BelongsToMapping.SourceType.ToDisplayString()} -> {_information.BelongsToMapping.DestinationType.ToDisplayString()}: Property '{_information.SourcePropertyName}' is null."")"
+                ? $@" ?? throw new {typeof(PropertyNullException).FullName}(""{_information.BelongsToMapping.SourceType.ToDisplayString()} -> {_information.BelongsToMapping.DestinationType.ToDisplayString()}: Property '{_information.SourcePropertyName}' is null."")"
                 : string.Empty;
 
             if (_information.CollectionType != null)
@@ -46,7 +52,7 @@ namespace GeneratedMapper.Builders
                     : _information.CollectionType == DestinationCollectionType.Array ? ".ToArray()"
                     : string.Empty;
 
-                if (_information.MappingInformationOfMapperToUse != null)
+                if (_information.MappingInformationOfMapperToUse != null && _information.MappingInformationOfMapperToUse.DestinationType != null)
                 {
                     sourceExpression = $"{propertyRead}{safePropagation}.Select(element => element.MapTo{_information.MappingInformationOfMapperToUse.DestinationType.Name}({GetMappingArguments()})){enumerationMethod}";
                 }
@@ -72,7 +78,7 @@ namespace GeneratedMapper.Builders
                    ? $"({sourceInstanceName}.{_information.SourcePropertyName}{throwWhenNull})"
                    : $"{sourceInstanceName}.{_information.SourcePropertyName}";
 
-                if (_information.MappingInformationOfMapperToUse != null)
+                if (_information.MappingInformationOfMapperToUse != null && _information.MappingInformationOfMapperToUse.DestinationType != null)
                 {
                     sourceExpression = $"{propertyRead}{safePropagation}.MapTo{_information.MappingInformationOfMapperToUse.DestinationType.Name}({GetMappingArguments()})";
                 }

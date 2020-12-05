@@ -158,7 +158,8 @@ namespace GeneratedMapper
                     .Where(x => x.RequiresMappingInformationOfMapper && x.MappingInformationOfMapperToUse == null))
                 {
                     var mappingInformationToFind = mappings
-                        .FirstOrDefault(x => x.SourceType.Equals(mapping.MapperFromType, SymbolEqualityComparer.Default) &&
+                        .FirstOrDefault(x => x.SourceType != null && x.DestinationType != null &&
+                            x.SourceType.Equals(mapping.MapperFromType, SymbolEqualityComparer.Default) &&
                             x.DestinationType.Equals(mapping.MapperToType, SymbolEqualityComparer.Default));
 
                     // TODO: the check if its fully resolved can be an issue when the mappings are dependent on each other, like A -> B -> A etc.

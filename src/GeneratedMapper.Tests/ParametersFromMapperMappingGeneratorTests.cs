@@ -42,8 +42,8 @@ namespace A
             
             var target = new B.B
             {
-                Target = (self.Name ?? throw new Exception(""A.A -> B.B: Property 'Name' is null."")).Substring(startIndex),
-                Obj = (self.Obj ?? throw new Exception(""A.A -> B.B: Property 'Obj' is null."")).MapToB(startIndex),
+                Target = (self.Name ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Name' is null."")).Substring(startIndex),
+                Obj = (self.Obj ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Obj' is null."")).MapToB(startIndex),
             };
             
             return target;
@@ -91,9 +91,9 @@ namespace A
             
             var target = new B.B
             {
-                Target = (self.Name ?? throw new Exception(""A.A -> B.B: Property 'Name' is null."")).Substring(startIndex),
-                Obj1 = (self.Obj1 ?? throw new Exception(""A.A -> B.B: Property 'Obj1' is null."")).MapToB(startIndex),
-                Obj2 = (self.Obj2 ?? throw new Exception(""A.A -> B.B: Property 'Obj2' is null."")).MapToB(startIndex),
+                Target = (self.Name ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Name' is null."")).Substring(startIndex),
+                Obj1 = (self.Obj1 ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Obj1' is null."")).MapToB(startIndex),
+                Obj2 = (self.Obj2 ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Obj2' is null."")).MapToB(startIndex),
             };
             
             return target;
@@ -152,9 +152,9 @@ namespace A
             
             var target = new B.B
             {
-                Target = (self.Name ?? throw new Exception(""A.A -> B.B: Property 'Name' is null."")).Substring(startIndex),
-                Obj1 = (self.Obj1 ?? throw new Exception(""A.A -> B.B: Property 'Obj1' is null."")).MapToB(startIndex),
-                Obj2 = (self.Obj2 ?? throw new Exception(""A.A -> B.B: Property 'Obj2' is null."")).MapToD(),
+                Target = (self.Name ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Name' is null."")).Substring(startIndex),
+                Obj1 = (self.Obj1 ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Obj1' is null."")).MapToB(startIndex),
+                Obj2 = (self.Obj2 ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Obj2' is null."")).MapToD(),
             };
             
             return target;
@@ -179,7 +179,7 @@ namespace C
             
             var target = new D.D
             {
-                Obj2 = (self.Obj2 ?? throw new Exception(""C.C -> D.D: Property 'Obj2' is null."")).MapToD(),
+                Obj2 = (self.Obj2 ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""C.C -> D.D: Property 'Obj2' is null."")).MapToD(),
             };
             
             return target;

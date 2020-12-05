@@ -93,7 +93,10 @@ namespace GeneratedMapper.Information
         {
             MappingInformationOfMapperToUse = information;
 
-            _namespacesRequired.Add(information.SourceType.ContainingNamespace.ToDisplayString());
+            if (information.SourceType != null)
+            {
+                _namespacesRequired.Add(information.SourceType.ContainingNamespace.ToDisplayString());
+            }
             _namespacesRequired.AddRange(information.Mappings.SelectMany(x => x.NamespacesUsed));
 
             return this;

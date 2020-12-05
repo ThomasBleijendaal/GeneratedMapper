@@ -229,7 +229,7 @@ namespace Namespace
             
             var target = new Namespace.Destination
             {
-                Name = self.Name ?? throw new Exception(""Namespace.Source -> Namespace.Destination: Property 'Name' is null.""),
+                Name = self.Name ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""Namespace.Source -> Namespace.Destination: Property 'Name' is null.""),
             };
             
             return target;

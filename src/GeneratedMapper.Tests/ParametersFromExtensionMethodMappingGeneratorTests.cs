@@ -45,7 +45,7 @@ namespace A
             
             var target = new B.B
             {
-                Target = (self.Name ?? throw new Exception(""A.A -> B.B: Property 'Name' is null."")).ExtensionMethod(startIndex),
+                Target = (self.Name ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Name' is null."")).ExtensionMethod(startIndex),
             };
             
             return target;
@@ -98,8 +98,8 @@ namespace A
             
             var target = new B.B
             {
-                Target1 = (self.Name1 ?? throw new Exception(""A.A -> B.B: Property 'Name1' is null."")).ExtensionMethod(startIndex),
-                Target2 = (self.Name2 ?? throw new Exception(""A.A -> B.B: Property 'Name2' is null."")).ExtensionMethod(startIndex),
+                Target1 = (self.Name1 ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Name1' is null."")).ExtensionMethod(startIndex),
+                Target2 = (self.Name2 ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Name2' is null."")).ExtensionMethod(startIndex),
             };
             
             return target;
@@ -162,8 +162,8 @@ namespace A
             
             var target = new B.B
             {
-                Target1 = (self.Name1 ?? throw new Exception(""A.A -> B.B: Property 'Name1' is null."")).ExtensionMethod1(startIndex),
-                Target2 = (self.Name2 ?? throw new Exception(""A.A -> B.B: Property 'Name2' is null."")).ExtensionMethod2(start, length),
+                Target1 = (self.Name1 ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Name1' is null."")).ExtensionMethod1(startIndex),
+                Target2 = (self.Name2 ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Name2' is null."")).ExtensionMethod2(start, length),
             };
             
             return target;

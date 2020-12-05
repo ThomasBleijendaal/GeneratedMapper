@@ -40,7 +40,7 @@ namespace GeneratedMapper.Information
             return this;
         }
 
-        public ITypeSymbol SourceType { get; private set; } = default!;
+        public ITypeSymbol? SourceType { get; private set; }
 
         public MappingInformation MapFrom(ITypeSymbol sourceType)
         {
@@ -49,7 +49,7 @@ namespace GeneratedMapper.Information
             return this;
         }
 
-        public ITypeSymbol DestinationType { get; private set; } = default!;
+        public ITypeSymbol? DestinationType { get; private set; }
 
         public MappingInformation MapTo(ITypeSymbol destinationType)
         {
