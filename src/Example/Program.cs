@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.Json;
+using Example.Records;
 using Example.Sources;
 
 namespace Example
@@ -51,6 +52,12 @@ namespace Example
 
             Console.WriteLine(JsonSerializer.Serialize(source.MapToSimpleDestination(), new JsonSerializerOptions { WriteIndented = true }));
             Console.WriteLine(JsonSerializer.Serialize(source.MapToComplexDestination(7, new[] { 1.2, 1.3 }, CultureInfo.CurrentCulture), new JsonSerializerOptions { WriteIndented = true }));
+
+            var record = new TestRecord("Test");
+
+            var destination = record.MapToTestRecordDestination();
+
+            Console.WriteLine(JsonSerializer.Serialize(destination, new JsonSerializerOptions { WriteIndented = true }));
         }
     }
 }

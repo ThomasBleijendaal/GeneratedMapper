@@ -93,7 +93,10 @@ namespace GeneratedMapper.Information
         {
             MappingInformationOfMapperToUse = information;
 
-            _namespacesRequired.Add(information.SourceType.ContainingNamespace.ToDisplayString());
+            if (information.SourceType != null)
+            {
+                _namespacesRequired.Add(information.SourceType.ContainingNamespace.ToDisplayString());
+            }
             _namespacesRequired.AddRange(information.Mappings.SelectMany(x => x.NamespacesUsed));
 
             return this;
@@ -115,12 +118,12 @@ namespace GeneratedMapper.Information
         }
 
         public DestinationCollectionType? CollectionType { get; private set; }
-        public string? DestinationCollectionItemTypeName { get; private set; }
+        public string? SourceCollectionItemTypeName { get; private set; }
 
-        public PropertyMappingInformation AsCollection(DestinationCollectionType destinationCollectionType, string destinationItemTypeName)
+        public PropertyMappingInformation AsCollection(DestinationCollectionType destinationCollectionType, string sourceItemTypeName)
         {
             CollectionType = destinationCollectionType;
-            DestinationCollectionItemTypeName = destinationItemTypeName;
+            SourceCollectionItemTypeName = sourceItemTypeName;
 
             _namespacesRequired.Add("System.Linq");
 

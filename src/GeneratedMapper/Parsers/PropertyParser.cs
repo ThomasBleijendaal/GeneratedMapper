@@ -68,7 +68,7 @@ namespace GeneratedMapper.Parsers
 
                 if (isCollectionToCollection)
                 {
-                    MapPropertyAsCollection(propertyMapping, destinationProperty);
+                    MapPropertyAsCollection(propertyMapping, sourceProperty, destinationProperty);
                 }
 
                 if (mapWithAttribute is not null && GetMapWithResolverType(mapWithAttribute) is INamedTypeSymbol resolverType)
@@ -159,24 +159,21 @@ namespace GeneratedMapper.Parsers
             return collectionTypeToUse;
         }
 
-        private void MapPropertyAsCollection(PropertyMappingInformation propertyMapping, IPropertySymbol destinationProperty)
+        private void MapPropertyAsCollection(PropertyMappingInformation propertyMapping, IPropertySymbol sourceProperty, IPropertySymbol destinationProperty)
         {
             var listType = DestinationCollectionType.Enumerable;
-            var destinationCollectionItemType = default(ITypeSymbol);
-
+            var sourceCollectionItemType = GetCollectionType(sourceProperty);
+            
             if (destinationProperty.Type.TypeKind == TypeKind.Array &&
                 destinationProperty.Type is IArrayTypeSymbol arrayDestinationProperty)
             {
                 listType = DestinationCollectionType.Array;
-                destinationCollectionItemType = arrayDestinationProperty.ElementType;
             }
             else if (destinationProperty.Type is INamedTypeSymbol namedDestinationPropertyType &&
                 namedDestinationPropertyType.IsGenericType &&
                 namedDestinationPropertyType.TypeArguments.Length == 1)
             {
                 var unboundGenericTypeInterfaces = namedDestinationPropertyType.AllInterfaces.Select(x => x.IsGenericType ? x.ConstructUnboundGenericType() : x);
-
-                destinationCollectionItemType = namedDestinationPropertyType.TypeArguments.First();
 
                 listType =
                     unboundGenericTypeInterfaces.Any(x => x.Equals(_genericListlikeType, SymbolEqualityComparer.Default)) ? DestinationCollectionType.List
@@ -185,11 +182,11 @@ namespace GeneratedMapper.Parsers
                     : DestinationCollectionType.Enumerable;
             }
 
-            if (destinationCollectionItemType is not null)
+            if (sourceCollectionItemType is not null)
             {
                 propertyMapping.AsCollection(
                     listType,
-                    destinationCollectionItemType.ToDisplayString());
+                    sourceCollectionItemType.ToDisplayString());
             }
         }
     }

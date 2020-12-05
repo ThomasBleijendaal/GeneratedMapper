@@ -45,7 +45,7 @@ namespace A
             
             var target = new B.B
             {
-                Target = self.Name?.ExtensionMethod() ?? throw new Exception(""A.A -> B.B: Property 'Name' is null.""),
+                Target = (self.Name ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Name' is null."")).ExtensionMethod(),
             };
             
             return target;

@@ -35,7 +35,7 @@ namespace A
             
             var target = new B.B
             {
-                Name = self.Name ?? throw new Exception(""A.A -> B.B: Property 'Name' is null.""),
+                Name = self.Name ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Name' is null.""),
             };
             
             return target;
@@ -77,7 +77,7 @@ namespace A
             
             var target = new B.B
             {
-                Name = self.Name ?? throw new Exception(""A.A -> B.B: Property 'Name' is null.""),
+                Name = self.Name ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Name' is null.""),
             };
             
             return target;

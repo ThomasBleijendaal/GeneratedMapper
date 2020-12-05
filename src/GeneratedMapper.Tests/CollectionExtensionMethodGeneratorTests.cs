@@ -46,7 +46,7 @@ namespace A
             
             var target = new B.B
             {
-                Prop = self.Prop?.Select(element => element.ExtensionMethod()).ToArray() ?? throw new Exception(""A.A -> B.B: Property 'Prop' is null.""),
+                Prop = (self.Prop ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Prop' is null."")).Select(element => element.ExtensionMethod()).ToArray(),
             };
             
             return target;
@@ -63,7 +63,7 @@ namespace A
 using GeneratedMapper.Attributes;
 
 namespace Ex {
-    public static class StringExtensions { public static string ExtensionMethod(this string subject, int startIndex) { } }
+    public static class StringExtensions { public static int ExtensionMethod(this string subject, int startIndex) { } }
 }
 
 namespace A {
@@ -75,7 +75,7 @@ namespace A {
 }
 
 namespace B {
-    public class B { public string[] Prop { get; set; } }
+    public class B { public int[] Prop { get; set; } }
 }
 }",
 @"using System;
@@ -97,7 +97,58 @@ namespace A
             
             var target = new B.B
             {
-                Prop = self.Prop?.Select(element => element.ExtensionMethod(startIndex)).ToArray() ?? throw new Exception(""A.A -> B.B: Property 'Prop' is null.""),
+                Prop = (self.Prop ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Prop' is null."")).Select(element => element.ExtensionMethod(startIndex)).ToArray(),
+            };
+            
+            return target;
+        }
+    }
+}
+");
+        }
+
+        [Test]
+        public void MapWithExtensionMethod_WithParametersAndNullable()
+        {
+            GeneratorTestHelper.TestGeneratedCode(@"using System;
+using GeneratedMapper.Attributes;
+
+namespace Ex {
+    public static class StringExtensions { public static int ExtensionMethod(this string subject, int startIndex) { } }
+}
+
+namespace A {
+    [MapTo(typeof(B.B))]
+    public class A { 
+        [MapWith(""Prop"", ""ExtensionMethod"")]
+        public string[]? Prop { get; set; } 
+    }
+}
+
+namespace B {
+    public class B { public int[] Prop { get; set; } }
+}
+}",
+@"using System;
+using System.Linq;
+using Ex;
+
+#nullable enable
+
+namespace A
+{
+    public static partial class AMapToExtensions
+    {
+        public static B.B MapToB(this A.A self, int startIndex)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self), ""A.A -> B.B: Source is null."");
+            }
+            
+            var target = new B.B
+            {
+                Prop = (self.Prop ?? Enumerable.Empty<string>()).Select(element => element.ExtensionMethod(startIndex)).ToArray(),
             };
             
             return target;

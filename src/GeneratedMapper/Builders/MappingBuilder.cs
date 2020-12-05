@@ -54,30 +54,30 @@ namespace GeneratedMapper.Builders
                 indentWriter.WriteLine();
             }
 
-            if (!_information.SourceType.ContainingNamespace.IsGlobalNamespace)
+            if (_information.SourceType != null && !_information.SourceType.ContainingNamespace.IsGlobalNamespace)
             {
                 indentWriter.WriteLine($"namespace {_information.SourceType.ContainingNamespace.ToDisplayString()}");
                 indentWriter.WriteLine("{");
                 indentWriter.Indent++;
             }
 
-            indentWriter.WriteLine($"public static partial class {_information.SourceType.Name}MapToExtensions");
+            indentWriter.WriteLine($"public static partial class {_information.SourceType?.Name}MapToExtensions");
             indentWriter.WriteLine("{");
             indentWriter.Indent++;
 
-            var mapArguments = new[] { $"this {_information.SourceType.ToDisplayString()} {SourceInstanceName}" }
+            var mapArguments = new[] { $"this {_information.SourceType?.ToDisplayString()} {SourceInstanceName}" }
                 .Union(_propertyMappingBuilders.SelectMany(x => x.MapArgumentsRequired().Select(x => x.ToMethodParameter(string.Empty))).Distinct());
 
-            indentWriter.WriteLine($"public static {_information.DestinationType.ToDisplayString()} MapTo{_information.DestinationType.Name}({string.Join(", ", mapArguments)})");
+            indentWriter.WriteLine($"public static {_information.DestinationType?.ToDisplayString()} MapTo{_information.DestinationType?.Name}({string.Join(", ", mapArguments)})");
             indentWriter.WriteLine("{");
             indentWriter.Indent++;
 
-            if (!_information.SourceType.IsValueType)
+            if (_information.SourceType != null && !_information.SourceType.IsValueType)
             {
                 indentWriter.WriteLine($"if ({SourceInstanceName} is null)");
                 indentWriter.WriteLine("{");
                 indentWriter.Indent++;
-                indentWriter.WriteLine($@"throw new ArgumentNullException(nameof(self), ""{_information.SourceType.ToDisplayString()} -> {_information.DestinationType.ToDisplayString()}: Source is null."");");
+                indentWriter.WriteLine($@"throw new ArgumentNullException(nameof(self), ""{_information.SourceType.ToDisplayString()} -> {_information.DestinationType?.ToDisplayString()}: Source is null."");");
                 indentWriter.Indent--;
                 indentWriter.WriteLine("}");
                 indentWriter.WriteLine();
@@ -85,7 +85,7 @@ namespace GeneratedMapper.Builders
 
             indentWriter.WriteLines(WriteMappingCode(map => map.PreConstructionInitialization()), true);
 
-            indentWriter.WriteLine($"var {TargetInstanceName} = new {_information.DestinationType.ToDisplayString()}");
+            indentWriter.WriteLine($"var {TargetInstanceName} = new {_information.DestinationType?.ToDisplayString()}");
             indentWriter.WriteLine("{");
             indentWriter.Indent++;
 
@@ -100,7 +100,7 @@ namespace GeneratedMapper.Builders
             indentWriter.Indent--;
             indentWriter.WriteLine("}");
 
-            if (!_information.SourceType.ContainingNamespace.IsGlobalNamespace)
+            if (_information.SourceType != null && !_information.SourceType.ContainingNamespace.IsGlobalNamespace)
             {
                 indentWriter.Indent--;
                 indentWriter.WriteLine("}");

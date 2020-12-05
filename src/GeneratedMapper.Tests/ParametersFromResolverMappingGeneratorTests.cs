@@ -44,7 +44,7 @@ namespace A
             
             var target = new B.B
             {
-                Name = resolver.Resolve(self.Name ?? throw new Exception(""A.A -> B.B: Property 'Name' is null."")),
+                Name = resolver.Resolve((self.Name ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Name' is null.""))),
             };
             
             return target;
@@ -95,8 +95,8 @@ namespace A
             
             var target = new B.B
             {
-                Target1 = resolver.Resolve(self.Name1 ?? throw new Exception(""A.A -> B.B: Property 'Name1' is null."")),
-                Target2 = resolver.Resolve(self.Name2 ?? throw new Exception(""A.A -> B.B: Property 'Name2' is null."")),
+                Target1 = resolver.Resolve((self.Name1 ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Name1' is null.""))),
+                Target2 = resolver.Resolve((self.Name2 ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Name2' is null.""))),
             };
             
             return target;
@@ -151,8 +151,8 @@ namespace A
             
             var target = new B.B
             {
-                Target1 = resolver1.Resolve(self.Name1 ?? throw new Exception(""A.A -> B.B: Property 'Name1' is null."")),
-                Target2 = resolver2.Resolve(self.Name2 ?? throw new Exception(""A.A -> B.B: Property 'Name2' is null."")),
+                Target1 = resolver1.Resolve((self.Name1 ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Name1' is null.""))),
+                Target2 = resolver2.Resolve((self.Name2 ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Name2' is null.""))),
             };
             
             return target;
