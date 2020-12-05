@@ -163,11 +163,13 @@ namespace GeneratedMapper.Parsers
         {
             var listType = DestinationCollectionType.Enumerable;
             var sourceCollectionItemType = GetCollectionType(sourceProperty);
+            ITypeSymbol destinationCollectionItemType;
             
             if (destinationProperty.Type.TypeKind == TypeKind.Array &&
                 destinationProperty.Type is IArrayTypeSymbol arrayDestinationProperty)
             {
                 listType = DestinationCollectionType.Array;
+                destinationCollectionItemType = arrayDestinationProperty.ElementType;
             }
             else if (destinationProperty.Type is INamedTypeSymbol namedDestinationPropertyType &&
                 namedDestinationPropertyType.IsGenericType &&
@@ -180,13 +182,22 @@ namespace GeneratedMapper.Parsers
                     : unboundGenericTypeInterfaces.Any(x => x.Equals(_genericReadOnlyListlikeType, SymbolEqualityComparer.Default)) ? DestinationCollectionType.List
                     : unboundGenericTypeInterfaces.Any(x => x.Equals(_genericEnumerableType, SymbolEqualityComparer.Default)) ? DestinationCollectionType.Enumerable
                     : DestinationCollectionType.Enumerable;
+
+                destinationCollectionItemType = namedDestinationPropertyType.TypeArguments.First();
+            }
+            else
+            {
+                // TODO: report collection item issue
+                return;
             }
 
             if (sourceCollectionItemType is not null)
             {
                 propertyMapping.AsCollection(
                     listType,
-                    sourceCollectionItemType.ToDisplayString());
+                    sourceCollectionItemType.ToDisplayString(),
+                    sourceCollectionItemType.NullableAnnotation == NullableAnnotation.Annotated,
+                    destinationCollectionItemType.NullableAnnotation == NullableAnnotation.Annotated);
             }
         }
     }

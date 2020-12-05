@@ -15,6 +15,6 @@ namespace Example.Sources
 
         public string SomeData { get; set; }
 
-        public List<Company>? SubCompanies { get; set; }
+        public List<Company?>? SubCompanies { get; set; }
     }
 }

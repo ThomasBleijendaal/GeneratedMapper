@@ -119,11 +119,16 @@ namespace GeneratedMapper.Information
 
         public DestinationCollectionType? CollectionType { get; private set; }
         public string? SourceCollectionItemTypeName { get; private set; }
+        public bool SourceCollectionItemNullable { get; private set; }
+        public bool DestinationCollectionItemNullable { get; private set; }
 
-        public PropertyMappingInformation AsCollection(DestinationCollectionType destinationCollectionType, string sourceItemTypeName)
+        public PropertyMappingInformation AsCollection(DestinationCollectionType destinationCollectionType, string sourceItemTypeName, bool sourceItemNullable, bool destinationItemNullable)
         {
             CollectionType = destinationCollectionType;
             SourceCollectionItemTypeName = sourceItemTypeName;
+
+            SourceCollectionItemNullable = sourceItemNullable;
+            DestinationCollectionItemNullable = destinationItemNullable;
 
             _namespacesRequired.Add("System.Linq");
 
