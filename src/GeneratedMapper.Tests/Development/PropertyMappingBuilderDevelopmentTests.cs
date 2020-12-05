@@ -101,28 +101,28 @@ namespace GeneratedMapper.Tests.Development
         public void NotNullableValueTypeToNotNullableValueType() => DoTest(true, new PropertyMappingInformation(_mappingInformation).MapFrom("x", false, true).MapTo("x", false, true));
 
         [Test]
-        public void SimpleMapperAsCollection() => DoTest(true, new PropertyMappingInformation(_mappingInformation).MapFrom("x", false, false).MapTo("x", false, false).AsCollection(DestinationCollectionType.Array, "x"));
+        public void SimpleMapperAsCollection() => DoTest(true, new PropertyMappingInformation(_mappingInformation).MapFrom("x", false, false).MapTo("x", false, false).AsCollection(DestinationCollectionType.Array, "x", false, false));
 
         [Test]
-        public void NotNullableToNullableAsCollection() => DoTest(true, new PropertyMappingInformation(_mappingInformation).MapFrom("x", false, false).MapTo("x", true, false).AsCollection(DestinationCollectionType.Array, "x"));
+        public void NotNullableToNullableAsCollection() => DoTest(true, new PropertyMappingInformation(_mappingInformation).MapFrom("x", false, false).MapTo("x", true, false).AsCollection(DestinationCollectionType.Array, "x", false, false));
 
         [Test]
-        public void NullableToNotNullableAsCollection() => DoTest(true, new PropertyMappingInformation(_mappingInformation).MapFrom("x", true, false).MapTo("x", false, false).AsCollection(DestinationCollectionType.Array, "x"));
+        public void NullableToNotNullableAsCollection() => DoTest(true, new PropertyMappingInformation(_mappingInformation).MapFrom("x", true, false).MapTo("x", false, false).AsCollection(DestinationCollectionType.Array, "x", false, false));
 
         [Test]
-        public void NullableToNullableAsCollection() => DoTest(true, new PropertyMappingInformation(_mappingInformation).MapFrom("x", true, false).MapTo("x", true, false).AsCollection(DestinationCollectionType.Array, "x"));
+        public void NullableToNullableAsCollection() => DoTest(true, new PropertyMappingInformation(_mappingInformation).MapFrom("x", true, false).MapTo("x", true, false).AsCollection(DestinationCollectionType.Array, "x", false, false));
 
         [Test]
-        public void ValidBaseAsCollectionWithoutMapping() => DoTest(true, _validBase.AsCollection(DestinationCollectionType.Array, "x"));
+        public void ValidBaseAsCollectionWithoutMapping() => DoTest(true, _validBase.AsCollection(DestinationCollectionType.Array, "x", false, false));
 
         [Test]
-        public void ValidBaseAsCollectionUsingMapper() => DoTest(true, _validBase.AsCollection(DestinationCollectionType.Array, "x").UsingMapper(_nestedSourceType.Object, _nestedDestinationType.Object).SetMappingInformation(_nestedMappingInformation));
+        public void ValidBaseAsCollectionUsingMapper() => DoTest(true, _validBase.AsCollection(DestinationCollectionType.Array, "x", false, false).UsingMapper(_nestedSourceType.Object, _nestedDestinationType.Object).SetMappingInformation(_nestedMappingInformation));
 
         [Test]
-        public void ValidBaseAsCollectionUsingMethod() => DoTest(true, _validBase.AsCollection(DestinationCollectionType.Array, "x").UsingMethod("x", "x", Enumerable.Empty<ParameterInformation>()));
+        public void ValidBaseAsCollectionUsingMethod() => DoTest(true, _validBase.AsCollection(DestinationCollectionType.Array, "x", false, false).UsingMethod("x", "x", Enumerable.Empty<ParameterInformation>()));
 
         [Test]
-        public void ValidBaseAsCollectionUsingResolver() => DoTest(true, _validBase.AsCollection(DestinationCollectionType.Array, "x").UsingResolver("x", "x", Enumerable.Empty<ParameterInformation>()));
+        public void ValidBaseAsCollectionUsingResolver() => DoTest(true, _validBase.AsCollection(DestinationCollectionType.Array, "x", false, false).UsingResolver("x", "x", Enumerable.Empty<ParameterInformation>()));
 
         [Test]
         public void ValidBaseUsingMapperWithoutMappingInformation() => DoTest(false, _validBase.UsingMapper(_nestedSourceType.Object, _nestedDestinationType.Object));

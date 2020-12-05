@@ -446,7 +446,7 @@ namespace Namespace
             DoTest(mappingInformation,
                 new[]
                 {
-                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", true, false).MapTo("Name", true, false).AsCollection(DestinationCollectionType.Array, "Namespace.DestinationItem")
+                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", true, false).MapTo("Name", true, false).AsCollection(DestinationCollectionType.Array, "Namespace.DestinationItem", false, false)
                 },
                 @"using System;
 using System.Linq;

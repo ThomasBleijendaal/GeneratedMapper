@@ -40,13 +40,17 @@ namespace GeneratedMapper.Builders
                     ? $" ?? Enumerable.Empty<{_information.SourceCollectionItemTypeName}>()"
                     : string.Empty;
 
-                var safePropagation = destinationCanHandleNull && string.IsNullOrEmpty(throwWhenNull) && string.IsNullOrEmpty(optionalEmptyCollectionCreation) ? "?" : "";
+                var optionalWhere = _information.SourceCollectionItemNullable && !_information.DestinationCollectionItemNullable
+                    ? ".Where(element => element is not null)"
+                    : string.Empty;
+
+                var safePropagationCollection = destinationCanHandleNull && string.IsNullOrEmpty(throwWhenNull) && string.IsNullOrEmpty(optionalEmptyCollectionCreation) ? "?" : "";
+                var safePropagationElement = _information.SourceCollectionItemNullable && _information.DestinationCollectionItemNullable ? "?" 
+                    : _information.SourceCollectionItemNullable ? "!" : "";
 
                 var propertyRead = !string.IsNullOrEmpty(throwWhenNull) || !string.IsNullOrEmpty(optionalEmptyCollectionCreation)
                     ? $"({sourceInstanceName}.{_information.SourcePropertyName}{throwWhenNull}{optionalEmptyCollectionCreation})"
                     : $"{sourceInstanceName}.{_information.SourcePropertyName}";
-
-                // TODO: what if the element type is nullable?
 
                 var enumerationMethod = _information.CollectionType == DestinationCollectionType.List ? ".ToList()"
                     : _information.CollectionType == DestinationCollectionType.Array ? ".ToArray()"
@@ -54,19 +58,23 @@ namespace GeneratedMapper.Builders
 
                 if (_information.MappingInformationOfMapperToUse != null && _information.MappingInformationOfMapperToUse.DestinationType != null)
                 {
-                    sourceExpression = $"{propertyRead}{safePropagation}.Select(element => element.MapTo{_information.MappingInformationOfMapperToUse.DestinationType.Name}({GetMappingArguments()})){enumerationMethod}";
+                    sourceExpression = $"{propertyRead}{safePropagationCollection}{optionalWhere}.Select(element => element{safePropagationElement}.MapTo{_information.MappingInformationOfMapperToUse.DestinationType.Name}({GetMappingArguments()})){enumerationMethod}";
                 }
                 else if (_information.SourcePropertyMethodToCall != null)
                 {
-                    sourceExpression = $"{propertyRead}{safePropagation}.Select(element => element.{_information.SourcePropertyMethodToCall}({GetMethodArguments()})){enumerationMethod}";
+                    sourceExpression = $"{propertyRead}{safePropagationCollection}{optionalWhere}.Select(element => element{safePropagationElement}.{_information.SourcePropertyMethodToCall}({GetMethodArguments()})){enumerationMethod}";
                 }
                 else if (_information.ResolverTypeToUse != null)
                 {
-                    sourceExpression = $"{propertyRead}{safePropagation}.Select(element => {_information.ResolverInstanceName}.Resolve(element)){enumerationMethod}";
+                    sourceExpression = $"{propertyRead}{safePropagationCollection}{optionalWhere}.Select(element => {_information.ResolverInstanceName}.Resolve(element)){enumerationMethod}";
+                }
+                else if (!string.IsNullOrEmpty(enumerationMethod))
+                {
+                    sourceExpression = $"{propertyRead}{safePropagationCollection}{optionalWhere}{enumerationMethod}";
                 }
                 else
                 {
-                    sourceExpression = $"{propertyRead}{(string.IsNullOrEmpty(enumerationMethod) ? string.Empty : $"{safePropagation}{enumerationMethod}")}";
+                    sourceExpression = propertyRead;
                 }
             }
             else
@@ -88,18 +96,7 @@ namespace GeneratedMapper.Builders
                 }
                 else if (_information.ResolverTypeToUse != null)
                 {
-                    if (!_information.SourcePropertyIsNullable && !_information.DestinationPropertyIsNullable)
-                    {
-                        sourceExpression = $"{_information.ResolverInstanceName}.Resolve({propertyRead})";
-                    }
-                    else if (!_information.DestinationPropertyIsNullable)
-                    {
-                        sourceExpression = $"{_information.ResolverInstanceName}.Resolve({sourceInstanceName}.{_information.SourcePropertyName})";
-                    } 
-                    else
-                    {
-                        sourceExpression = $"{_information.ResolverInstanceName}.Resolve({sourceInstanceName}.{_information.SourcePropertyName})";
-                    }
+                    sourceExpression = $"{_information.ResolverInstanceName}.Resolve({propertyRead})";
                 }
                 else
                 {
