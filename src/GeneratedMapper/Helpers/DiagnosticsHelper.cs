@@ -112,8 +112,16 @@ namespace GeneratedMapper.Helpers
         private static DiagStruct _cannotFindPropertyToIgnore = new()
         {
             Id = "GM0014",
-            Title = "Method cannot be found",
+            Title = "Property cannot be found",
             Message = "The property '{1}' of type '{0}' was specified using a [IgnoreInTarget] but cannot be found.",
+            Severity = DiagnosticSeverity.Error
+        };
+
+        private static DiagStruct _multiplewMappingInformation = new()
+        {
+            Id = "GM0015",
+            Title = "Multiple mappings",
+            Message = "There are multiple mappings found for mapping the type '{0}' to type '{1}'.",
             Severity = DiagnosticSeverity.Error
         };
 
@@ -139,6 +147,8 @@ namespace GeneratedMapper.Helpers
             => GetDiagnostic(_subClassHasIncompatibleMapper, attributeData, sourceProperty, destinationCollectionType);
         public static Diagnostic MissingMappingInformation(AttributeData attributeData, string? mapFromType, string? mapToType)
             => GetDiagnostic(_missingMappingInformation, attributeData, mapFromType, mapToType);
+        public static Diagnostic MultipleMappingInformation(AttributeData attributeData, string? mapFromType, string? mapToType)
+            => GetDiagnostic(_multiplewMappingInformation, attributeData, mapFromType, mapToType);
         public static Diagnostic ConflictingMappingInformation(AttributeData attributeData, string sourceProperty)
             => GetDiagnostic(_conflictingMappingInformation, attributeData, sourceProperty);
         public static Diagnostic EmptyMapper(AttributeData attributeData, string sourceType, string destinationType)

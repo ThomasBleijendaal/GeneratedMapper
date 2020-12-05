@@ -28,7 +28,7 @@ namespace GeneratedMapper.Builders
             var destinationCanHandleNull = _information.DestinationPropertyIsNullable;
 
             // only really throw when destination property can't handle a null
-            var throwWhenNull = _information.BelongsToMapping.ConfigurationValues.Customizations.ThrowWhenNotNullablePropertyIsNull 
+            var throwWhenNull = _information.BelongsToMapping.ConfigurationValues.Customizations.ThrowWhenNotNullablePropertyIsNull
                     && !_information.SourcePropertyIsValueType
                     && !_information.SourcePropertyIsNullable
                 ? $@" ?? throw new {typeof(PropertyNullException).FullName}(""{_information.BelongsToMapping.SourceType.ToDisplayString()} -> {_information.BelongsToMapping.DestinationType.ToDisplayString()}: Property '{_information.SourcePropertyName}' is null."")"
@@ -45,7 +45,7 @@ namespace GeneratedMapper.Builders
                     : string.Empty;
 
                 var safePropagationCollection = destinationCanHandleNull && string.IsNullOrEmpty(throwWhenNull) && string.IsNullOrEmpty(optionalEmptyCollectionCreation) ? "?" : "";
-                var safePropagationElement = _information.SourceCollectionItemNullable && _information.DestinationCollectionItemNullable ? "?" 
+                var safePropagationElement = _information.SourceCollectionItemNullable && _information.DestinationCollectionItemNullable ? "?"
                     : _information.SourceCollectionItemNullable ? "!" : "";
 
                 var propertyRead = !string.IsNullOrEmpty(throwWhenNull) || !string.IsNullOrEmpty(optionalEmptyCollectionCreation)
@@ -107,43 +107,32 @@ namespace GeneratedMapper.Builders
         }
 
         public string? PreConstructionInitialization()
-        {
-            if (_information.ResolverConstructorParameters != null)
-            {
-                return $"var {_information.ResolverInstanceName} = new {_information.ResolverTypeToUse}({GetResolverArguments()});";
-            }
-
-            return null;
-        }
+            => _information.ResolverConstructorParameters != null
+                ? $"var {_information.ResolverInstanceName} = new {_information.ResolverTypeToUse}({GetResolverArguments()});"
+                : null;
 
         public IEnumerable<string> NamespacesUsed() => _information.NamespacesUsed;
 
         public IEnumerable<ParameterInformation> MapArgumentsRequired() => _information.MapParametersRequired;
 
         private string GetResolverArguments()
-        {
-            return _information.ResolverConstructorParameters == null || _information.ResolverInstanceName == null
+            => _information.ResolverConstructorParameters == null || _information.ResolverInstanceName == null
                 ? string.Empty
                 : string.Join(", ", _information.ResolverConstructorParameters
                     .Select(x => x.ToArgument(_information.ResolverInstanceName)));
-        }
 
         private string GetMappingArguments()
-        {
-            return _information.MappingInformationOfMapperToUse == null
+            => _information.MappingInformationOfMapperToUse == null
                 ? string.Empty
                 : string.Join(", ", _information.MappingInformationOfMapperToUse.Mappings
                     .SelectMany(x => x.MapParametersRequired)
                     .Select(x => x.ToArgument(string.Empty))
                     .Distinct());
-        }
 
         private string GetMethodArguments()
-        {
-            return _information.SourcePropertyMethodParameters == null
+            => _information.SourcePropertyMethodParameters == null
                 ? string.Empty
                 : string.Join(", ", _information.SourcePropertyMethodParameters
                     .Select(x => x.ToArgument(string.Empty)));
-        }
     }
 }

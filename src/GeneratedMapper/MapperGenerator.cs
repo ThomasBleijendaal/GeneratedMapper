@@ -148,29 +148,25 @@ namespace GeneratedMapper
 
         private static void ResolvePendingNestedMappings(IEnumerable<MappingInformation> mappings)
         {
-            bool resolvedSomething;
-            do
+            foreach (var mapping in mappings
+                .SelectMany(x => x.Mappings)
+                .Where(x => x.RequiresMappingInformationOfMapper && x.MappingInformationOfMapperToUse == null))
             {
-                resolvedSomething = false;
+                var mappingInformationToFind = mappings
+                    .Where(x => x.SourceType != null && x.DestinationType != null &&
+                        x.SourceType.Equals(mapping.MapperFromType, SymbolEqualityComparer.Default) &&
+                        x.DestinationType.Equals(mapping.MapperToType, SymbolEqualityComparer.Default))
+                    .ToArray();
 
-                foreach (var mapping in mappings
-                    .SelectMany(x => x.Mappings)
-                    .Where(x => x.RequiresMappingInformationOfMapper && x.MappingInformationOfMapperToUse == null))
+                if (mappingInformationToFind.Length == 1)
                 {
-                    var mappingInformationToFind = mappings
-                        .FirstOrDefault(x => x.SourceType != null && x.DestinationType != null &&
-                            x.SourceType.Equals(mapping.MapperFromType, SymbolEqualityComparer.Default) &&
-                            x.DestinationType.Equals(mapping.MapperToType, SymbolEqualityComparer.Default));
-
-                    // TODO: the check if its fully resolved can be an issue when the mappings are dependent on each other, like A -> B -> A etc.
-                    if (mappingInformationToFind != null && mappingInformationToFind.IsFullyResolved)
-                    {
-                        resolvedSomething = true;
-                        mapping.SetMappingInformation(mappingInformationToFind);
-                    }
+                    mapping.SetMappingInformation(mappingInformationToFind.First());
+                }
+                else
+                {
+                    mapping.BelongsToMapping.ReportIssue(DiagnosticsHelper.MultipleMappingInformation(mapping.BelongsToMapping.AttributeData, mapping.MapperFromType?.Name, mapping.MapperToType?.Name));
                 }
             }
-            while (resolvedSomething);
         }
 
         private static void ValidateMappings(GeneratorExecutionContext context, IEnumerable<MappingInformation> mappings)
