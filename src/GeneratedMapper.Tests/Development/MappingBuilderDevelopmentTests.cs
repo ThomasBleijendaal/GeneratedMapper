@@ -432,51 +432,6 @@ namespace Namespace
 ");
 
         [Test]
-        public void MappingNullableSingleEnumerablePropertyFromSourceToDestinationWithThrowIfNullOnNullableProperty()
-        {
-            var customizations = new MapperCustomizations
-            {
-                ThrowWhenNotNullablePropertyIsNull = true
-            };
-
-            var mappingInformation = new MappingInformation(_attributeData.Object, new ConfigurationValues(IndentStyle.Space, 4, customizations))
-                .MapFrom(_sourceType.Object)
-                .MapTo(_destinationType.Object);
-
-            DoTest(mappingInformation,
-                new[]
-                {
-                    new PropertyMappingInformation(mappingInformation).MapFrom("Name", true, false).MapTo("Name", true, false).AsCollection(DestinationCollectionType.Array, "Namespace.DestinationItem", false, false)
-                },
-                @"using System;
-using System.Linq;
-
-#nullable enable
-
-namespace Namespace
-{
-    public static partial class SourceMapToExtensions
-    {
-        public static Namespace.Destination MapToDestination(this Namespace.Source self)
-        {
-            if (self is null)
-            {
-                throw new ArgumentNullException(nameof(self), ""Namespace.Source -> Namespace.Destination: Source is null."");
-            }
-            
-            var target = new Namespace.Destination
-            {
-                Name = self.Name?.ToArray(),
-            };
-            
-            return target;
-        }
-    }
-}
-");
-        }
-
-        [Test]
         public void MappingUsingSubClasses()
         {
             var information = new MappingInformation(_attributeData.Object, _values)

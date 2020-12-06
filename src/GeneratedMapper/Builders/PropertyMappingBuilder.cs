@@ -26,27 +26,16 @@ namespace GeneratedMapper.Builders
 
             var sourceCanBeNull = _information.SourcePropertyIsNullable || (!_information.SourcePropertyIsNullable && !_information.SourcePropertyIsValueType);
             var destinationCanHandleNull = _information.DestinationPropertyIsNullable;
-
-            // only really throw when destination property can't handle a null
-            var throwWhenNull = _information.BelongsToMapping.ConfigurationValues.Customizations.ThrowWhenNotNullablePropertyIsNull
-                    && !_information.SourcePropertyIsValueType
-                    && !_information.SourcePropertyIsNullable
-                ? $@" ?? throw new {typeof(PropertyNullException).FullName}(""{_information.BelongsToMapping.SourceType.ToDisplayString()} -> {_information.BelongsToMapping.DestinationType.ToDisplayString()}: Property '{_information.SourcePropertyName}' is null."")"
-                : string.Empty;
+            var throwWhenNull = GetThrowWhenNull();
 
             if (_information.CollectionType != null)
             {
-                var optionalEmptyCollectionCreation = !_information.DestinationPropertyIsNullable && _information.SourcePropertyIsNullable
-                    ? $" ?? Enumerable.Empty<{_information.SourceCollectionItemTypeName}>()"
-                    : string.Empty;
-
-                var optionalWhere = _information.SourceCollectionItemNullable && !_information.DestinationCollectionItemNullable
-                    ? ".Where(element => element is not null)"
-                    : string.Empty;
+                var optionalEmptyCollectionCreation = GetEmptyCollectionCreation();
+                var optionalWhere = GetFilterDefaultItems();
 
                 var safePropagationCollection = destinationCanHandleNull && string.IsNullOrEmpty(throwWhenNull) && string.IsNullOrEmpty(optionalEmptyCollectionCreation) ? "?" : "";
-                var safePropagationElement = _information.SourceCollectionItemNullable && _information.DestinationCollectionItemNullable ? "?"
-                    : _information.SourceCollectionItemNullable ? "!" : "";
+                var safePropagationElement = _information.SourceCollectionItemsNullable?.Last() == true && _information.DestinationCollectionItemsNullable?.Last() == true ? "?"
+                    : _information.SourceCollectionItemsNullable?.Last() == true ? "!" : "";
 
                 var propertyRead = !string.IsNullOrEmpty(throwWhenNull) || !string.IsNullOrEmpty(optionalEmptyCollectionCreation)
                     ? $"({sourceInstanceName}.{_information.SourcePropertyName}{throwWhenNull}{optionalEmptyCollectionCreation})"
@@ -56,25 +45,43 @@ namespace GeneratedMapper.Builders
                     : _information.CollectionType == DestinationCollectionType.Array ? ".ToArray()"
                     : string.Empty;
 
-                string selectExpression;
+                var item = _information.CollectionType == DestinationCollectionType.Dictionary ? "element.Value" : "element";
+
+                // TODO: element null exception
+
+                string itemMapping;
                 if (_information.MappingInformationOfMapperToUse != null && _information.MappingInformationOfMapperToUse.DestinationType != null)
                 {
-                    selectExpression = $".Select(element => element{safePropagationElement}.MapTo{_information.MappingInformationOfMapperToUse.DestinationType.Name}({GetMappingArguments()}))";
+                    itemMapping = $"element => {item}{safePropagationElement}.MapTo{_information.MappingInformationOfMapperToUse.DestinationType.Name}({GetMappingArguments()})";
                 }
                 else if (_information.SourcePropertyMethodToCall != null)
                 {
-                    selectExpression = $".Select(element => element{safePropagationElement}.{_information.SourcePropertyMethodToCall}({GetMethodArguments()}))";
+                    itemMapping = $"element => {item}{safePropagationElement}.{_information.SourcePropertyMethodToCall}({GetMethodArguments()})";
                 }
                 else if (_information.ResolverTypeToUse != null)
                 {
-                    selectExpression = $".Select(element => {_information.ResolverInstanceName}.Resolve(element))";
+                    itemMapping = $"element => {_information.ResolverInstanceName}.Resolve({item})";
                 }
                 else
                 {
-                    selectExpression = string.Empty;
+                    itemMapping = string.Empty;
                 }
 
-                sourceExpression = $"{propertyRead}{safePropagationCollection}{optionalWhere}{selectExpression}{enumerationMethod}";
+                string mapExpression;
+                if (_information.CollectionType == DestinationCollectionType.Dictionary)
+                {
+                    mapExpression = $".ToDictionary(element => element.Key, {itemMapping})";
+                }
+                else if (!string.IsNullOrEmpty(itemMapping))
+                {
+                    mapExpression = $".Select({itemMapping})";
+                }
+                else
+                {
+                    mapExpression = string.Empty;
+                }
+
+                sourceExpression = $"{propertyRead}{safePropagationCollection}{optionalWhere}{mapExpression}{enumerationMethod}";
             }
             else
             {
@@ -106,6 +113,14 @@ namespace GeneratedMapper.Builders
             return $"{_information.DestinationPropertyName} = {sourceExpression},";
         }
 
+        private string GetThrowWhenNull()
+            // only really throw when destination property can't handle a null
+            => _information.BelongsToMapping.ConfigurationValues.Customizations.ThrowWhenNotNullablePropertyIsNull
+                    && !_information.SourcePropertyIsValueType
+                    && !_information.SourcePropertyIsNullable
+                ? $@" ?? throw new {typeof(PropertyNullException).FullName}(""{_information.BelongsToMapping.SourceType?.ToDisplayString()} -> {_information.BelongsToMapping.DestinationType?.ToDisplayString()}: Property '{_information.SourcePropertyName}' is null."")"
+                : string.Empty;
+
         public string? PreConstructionInitialization()
             => _information.ResolverConstructorParameters != null
                 ? $"var {_information.ResolverInstanceName} = new {_information.ResolverTypeToUse}({GetResolverArguments()});"
@@ -134,5 +149,43 @@ namespace GeneratedMapper.Builders
                 ? string.Empty
                 : string.Join(", ", _information.SourcePropertyMethodParameters
                     .Select(x => x.ToArgument(string.Empty)));
+
+        private string GetEmptyCollectionCreation()
+            => _information.DestinationPropertyIsNullable || !_information.SourcePropertyIsNullable ? string.Empty
+                : _information.SourceCollectionItemTypeNames?.Length == 1 ? $" ?? Enumerable.Empty<{_information.SourceCollectionItemTypeNames[0]}>()"
+                : _information.SourceCollectionItemTypeNames?.Length == 2 ? $" ?? Enumerable.Empty<KeyValuePair<{_information.SourceCollectionItemTypeNames[0]}, {_information.SourceCollectionItemTypeNames[1]}>>()"
+                // TODO: error:
+                : string.Empty;
+
+        private string GetFilterDefaultItems()
+        {
+            if (_information.SourceCollectionItemsNullable?.Length == 1 && _information.DestinationCollectionItemsNullable?.Length == 1)
+            {
+                if (_information.SourceCollectionItemsNullable[0] && !_information.DestinationCollectionItemsNullable[0])
+                {
+                    return ".Where(element => element is not null)";
+                }
+            }
+            else if (_information.SourceCollectionItemsNullable?.Length == 2 && _information.DestinationCollectionItemsNullable?.Length == 2 &&
+                !_information.SourceCollectionItemsNullable.All(x => x == false) && !_information.DestinationCollectionItemsNullable.All(x => x == true))
+            {
+                var checks = new List<string>();
+                if (_information.SourceCollectionItemsNullable[0] && !_information.DestinationCollectionItemsNullable[0])
+                {
+                    checks.Add("element.Key is not null");
+                }
+                if (_information.SourceCollectionItemsNullable[1] && !_information.DestinationCollectionItemsNullable[1])
+                {
+                    checks.Add("element.Value is not null");
+                }
+
+                if (checks.Any())
+                {
+                    return $".Where(element => {string.Join(" && ", checks)})";
+                }
+            }
+
+            return string.Empty;
+        }
     }
 }

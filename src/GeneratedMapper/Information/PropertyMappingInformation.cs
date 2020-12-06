@@ -118,17 +118,23 @@ namespace GeneratedMapper.Information
         }
 
         public DestinationCollectionType? CollectionType { get; private set; }
-        public string? SourceCollectionItemTypeName { get; private set; }
-        public bool SourceCollectionItemNullable { get; private set; }
-        public bool DestinationCollectionItemNullable { get; private set; }
+        public string[]? SourceCollectionItemTypeNames { get; private set; }
+        public bool[]? SourceCollectionItemsNullable { get; private set; }
+        public string[]? DestinationCollectionItemTypeNames { get; private set; }
+        public bool[]? DestinationCollectionItemsNullable { get; private set; }
 
-        public PropertyMappingInformation AsCollection(DestinationCollectionType destinationCollectionType, string sourceItemTypeName, bool sourceItemNullable, bool destinationItemNullable)
+        public PropertyMappingInformation AsCollection(DestinationCollectionType destinationCollectionType, 
+            IEnumerable<string> sourceItemTypeName, 
+            IEnumerable<bool> sourceItemNullable, 
+            IEnumerable<string> destinationItemTypeNames, 
+            IEnumerable<bool> destinationItemsNullable)
         {
             CollectionType = destinationCollectionType;
-            SourceCollectionItemTypeName = sourceItemTypeName;
+            SourceCollectionItemTypeNames = sourceItemTypeName.ToArray();
+            SourceCollectionItemsNullable = sourceItemNullable.ToArray();
 
-            SourceCollectionItemNullable = sourceItemNullable;
-            DestinationCollectionItemNullable = destinationItemNullable;
+            DestinationCollectionItemTypeNames = destinationItemTypeNames.ToArray();
+            DestinationCollectionItemsNullable = destinationItemsNullable.ToArray();
 
             _namespacesRequired.Add("System.Linq");
 
@@ -149,6 +155,15 @@ namespace GeneratedMapper.Information
             if (string.IsNullOrWhiteSpace(SourcePropertyName) || string.IsNullOrWhiteSpace(DestinationPropertyName))
             {
                 messages.Add(DiagnosticsHelper.UnrecognizedTypes(attributeData));
+            }
+
+            if (SourceCollectionItemTypeNames?.Length != DestinationCollectionItemTypeNames?.Length)
+            {
+                // TODO: error
+            }
+            else if (SourceCollectionItemTypeNames?.Length > 1 && SourceCollectionItemTypeNames.First() != DestinationCollectionItemTypeNames.First())
+            {
+                // TODO: error
             }
 
             if (SourcePropertyIsNullable && !DestinationPropertyIsNullable && CollectionType == default)

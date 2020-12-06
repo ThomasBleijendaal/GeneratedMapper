@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using GeneratedMapper.Attributes;
 using GeneratedMapper.Enums;
@@ -17,6 +18,7 @@ namespace GeneratedMapper.Parsers
         private readonly INamedTypeSymbol _genericEnumerableType;
         private readonly INamedTypeSymbol _genericListlikeType;
         private readonly INamedTypeSymbol _genericReadOnlyListlikeType;
+        private readonly INamedTypeSymbol _genericReadOnlyDictionarylikeType;
         private readonly INamedTypeSymbol _stringType;
 
         private readonly INamedTypeSymbol _mapToAttribute;
@@ -34,6 +36,7 @@ namespace GeneratedMapper.Parsers
             _genericEnumerableType = context.Compilation.GetTypeByMetadataName("System.Collections.Generic.IEnumerable`1")?.ConstructUnboundGenericType() ?? throw new InvalidOperationException("Cannot find System.Collections.Generic.IEnumerable`1");
             _genericListlikeType = context.Compilation.GetTypeByMetadataName("System.Collections.Generic.ICollection`1")?.ConstructUnboundGenericType() ?? throw new InvalidOperationException("Cannot find System.Collections.Generic.ICollection`1");
             _genericReadOnlyListlikeType = context.Compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyCollection`1")?.ConstructUnboundGenericType() ?? throw new InvalidOperationException("Cannot find System.Collections.Generic.IReadOnlyList`1");
+            _genericReadOnlyDictionarylikeType = context.Compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyDictionary`2")?.ConstructUnboundGenericType() ?? throw new InvalidOperationException("Cannot find System.Collections.Generic.IReadOnlyDictionary`2");
             _stringType = context.Compilation.GetTypeByMetadataName("System.String") ?? throw new InvalidOperationException("Cannot find System.String");
 
             _mapToAttribute = context.Compilation.GetTypeByMetadataName(typeof(MapToAttribute).FullName) ?? throw new InvalidOperationException("Cannot find MapToAttribute");
@@ -57,8 +60,9 @@ namespace GeneratedMapper.Parsers
 
             try
             {
-                var sourcePropertyCollectionType = GetCollectionType(sourceProperty);
-                var destinationPropertyCollectionType = GetCollectionType(destinationProperty);
+                // TODO: this ?.Last() forces the keys to be of the same type for now
+                var sourcePropertyCollectionType = GetCollectionType(sourceProperty)?.Last();
+                var destinationPropertyCollectionType = GetCollectionType(destinationProperty)?.Last();
 
                 // check if property is collection to collection
                 var isCollectionToCollection = sourcePropertyCollectionType is ITypeSymbol && destinationPropertyCollectionType is ITypeSymbol;
@@ -137,68 +141,72 @@ namespace GeneratedMapper.Parsers
             return null;
         }
 
-        // TODO: this is very naive - can this recognize Dictionaries?
-        private ITypeSymbol? GetCollectionType(IPropertySymbol property)
+        private IEnumerable<ITypeSymbol>? GetCollectionType(IPropertySymbol property)
         {
-            var collectionTypeToUse = default(ITypeSymbol);
+            // collection detection
+            if (!property.Type.Equals(_stringType, SymbolEqualityComparer.Default) &&
+                property.Type.Interfaces.Any(x => x.Equals(_enumerableType, SymbolEqualityComparer.Default)) &&
+                property.Type is INamedTypeSymbol namedPropertyType &&
+                namedPropertyType.IsGenericType)
             {
-                // collection detection
-                if (!property.Type.Equals(_stringType, SymbolEqualityComparer.Default) &&
-                    property.Type.Interfaces.Any(x => x.Equals(_enumerableType, SymbolEqualityComparer.Default)) &&
-                    property.Type is INamedTypeSymbol namedPropertyType &&
-                    namedPropertyType.IsGenericType)
-                {
-                    collectionTypeToUse = namedPropertyType.TypeArguments.FirstOrDefault();
-                }
-                else if (property.Type is IArrayTypeSymbol arrayPropertyType)
-                {
-                    collectionTypeToUse = arrayPropertyType.ElementType;
-                }
+                var (_, types) = GetCollectionTypes(namedPropertyType);
+
+                return types;
+            }
+            else if (property.Type is IArrayTypeSymbol arrayPropertyType)
+            {
+                return new[] { arrayPropertyType.ElementType };
             }
 
-            return collectionTypeToUse;
+            return null;
         }
 
         private void MapPropertyAsCollection(PropertyMappingInformation propertyMapping, IPropertySymbol sourceProperty, IPropertySymbol destinationProperty)
         {
             var listType = DestinationCollectionType.Enumerable;
-            var sourceCollectionItemType = GetCollectionType(sourceProperty);
-            ITypeSymbol destinationCollectionItemType;
-            
+            var sourceCollectionItemTypes = GetCollectionType(sourceProperty);
+
+            var destinationCollectionItemTypes = default(IEnumerable<ITypeSymbol>);
+
             if (destinationProperty.Type.TypeKind == TypeKind.Array &&
                 destinationProperty.Type is IArrayTypeSymbol arrayDestinationProperty)
             {
                 listType = DestinationCollectionType.Array;
-                destinationCollectionItemType = arrayDestinationProperty.ElementType;
+                destinationCollectionItemTypes = new[] { arrayDestinationProperty.ElementType };
             }
-            else if (destinationProperty.Type is INamedTypeSymbol namedDestinationPropertyType &&
-                namedDestinationPropertyType.IsGenericType &&
-                namedDestinationPropertyType.TypeArguments.Length == 1)
+            else if (destinationProperty.Type is INamedTypeSymbol namedDestinationPropertyType && namedDestinationPropertyType.IsGenericType)
             {
-                var unboundGenericTypeInterfaces = namedDestinationPropertyType.AllInterfaces.Select(x => x.IsGenericType ? x.ConstructUnboundGenericType() : x);
-
-                listType =
-                    unboundGenericTypeInterfaces.Any(x => x.Equals(_genericListlikeType, SymbolEqualityComparer.Default)) ? DestinationCollectionType.List
-                    : unboundGenericTypeInterfaces.Any(x => x.Equals(_genericReadOnlyListlikeType, SymbolEqualityComparer.Default)) ? DestinationCollectionType.List
-                    : unboundGenericTypeInterfaces.Any(x => x.Equals(_genericEnumerableType, SymbolEqualityComparer.Default)) ? DestinationCollectionType.Enumerable
-                    : DestinationCollectionType.Enumerable;
-
-                destinationCollectionItemType = namedDestinationPropertyType.TypeArguments.First();
-            }
-            else
-            {
-                // TODO: report collection item issue
-                return;
+                (listType, destinationCollectionItemTypes) = GetCollectionTypes(namedDestinationPropertyType);
             }
 
-            if (sourceCollectionItemType is not null)
+            if (sourceCollectionItemTypes is not null && destinationCollectionItemTypes is not null)
             {
                 propertyMapping.AsCollection(
                     listType,
-                    sourceCollectionItemType.ToDisplayString(),
-                    sourceCollectionItemType.NullableAnnotation == NullableAnnotation.Annotated,
-                    destinationCollectionItemType.NullableAnnotation == NullableAnnotation.Annotated);
+                    sourceCollectionItemTypes.Select(x => x.ToDisplayString()),
+                    sourceCollectionItemTypes.Select(x => x.NullableAnnotation == NullableAnnotation.Annotated),
+                    destinationCollectionItemTypes.Select(x => x.ToDisplayString()),
+                    destinationCollectionItemTypes.Select(x => x.NullableAnnotation == NullableAnnotation.Annotated));
             }
+            else
+            {
+                // TODO: check if KEY and VALUE are compatible
+                // TODO: report collection item issue
+                return;
+            }
+        }
+
+        private (DestinationCollectionType type, ImmutableArray<ITypeSymbol> collectionTypes) GetCollectionTypes(INamedTypeSymbol type)
+        {
+            var unboundGenericTypeInterfaces = type.AllInterfaces.Select(x => x.IsGenericType ? x.ConstructUnboundGenericType() : x);
+
+            var listType = unboundGenericTypeInterfaces.Any(x => x.Equals(_genericReadOnlyDictionarylikeType, SymbolEqualityComparer.Default)) ? DestinationCollectionType.Dictionary
+                : unboundGenericTypeInterfaces.Any(x => x.Equals(_genericListlikeType, SymbolEqualityComparer.Default)) ? DestinationCollectionType.List
+                : unboundGenericTypeInterfaces.Any(x => x.Equals(_genericReadOnlyListlikeType, SymbolEqualityComparer.Default)) ? DestinationCollectionType.List
+                : unboundGenericTypeInterfaces.Any(x => x.Equals(_genericEnumerableType, SymbolEqualityComparer.Default)) ? DestinationCollectionType.Enumerable
+                : DestinationCollectionType.Enumerable;
+
+            return (listType, type.TypeArguments);
         }
     }
 }

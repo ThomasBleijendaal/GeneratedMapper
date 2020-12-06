@@ -4,6 +4,7 @@
     {
         Enumerable,
         Array,
-        List
+        List,
+        Dictionary
     }
 }
