@@ -60,7 +60,7 @@ namespace GeneratedMapper.Parsers
 
             try
             {
-                // TODO: this ?.Last() forces the keys to be of the same type for now
+                // TODO: this ?.Last() forces the keys of a dictionary to be of the same type for now
                 var sourcePropertyCollectionType = GetCollectionType(sourceProperty)?.Last();
                 var destinationPropertyCollectionType = GetCollectionType(destinationProperty)?.Last();
 
@@ -179,6 +179,12 @@ namespace GeneratedMapper.Parsers
                 (listType, destinationCollectionItemTypes) = GetCollectionTypes(namedDestinationPropertyType);
             }
 
+            if (listType == DestinationCollectionType.Dictionary &&
+                sourceCollectionItemTypes?.FirstOrDefault().Equals(destinationCollectionItemTypes?.FirstOrDefault(), SymbolEqualityComparer.Default) == false)
+            {
+                throw new ParseException(DiagnosticsHelper.InequalDictionaryKeys(propertyMapping.BelongsToMapping.AttributeData, propertyMapping.SourcePropertyName!, propertyMapping.DestinationPropertyName!));
+            }
+
             if (sourceCollectionItemTypes is not null && destinationCollectionItemTypes is not null)
             {
                 propertyMapping.AsCollection(
@@ -190,9 +196,11 @@ namespace GeneratedMapper.Parsers
             }
             else
             {
-                // TODO: check if KEY and VALUE are compatible
-                // TODO: report collection item issue
-                return;
+                throw new ParseException(DiagnosticsHelper.UnmappableEnumerableProperty(propertyMapping.BelongsToMapping.AttributeData,
+                    propertyMapping.BelongsToMapping.SourceType?.Name!,
+                    propertyMapping.SourcePropertyName!,
+                    propertyMapping.BelongsToMapping.DestinationType?.Name!,
+                    propertyMapping.DestinationPropertyName!));
             }
         }
 

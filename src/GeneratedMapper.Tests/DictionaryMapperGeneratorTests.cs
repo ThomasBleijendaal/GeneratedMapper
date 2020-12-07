@@ -52,6 +52,26 @@ namespace A
         }
 
         [Test]
+        public void MapWithMapper_InequalKeys()
+        {
+            GeneratorTestHelper.TestReportedDiagnostics(@"using System;
+using System.Collections.Generic;
+using GeneratedMapper.Attributes;
+
+namespace A {
+    [MapTo(typeof(B.B))]
+    public class A { 
+        public Dictionary<int, A> Dict { get; set; } 
+    }
+}
+
+namespace B {
+    public class B { public Dictionary<string, B> Dict { get; set; } }
+}
+}", "GM0016");
+        }
+
+        [Test]
         public void MapWithMapper_WithNullableSource()
         {
             GeneratorTestHelper.TestGeneratedCode(@"using System;
