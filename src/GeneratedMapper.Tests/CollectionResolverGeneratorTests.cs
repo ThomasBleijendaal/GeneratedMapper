@@ -47,7 +47,7 @@ namespace A
             
             var target = new B.B
             {
-                Prop = (self.Prop ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Prop' is null."")).Select(element => resolver.Resolve(element)).ToArray(),
+                Prop = (self.Prop ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Prop is null."")).Select(element => resolver.Resolve((element ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: An item of the property Prop is null."")))).ToArray(),
             };
             
             return target;
@@ -99,7 +99,7 @@ namespace A
             
             var target = new B.B
             {
-                Prop = (self.Prop ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Prop' is null."")).Select(element => resolver.Resolve(element)).ToArray(),
+                Prop = (self.Prop ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Prop is null."")).Select(element => resolver.Resolve((element ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: An item of the property Prop is null."")))).ToArray(),
             };
             
             return target;

@@ -1,4 +1,5 @@
-﻿using Example.Destinations;
+﻿using System.Collections.Generic;
+using Example.Destinations;
 using Example.Resolvers;
 using GeneratedMapper.Attributes;
 
@@ -18,7 +19,12 @@ namespace Example.Sources
         [Ignore(Index = 2)]
         public SourceMetadata[]? Metadata { get; set; }
 
+        [Ignore(Index = 1)]
+        [MapWith("Metadata", Index = 2)]
+        public Dictionary<string, SourceMetadata> MetadataDictionary { get; set; }
+
         [MapTo(typeof(SimpleDestination.SimpleDestinationMetadata))]
+        [MapTo(typeof(ComplexDestination.ComplexDestinationMetadata))]
         public class SourceMetadata
         {
             public string Data { get; set; }

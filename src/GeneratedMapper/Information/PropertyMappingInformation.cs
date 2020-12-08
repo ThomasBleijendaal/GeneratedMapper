@@ -8,50 +8,33 @@ using Microsoft.CodeAnalysis;
 
 namespace GeneratedMapper.Information
 {
-    internal sealed class PropertyMappingInformation
+    internal abstract class PropertyBaseMappingInformation
     {
-        private readonly List<string> _namespacesRequired = new List<string>
+        protected readonly List<string> _namespacesRequired = new List<string>
         {
             "System"
         };
-
-        public PropertyMappingInformation(MappingInformation belongsToMapping)
+        
+        public PropertyBaseMappingInformation(MappingInformation belongsToMapping)
         {
             BelongsToMapping = belongsToMapping ?? throw new ArgumentNullException(nameof(belongsToMapping));
         }
 
         public MappingInformation BelongsToMapping { get; private set; }
 
-        public string? SourcePropertyName { get; private set; }
-        public bool SourcePropertyIsNullable { get; private set; }
-        public bool SourcePropertyIsValueType { get; private set; }
+        public PropertyType PropertyType { get; protected set; }
 
-        public PropertyMappingInformation MapFrom(string propertyName, bool isNullable, bool valueType)
-        {
-            SourcePropertyName = propertyName;
-            SourcePropertyIsNullable = isNullable;
-            SourcePropertyIsValueType = valueType;
-
-            return this;
-        }
-
-        public string? DestinationPropertyName { get; private set; }
-        public bool DestinationPropertyIsNullable { get; private set; }
-        public bool DestinationPropertyIsValueType { get; private set; }
-
-        public PropertyMappingInformation MapTo(string propertyName, bool isNullable, bool valueType)
-        {
-            DestinationPropertyName = propertyName;
-            DestinationPropertyIsNullable = isNullable;
-            DestinationPropertyIsValueType = valueType;
-
-            return this;
-        }
+        public bool SourceIsNullable { get; protected set; }
+        public bool SourceIsValueType { get; protected set; }
+        public bool DestinationIsNullable { get; protected set; }
+        public bool DestinationIsValueType { get; protected set; }
 
         public string? SourcePropertyMethodToCall { get; private set; }
         public IEnumerable<ParameterInformation>? SourcePropertyMethodParameters { get; private set; }
 
-        public PropertyMappingInformation UsingMethod(string method, string? methodNamespace, IEnumerable<ParameterInformation> methodParameters)
+        public List<PropertyElementMappingInformation> CollectionElements { get; private set; } = new();
+
+        public void UsingMethod(string method, string? methodNamespace, IEnumerable<ParameterInformation> methodParameters)
         {
             SourcePropertyMethodToCall = method;
             SourcePropertyMethodParameters = methodParameters;
@@ -62,8 +45,6 @@ namespace GeneratedMapper.Information
             }
 
             _namespacesRequired.AddRange(methodParameters.Where(x => !string.IsNullOrWhiteSpace(x.DefaultValue)).Select(x => x.Namespace));
-
-            return this;
         }
 
         public bool RequiresMappingInformationOfMapper { get; private set; }
@@ -73,7 +54,7 @@ namespace GeneratedMapper.Information
 
         public MappingInformation? MappingInformationOfMapperToUse { get; private set; }
 
-        public PropertyMappingInformation UsingMapper(ITypeSymbol sourceType, ITypeSymbol destinationType)
+        public void UsingMapper(ITypeSymbol sourceType, ITypeSymbol destinationType)
         {
             RequiresMappingInformationOfMapper = true;
             MapperFromType = sourceType;
@@ -85,11 +66,9 @@ namespace GeneratedMapper.Information
             {
                 MappingInformationOfMapperToUse = BelongsToMapping;
             }
-
-            return this;
         }
 
-        public PropertyMappingInformation SetMappingInformation(MappingInformation information)
+        public void SetMappingInformation(MappingInformation information)
         {
             MappingInformationOfMapperToUse = information;
 
@@ -98,103 +77,35 @@ namespace GeneratedMapper.Information
                 _namespacesRequired.Add(information.SourceType.ContainingNamespace.ToDisplayString());
             }
             _namespacesRequired.AddRange(information.Mappings.SelectMany(x => x.NamespacesUsed));
-
-            return this;
         }
 
         public string? ResolverTypeToUse { get; private set; }
         public string? ResolverInstanceName { get; private set; }
         public IEnumerable<ParameterInformation>? ResolverConstructorParameters { get; private set; }
 
-        public PropertyMappingInformation UsingResolver(string resolverTypeName, string resolverFullName, IEnumerable<ParameterInformation> constructorParameters)
+        public void UsingResolver(string resolverTypeName, string resolverFullName, IEnumerable<ParameterInformation> constructorParameters)
         {
             ResolverInstanceName = resolverTypeName.ToFirstLetterLower();
             ResolverTypeToUse = resolverFullName;
             ResolverConstructorParameters = constructorParameters;
 
             _namespacesRequired.AddRange(constructorParameters.Where(x => !string.IsNullOrWhiteSpace(x.DefaultValue)).Select(x => x.Namespace));
-
-            return this;
         }
 
-        public DestinationCollectionType? CollectionType { get; private set; }
-        public string[]? SourceCollectionItemTypeNames { get; private set; }
-        public bool[]? SourceCollectionItemsNullable { get; private set; }
-        public string[]? DestinationCollectionItemTypeNames { get; private set; }
-        public bool[]? DestinationCollectionItemsNullable { get; private set; }
-
-        public PropertyMappingInformation AsCollection(DestinationCollectionType destinationCollectionType, 
-            IEnumerable<string> sourceItemTypeName, 
-            IEnumerable<bool> sourceItemNullable, 
-            IEnumerable<string> destinationItemTypeNames, 
-            IEnumerable<bool> destinationItemsNullable)
-        {
-            CollectionType = destinationCollectionType;
-            SourceCollectionItemTypeNames = sourceItemTypeName.ToArray();
-            SourceCollectionItemsNullable = sourceItemNullable.ToArray();
-
-            DestinationCollectionItemTypeNames = destinationItemTypeNames.ToArray();
-            DestinationCollectionItemsNullable = destinationItemsNullable.ToArray();
-
-            _namespacesRequired.Add("System.Linq");
-
-            return this;
-        }
-
-        public IEnumerable<string> NamespacesUsed => _namespacesRequired;
+        public IEnumerable<string> NamespacesUsed => _namespacesRequired.Union(CollectionElements.SelectMany(x => x.NamespacesUsed));
 
         public IEnumerable<ParameterInformation> MapParametersRequired
             => this.DoRecursionSafe(
-                mapping => mapping.AllParameters.Select(argument => argument.CopyWithPrefix(mapping.ResolverInstanceName!)) ?? Enumerable.Empty<ParameterInformation>(),
+                mapping => mapping.AllParameters ?? Enumerable.Empty<ParameterInformation>(),
                 mapping => mapping.MappingInformationOfMapperToUse?.Mappings);
 
-        public bool TryValidateMapping(AttributeData attributeData, out IEnumerable<Diagnostic> diagnostics)
-        {
-            var messages = new List<Diagnostic>();
-
-            if (string.IsNullOrWhiteSpace(SourcePropertyName) || string.IsNullOrWhiteSpace(DestinationPropertyName))
-            {
-                messages.Add(DiagnosticsHelper.UnrecognizedTypes(attributeData));
-            }
-
-            if (SourceCollectionItemTypeNames?.Length != DestinationCollectionItemTypeNames?.Length)
-            {
-                // TODO: error
-            }
-            else if (SourceCollectionItemTypeNames?.Length > 1 && SourceCollectionItemTypeNames.First() != DestinationCollectionItemTypeNames.First())
-            {
-                // TODO: error
-            }
-
-            if (SourcePropertyIsNullable && !DestinationPropertyIsNullable && CollectionType == default)
-            {
-                messages.Add(DiagnosticsHelper.IncorrectNullability(attributeData, SourcePropertyName!, DestinationPropertyName!));
-            }
-
-            if (RequiresMappingInformationOfMapper && MappingInformationOfMapperToUse == null)
-            {
-                messages.Add(DiagnosticsHelper.MissingMappingInformation(attributeData, MapperFromType?.ToDisplayString(), MapperToType?.ToDisplayString()));
-            }
-
-            if ((!string.IsNullOrWhiteSpace(ResolverTypeToUse) && !string.IsNullOrWhiteSpace(SourcePropertyMethodToCall)) ||
-                (!string.IsNullOrWhiteSpace(ResolverTypeToUse) && RequiresMappingInformationOfMapper) ||
-                (!string.IsNullOrWhiteSpace(SourcePropertyMethodToCall) && RequiresMappingInformationOfMapper) ||
-                (SourcePropertyIsValueType != DestinationPropertyIsValueType && string.IsNullOrWhiteSpace(ResolverTypeToUse) && string.IsNullOrWhiteSpace(SourcePropertyMethodToCall) && !RequiresMappingInformationOfMapper))
-            {
-                messages.Add(DiagnosticsHelper.ConflictingMappingInformation(attributeData, SourcePropertyName!));
-            }
-
-            diagnostics = messages;
-            return messages.Count == 0;
-        }
-
         public bool RequiresNullableContext =>
-            CollectionType != default ||
+            PropertyType != default ||
             RequiresMappingInformationOfMapper ||
-            !string.IsNullOrEmpty(SourcePropertyMethodToCall) && !((SourcePropertyIsValueType && !SourcePropertyIsNullable) || (DestinationPropertyIsValueType && !DestinationPropertyIsNullable));
+            (!string.IsNullOrEmpty(SourcePropertyMethodToCall) && !((SourceIsValueType && !SourceIsNullable) || (DestinationIsValueType && !DestinationIsNullable))) ||
+            CollectionElements.Any(x => x.RequiresNullableContext);
 
-
-        public IEnumerable<ParameterInformation> AllParameters
+        private IEnumerable<ParameterInformation> AllParameters
         {
             get
             {
@@ -210,10 +121,121 @@ namespace GeneratedMapper.Information
                 {
                     foreach (var parameter in ResolverConstructorParameters)
                     {
+                        yield return parameter.CopyWithPrefix(ResolverInstanceName!);
+                    }
+                }
+
+                foreach (var element in CollectionElements)
+                {
+                    foreach (var parameter in element.AllParameters)
+                    {
                         yield return parameter;
                     }
                 }
             }
         }
+
+    }
+
+    internal sealed class PropertyElementMappingInformation : PropertyBaseMappingInformation
+    {
+        public PropertyElementMappingInformation(MappingInformation belongsToMapping) : base(belongsToMapping)
+        {
+        }
+
+        public string? SourceTypeName { get; private set; }
+
+        public void MapFrom(ITypeSymbol type)
+        {
+            SourceTypeName = type.ToDisplayString();
+            SourceIsNullable = type.NullableAnnotation == NullableAnnotation.Annotated;
+            SourceIsValueType = type.IsValueType;
+        }
+
+        public string? DestinationTypeName { get; private set; }
+
+        public void MapTo(ITypeSymbol type)
+        {
+            DestinationTypeName = type.ToDisplayString();
+            DestinationIsNullable = type.NullableAnnotation == NullableAnnotation.Annotated;
+            DestinationIsValueType = type.IsValueType;
+        }
+    }
+
+    internal sealed class PropertyMappingInformation : PropertyBaseMappingInformation
+    {
+        public PropertyMappingInformation(MappingInformation belongsToMapping) : base(belongsToMapping)
+        {
+        }
+
+        public string? SourcePropertyName { get; private set; }
+
+        public void MapFrom(IPropertySymbol property)
+        {
+            SourcePropertyName = property.Name;
+            SourceIsNullable = property.NullableAnnotation == NullableAnnotation.Annotated;
+            SourceIsValueType = property.Type.IsValueType;
+        }
+
+        public string? DestinationPropertyName { get; private set; }
+
+        public void MapTo(IPropertySymbol property)
+        {
+            DestinationPropertyName = property.Name;
+            DestinationIsNullable = property.NullableAnnotation == NullableAnnotation.Annotated;
+            DestinationIsValueType = property.Type.IsValueType;
+        }
+
+        public void AsCollection(PropertyType destinationCollectionType)
+        {
+            PropertyType = destinationCollectionType;
+
+            _namespacesRequired.Add("System.Linq");
+        }
+
+        public void AddCollectionElementMapping(PropertyElementMappingInformation element)
+        {
+            CollectionElements.Add(element);
+        }
+
+        public bool TryValidateMapping(AttributeData attributeData, out IEnumerable<Diagnostic> diagnostics)
+        {
+            var messages = new List<Diagnostic>();
+
+            if (string.IsNullOrWhiteSpace(SourcePropertyName) || string.IsNullOrWhiteSpace(DestinationPropertyName))
+            {
+                messages.Add(DiagnosticsHelper.UnrecognizedTypes(attributeData));
+            }
+
+            if (SourceIsNullable && !DestinationIsNullable && PropertyType == default)
+            {
+                messages.Add(DiagnosticsHelper.IncorrectNullability(attributeData, SourcePropertyName!, DestinationPropertyName!));
+            }
+
+            if (RequiresMappingInformationOfMapper && MappingInformationOfMapperToUse == null)
+            {
+                messages.Add(DiagnosticsHelper.MissingMappingInformation(attributeData, MapperFromType?.ToDisplayString(), MapperToType?.ToDisplayString()));
+            }
+
+            if ((!string.IsNullOrWhiteSpace(ResolverTypeToUse) && !string.IsNullOrWhiteSpace(SourcePropertyMethodToCall)) ||
+                (!string.IsNullOrWhiteSpace(ResolverTypeToUse) && RequiresMappingInformationOfMapper) ||
+                (!string.IsNullOrWhiteSpace(SourcePropertyMethodToCall) && RequiresMappingInformationOfMapper) ||
+                (SourceIsValueType != DestinationIsValueType && string.IsNullOrWhiteSpace(ResolverTypeToUse) && string.IsNullOrWhiteSpace(SourcePropertyMethodToCall) && !RequiresMappingInformationOfMapper))
+            {
+                messages.Add(DiagnosticsHelper.ConflictingMappingInformation(attributeData, SourcePropertyName!));
+            }
+
+            foreach (var element in CollectionElements)
+            {
+                // TODO: add collection validations
+                
+            }
+
+
+            diagnostics = messages;
+            return messages.Count == 0;
+        }
+
+        // TODO: add collection requirements
     }
 }

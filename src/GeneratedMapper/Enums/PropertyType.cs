@@ -1,7 +1,8 @@
 ﻿namespace GeneratedMapper.Enums
 {
-    internal enum DestinationCollectionType
+    internal enum PropertyType
     {
+        Default,
         Enumerable,
         Array,
         List,

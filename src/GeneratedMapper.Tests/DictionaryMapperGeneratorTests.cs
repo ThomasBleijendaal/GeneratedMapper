@@ -41,7 +41,7 @@ namespace A
             
             var target = new B.B
             {
-                Dict = (self.Dict ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Dict' is null."")).ToDictionary(element => element.Key, element => element.Value.MapToB()),
+                Dict = (self.Dict ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Dict is null."")).ToDictionary(element => (element.Key ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: A key of the property Dict is null."")), element => (element.Value ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: A value of the property Dict is null."")).MapToB()),
             };
             
             return target;
@@ -107,7 +107,7 @@ namespace A
             
             var target = new B.B
             {
-                Dict = (self.Dict ?? Enumerable.Empty<KeyValuePair<string, A.A>>()).ToDictionary(element => element.Key, element => element.Value.MapToB()),
+                Dict = (self.Dict ?? Enumerable.Empty<KeyValuePair<string, A.A>>()).ToDictionary(element => (element.Key ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: A key of the property Dict is null."")), element => (element.Value ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: A value of the property Dict is null."")).MapToB()),
             };
             
             return target;
@@ -153,7 +153,7 @@ namespace A
             
             var target = new B.B
             {
-                Dict = (self.Dict ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Dict' is null."")).ToDictionary(element => element.Key, element => element.Value.MapToB()),
+                Dict = self.Dict?.ToDictionary(element => (element.Key ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: A key of the property Dict is null."")), element => (element.Value ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: A value of the property Dict is null."")).MapToB()),
             };
             
             return target;
@@ -199,7 +199,7 @@ namespace A
             
             var target = new B.B
             {
-                Dict = self.Dict?.ToDictionary(element => element.Key, element => element.Value.MapToB()),
+                Dict = self.Dict?.ToDictionary(element => (element.Key ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: A key of the property Dict is null."")), element => (element.Value ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: A value of the property Dict is null."")).MapToB()),
             };
             
             return target;
@@ -245,7 +245,7 @@ namespace A
             
             var target = new B.B
             {
-                Dict = (self.Dict ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Dict' is null."")).Where(element => element.Value is not null).ToDictionary(element => element.Key, element => element.Value!.MapToB()),
+                Dict = (self.Dict ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Dict is null."")).Where(element => element.Value is not null).ToDictionary(element => (element.Key ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: A key of the property Dict is null."")), element => element.Value.MapToB()),
             };
             
             return target;
@@ -291,7 +291,7 @@ namespace A
             
             var target = new B.B
             {
-                Dict = (self.Dict ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Dict' is null."")).ToDictionary(element => element.Key, element => element.Value.MapToB()),
+                Dict = (self.Dict ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Dict is null."")).ToDictionary(element => (element.Key ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: A key of the property Dict is null."")), element => element.Value?.MapToB()),
             };
             
             return target;
@@ -337,7 +337,7 @@ namespace A
             
             var target = new B.B
             {
-                Dict = (self.Dict ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Dict' is null."")).ToDictionary(element => element.Key, element => element.Value?.MapToB()),
+                Dict = (self.Dict ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Dict is null."")).ToDictionary(element => (element.Key ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: A key of the property Dict is null."")), element => element.Value?.MapToB()),
             };
             
             return target;
@@ -383,7 +383,7 @@ namespace A
             
             var target = new B.B
             {
-                Dict = (self.Dict ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Dict' is null."")).Where(element => element.Key is not null).ToDictionary(element => element.Key, element => element.Value.MapToB()),
+                Dict = (self.Dict ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Dict is null."")).Where(element => element.Key is not null).ToDictionary(element => element.Key, element => (element.Value ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: A value of the property Dict is null."")).MapToB()),
             };
             
             return target;
@@ -429,7 +429,7 @@ namespace A
             
             var target = new B.B
             {
-                Dict = (self.Dict ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Dict' is null."")).ToDictionary(element => element.Key, element => element.Value.MapToB()),
+                Dict = (self.Dict ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Dict is null."")).ToDictionary(element => element.Key, element => (element.Value ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: A value of the property Dict is null."")).MapToB()),
             };
             
             return target;
@@ -475,7 +475,7 @@ namespace A
             
             var target = new B.B
             {
-                Dict = (self.Dict ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Dict' is null."")).ToDictionary(element => element.Key, element => element.Value.MapToB()),
+                Dict = (self.Dict ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Dict is null."")).ToDictionary(element => element.Key, element => (element.Value ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: A value of the property Dict is null."")).MapToB()),
             };
             
             return target;
@@ -521,7 +521,7 @@ namespace A
             
             var target = new B.B
             {
-                Dict = (self.Dict ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Dict' is null."")).Where(element => element.Key is not null && element.Value is not null).ToDictionary(element => element.Key, element => element.Value!.MapToB()),
+                Dict = (self.Dict ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Dict is null."")).Where(element => element.Key is not null && element.Value is not null).ToDictionary(element => element.Key, element => element.Value.MapToB()),
             };
             
             return target;
@@ -567,7 +567,7 @@ namespace A
             
             var target = new B.B
             {
-                Dict = (self.Dict ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Dict' is null."")).ToDictionary(element => element.Key, element => element.Value.MapToB()),
+                Dict = (self.Dict ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Dict is null."")).ToDictionary(element => element.Key, element => element.Value?.MapToB()),
             };
             
             return target;
@@ -613,7 +613,7 @@ namespace A
             
             var target = new B.B
             {
-                Dict = (self.Dict ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Dict' is null."")).ToDictionary(element => element.Key, element => element.Value?.MapToB()),
+                Dict = (self.Dict ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Dict is null."")).ToDictionary(element => element.Key, element => element.Value?.MapToB()),
             };
             
             return target;

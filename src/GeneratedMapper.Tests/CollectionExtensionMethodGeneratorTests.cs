@@ -46,7 +46,7 @@ namespace A
             
             var target = new B.B
             {
-                Prop = (self.Prop ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Prop' is null."")).Select(element => element.ExtensionMethod()).ToArray(),
+                Prop = (self.Prop ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Prop is null."")).Select(element => (element ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: An item of the property Prop is null."")).ExtensionMethod()).ToArray(),
             };
             
             return target;
@@ -97,7 +97,7 @@ namespace A
             
             var target = new B.B
             {
-                Prop = (self.Prop ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Prop' is null."")).Select(element => element.ExtensionMethod(startIndex)).ToArray(),
+                Prop = (self.Prop ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Prop is null."")).Select(element => (element ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: An item of the property Prop is null."")).ExtensionMethod(startIndex)).ToArray(),
             };
             
             return target;
@@ -148,7 +148,7 @@ namespace A
             
             var target = new B.B
             {
-                Prop = (self.Prop ?? Enumerable.Empty<string>()).Select(element => element.ExtensionMethod(startIndex)).ToArray(),
+                Prop = (self.Prop ?? Enumerable.Empty<string>()).Select(element => (element ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: An item of the property Prop is null."")).ExtensionMethod(startIndex)).ToArray(),
             };
             
             return target;

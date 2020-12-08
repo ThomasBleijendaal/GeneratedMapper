@@ -5,6 +5,7 @@ using System.Text.Json;
 using Example.Records;
 using Example.Sources;
 
+[assembly: GeneratedMapper.Attributes.MapperGeneratorConfiguration(ThrowWhenNotNullableElementIsNull = false, ThrowWhenNotNullablePropertyIsNull = false)]
 namespace Example
 {
     public class Program
@@ -38,7 +39,12 @@ namespace Example
                     new Source.SourceMetadata
                     {
                         Data = Guid.NewGuid().ToString()
-                    }}
+                    }},
+                MetadataDictionary = new Dictionary<string, Source.SourceMetadata>
+                {
+                    { "tag1", new Source.SourceMetadata { Data = "tag1 metadata "} },
+                    { "tag2", new Source.SourceMetadata { Data = "tag2 metadata "} },
+                }
             };
 
             // important known limitation for source generators:

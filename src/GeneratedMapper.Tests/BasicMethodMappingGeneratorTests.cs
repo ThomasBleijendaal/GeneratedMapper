@@ -40,7 +40,7 @@ namespace A
             
             var target = new B.B
             {
-                Target = (self.Name ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Name' is null."")).ToString(),
+                Target = (self.Name ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name is null."")).ToString(),
             };
             
             return target;
