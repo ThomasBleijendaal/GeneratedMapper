@@ -109,12 +109,6 @@ namespace GeneratedMapper.Parsers
                 (listType, destinationCollectionItemTypes) = GetCollectionTypes(namedDestinationPropertyType);
             }
 
-            if (listType == PropertyType.Dictionary &&
-                sourceCollectionItemTypes.FirstOrDefault()?.Equals(destinationCollectionItemTypes?.FirstOrDefault(), SymbolEqualityComparer.Default) == false)
-            {
-                throw new ParseException(DiagnosticsHelper.InequalDictionaryKeys(propertyMapping.BelongsToMapping.AttributeData, propertyMapping.SourcePropertyName!, propertyMapping.DestinationPropertyName!));
-            }
-
             if (sourceCollectionItemTypes is not null && destinationCollectionItemTypes is not null)
             {
                 propertyMapping.AsCollection(listType);
@@ -150,15 +144,7 @@ namespace GeneratedMapper.Parsers
                     resolverType.ToDisplayString(),
                     _parameterParser.ParseConstructorParameters(resolverType));
             }
-
-            if (destinationType.HasAttribute(_mapFromAttribute, default, 0, sourceType) ||
-                sourceType.HasAttribute(_mapToAttribute, default, 0, destinationType))
-            {
-                propertyMapping.UsingMapper(sourceType, destinationType);
-            }
-
-
-            if (mapWithAttribute?.ConstructorArgument<string>(1) is string propertyMethodToCall)
+            else if (mapWithAttribute?.ConstructorArgument<string>(1) is string propertyMethodToCall)
             {
                 if (sourceType is INamedTypeSymbol namedSourcePropertyType &&
                     namedSourcePropertyType.GetMembers(propertyMethodToCall)
@@ -181,6 +167,11 @@ namespace GeneratedMapper.Parsers
                     // probably an extension method beyond the vision of this generator -- the compiler will throw if it's invalid but we can't check it here
                     propertyMapping.UsingMethod(propertyMethodToCall, default, Enumerable.Empty<ParameterInformation>());
                 }
+            }
+            else if (destinationType.HasAttribute(_mapFromAttribute, default, 0, sourceType) ||
+                sourceType.HasAttribute(_mapToAttribute, default, 0, destinationType))
+            {
+                propertyMapping.UsingMapper(sourceType, destinationType);
             }
         }
 

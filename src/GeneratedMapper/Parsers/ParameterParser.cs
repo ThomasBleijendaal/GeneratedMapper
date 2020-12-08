@@ -23,6 +23,11 @@ namespace GeneratedMapper.Parsers
                 .OrderBy(x => x.Parameters.Length)
                 .FirstOrDefault();
 
+            if (resolverConstructor == null)
+            {
+                return Enumerable.Empty<ParameterInformation>();
+            }
+
             return ParseMethodParameters(resolverConstructor.Parameters).ToImmutableArray();
         }
 

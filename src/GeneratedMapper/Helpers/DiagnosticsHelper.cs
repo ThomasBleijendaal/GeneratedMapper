@@ -125,14 +125,6 @@ namespace GeneratedMapper.Helpers
             Severity = DiagnosticSeverity.Error
         };
 
-        private static DiagStruct _inequalDictionaryKeys = new()
-        {
-            Id = "GM0016",
-            Title = "Incompatible dictionaries",
-            Message = "The keys of the dictionary '{0}' must be the same as the keys of the dictionary '{1}'.",
-            Severity = DiagnosticSeverity.Error
-        };
-
         public static Diagnostic NoParameterlessConstructor(AttributeData attributeData)
             => GetDiagnostic(_noParameterlessConstructor, attributeData);
         public static Diagnostic UnrecognizedTypes(AttributeData attributeData)
@@ -163,8 +155,6 @@ namespace GeneratedMapper.Helpers
             => GetDiagnostic(_emptyMapper, attributeData, sourceType, destinationType);
         public static Diagnostic MissingIgnoreInTarget(AttributeData attributeData, string targetType, string targetProperty)
             => GetDiagnostic(_cannotFindPropertyToIgnore, attributeData, targetType, targetProperty);
-        public static Diagnostic InequalDictionaryKeys(AttributeData attributeData, string sourcePropertyName, string destinationPropertyName)
-            => GetDiagnostic(_inequalDictionaryKeys, attributeData, sourcePropertyName, destinationPropertyName);
 
 
         public static Diagnostic Debug(Exception ex) => Debug($"{ex.Message } -- {ex.StackTrace.Replace("\n", "--").Replace("\r", "")}");
