@@ -58,10 +58,10 @@ namespace GeneratedMapper.Parsers
             propertyMapping.MapFrom(sourceProperty);
             propertyMapping.MapTo(destinationProperty);
 
-            // TODO: allow to override collection recognition and have resolver or method be invoked on the collection itself instead of on its elements
-
             try
             {
+                var mapCollectionAsProperty = mapWithAttribute?.GetMapCompleteCollection() ?? false;
+
                 var sourcePropertyCollectionType = GetCollectionType(sourceProperty);
                 var destinationPropertyCollectionType = GetCollectionType(destinationProperty);
 
@@ -69,7 +69,7 @@ namespace GeneratedMapper.Parsers
                 var isCollectionToCollection = sourcePropertyCollectionType is not null && destinationPropertyCollectionType is not null &&
                     sourcePropertyCollectionType.Count == destinationPropertyCollectionType.Count;
                 
-                if (isCollectionToCollection)
+                if (isCollectionToCollection && !mapCollectionAsProperty)
                 {
                     MapPropertyAsCollection(mapWithAttribute, propertyMapping, sourceProperty, destinationProperty);
                 }

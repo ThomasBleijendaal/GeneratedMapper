@@ -53,5 +53,10 @@ namespace GeneratedMapper.Attributes
         /// Set when using multiple Map attributes on the same class with different configurations.
         /// </summary>
         public int Index { get; set; }
+
+        /// <summary>
+        /// Set when mapping each element is unwanted and complete property should be mapped by resolver or (extension) method.
+        /// </summary>
+        public bool MapCompleteCollection { get; set; }
     }
 }

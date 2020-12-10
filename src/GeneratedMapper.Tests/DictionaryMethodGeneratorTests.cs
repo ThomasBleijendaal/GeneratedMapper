@@ -3,10 +3,10 @@ using NUnit.Framework;
 
 namespace GeneratedMapper.Tests
 {
-    public class DictionaryResolverGeneratorTests
+    public class DictionaryMethodGeneratorTests
     {
         [Test]
-        public void MapWithResolver()
+        public void MapWithMethod()
         {
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using System.Collections.Generic;
@@ -21,7 +21,7 @@ namespace R {
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 
-        [MapWith(typeof(R.Resolver))]
+        [MapWith(""Dict"", ""ToString"")]
         public Dictionary<string, A> Dict { get; set; } 
     }
 }
@@ -46,11 +46,9 @@ namespace A
                 throw new ArgumentNullException(nameof(self), ""A.A -> B.B: Source is null."");
             }
             
-            var resolver = new R.Resolver();
-            
             var target = new B.B
             {
-                Dict = (self.Dict ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Dict is null."")).ToDictionary(element => resolver.Resolve((element.Key ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: A key of the property Dict is null.""))), element => resolver.Resolve((element.Value ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: A value of the property Dict is null."")))),
+                Dict = (self.Dict ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Dict is null."")).ToDictionary(element => (element.Key ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: A key of the property Dict is null."")).ToString(), element => (element.Value ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: A value of the property Dict is null."")).ToString()),
             };
             
             return target;
@@ -61,7 +59,7 @@ namespace A
         }
 
         [Test]
-        public void MapWithResolver_InequalKeys()
+        public void MapWithMethod_InequalKeys()
         {
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using System.Collections.Generic;
@@ -70,7 +68,7 @@ using GeneratedMapper.Attributes;
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 
-        [MapWith(typeof(R.Resolver))]
+        [MapWith(""Dict"", ""ToString"")]
         public Dictionary<int, A> Dict { get; set; } 
     }
 }
@@ -96,11 +94,9 @@ namespace A
                 throw new ArgumentNullException(nameof(self), ""A.A -> B.B: Source is null."");
             }
             
-            var resolver = new R.Resolver();
-            
             var target = new B.B
             {
-                Dict = (self.Dict ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Dict is null."")).ToDictionary(element => resolver.Resolve(element.Key), element => resolver.Resolve((element.Value ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: A value of the property Dict is null."")))),
+                Dict = (self.Dict ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Dict is null."")).ToDictionary(element => element.Key.ToString(), element => (element.Value ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: A value of the property Dict is null."")).ToString()),
             };
             
             return target;
@@ -111,7 +107,7 @@ namespace A
         }
 
         [Test]
-        public void MapCompletePropertyWithResolver()
+        public void MapCompletePropertyWithMethod()
         {
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using System.Collections.Generic;
@@ -126,7 +122,7 @@ namespace R {
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 
-        [MapWith(typeof(R.Resolver), MapCompleteCollection = true)]
+        [MapWith(""Dict"", ""ToString"", MapCompleteCollection = true)]
         public Dictionary<string, A> Dict { get; set; } 
     }
 }
@@ -136,6 +132,8 @@ namespace B {
 }
 }",
 @"using System;
+
+#nullable enable
 
 namespace A
 {
@@ -148,11 +146,9 @@ namespace A
                 throw new ArgumentNullException(nameof(self), ""A.A -> B.B: Source is null."");
             }
             
-            var resolver = new R.Resolver();
-            
             var target = new B.B
             {
-                Dict = resolver.Resolve((self.Dict ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Dict is null.""))),
+                Dict = (self.Dict ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Dict is null."")).ToString(),
             };
             
             return target;
