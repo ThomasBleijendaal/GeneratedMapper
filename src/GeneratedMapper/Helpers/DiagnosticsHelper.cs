@@ -156,6 +156,7 @@ namespace GeneratedMapper.Helpers
         public static Diagnostic MissingIgnoreInTarget(AttributeData attributeData, string targetType, string targetProperty)
             => GetDiagnostic(_cannotFindPropertyToIgnore, attributeData, targetType, targetProperty);
 
+
         public static Diagnostic Debug(Exception ex) => Debug($"{ex.Message } -- {ex.StackTrace.Replace("\n", "--").Replace("\r", "")}");
 
         public static Diagnostic Debug(string message) => Diagnostic.Create(

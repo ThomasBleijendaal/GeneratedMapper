@@ -23,11 +23,18 @@ namespace GeneratedMapper.Parsers
                 .OrderBy(x => x.Parameters.Length)
                 .FirstOrDefault();
 
+            if (resolverConstructor == null)
+            {
+                return Enumerable.Empty<ParameterInformation>();
+            }
+
             return ParseMethodParameters(resolverConstructor.Parameters).ToImmutableArray();
         }
 
-        public IEnumerable<ParameterInformation> ParseMethodParameters(IEnumerable<IParameterSymbol> parameters)
+        public List<ParameterInformation> ParseMethodParameters(IEnumerable<IParameterSymbol> parameters)
         {
+            var list = new List<ParameterInformation>();
+
             foreach (var parameter in parameters)
             {
                 // TODO: this is very naive
@@ -49,13 +56,15 @@ namespace GeneratedMapper.Parsers
                     ? arrayParameter.ElementType.ContainingNamespace.ToDisplayString()
                     : parameter.Type.ContainingNamespace.ToDisplayString();
 
-                yield return new ParameterInformation(
+                list.Add(new ParameterInformation(
                     parameter.Name,
                     parameter.Type.ToDisplayString(),
                     @namespace,
                     parameter.NullableAnnotation == NullableAnnotation.Annotated,
-                    defaultValueString);
+                    defaultValueString));
             }
+
+            return list;
         }
     }
 }

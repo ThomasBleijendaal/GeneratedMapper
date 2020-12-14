@@ -119,5 +119,16 @@ namespace GeneratedMapper.Builders
                 yield return feature!;
             }
         }
+
+        private IEnumerable<string> WriteMappingCode(Func<PropertyMappingBuilder, IEnumerable<string>> mappingFeature)
+        {
+            foreach (var feature in _propertyMappingBuilders
+                .SelectMany(map => mappingFeature.Invoke(map))
+                .Where(feature => feature is not null)
+                .Distinct())
+            {
+                yield return feature!;
+            }
+        }
     }
 }

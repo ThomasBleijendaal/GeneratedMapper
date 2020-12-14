@@ -44,7 +44,7 @@ namespace A
             
             var target = new B.B
             {
-                Target = resolver.Resolve((self.Name ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property 'Name' is null.""))),
+                Target = resolver.Resolve((self.Name ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name is null.""))),
             };
             
             return target;

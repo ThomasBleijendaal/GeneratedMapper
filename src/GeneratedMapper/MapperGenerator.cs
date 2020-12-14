@@ -117,7 +117,6 @@ namespace GeneratedMapper
 
                 var configurationAttribute = context.Compilation.GetTypeByMetadataName(typeof(MapperGeneratorConfigurationAttribute).FullName);
 
-
                 var config = assemblyAttributes.FirstOrDefault(x => x.AttributeClass != null && x.AttributeClass.Equals(configurationAttribute, SymbolEqualityComparer.Default));
                 if (config != null)
                 {
@@ -133,9 +132,16 @@ namespace GeneratedMapper
                                 break;
 
                             case nameof(MapperCustomizations.ThrowWhenNotNullablePropertyIsNull):
-                                if (argument.Value.Value is bool throwWhenNotNull)
+                                if (argument.Value.Value is bool throwWhenPropertyIsNull)
                                 {
-                                    customizations.ThrowWhenNotNullablePropertyIsNull = throwWhenNotNull;
+                                    customizations.ThrowWhenNotNullablePropertyIsNull = throwWhenPropertyIsNull;
+                                }
+                                break;
+
+                            case nameof(MapperCustomizations.ThrowWhenNotNullableElementIsNull):
+                                if (argument.Value.Value is bool throwWhenElementIsNull)
+                                {
+                                    customizations.ThrowWhenNotNullableElementIsNull = throwWhenElementIsNull;
                                 }
                                 break;
                         }
@@ -150,6 +156,7 @@ namespace GeneratedMapper
         {
             foreach (var mapping in mappings
                 .SelectMany(x => x.Mappings)
+                .SelectMany(x => new PropertyBaseMappingInformation[] { x }.Union(x.CollectionElements))
                 .Where(x => x.RequiresMappingInformationOfMapper && x.MappingInformationOfMapperToUse == null))
             {
                 var mappingInformationToFind = mappings

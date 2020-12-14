@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using GeneratedMapper.Attributes;
 using Microsoft.CodeAnalysis;
 
 namespace GeneratedMapper.Extensions
@@ -7,15 +8,23 @@ namespace GeneratedMapper.Extensions
     {
         public static int GetIndex(this AttributeData attributeData)
         {
-            var args = attributeData.NamedArguments;
+            return GetAttributeNamedArgument<int>(attributeData, nameof(MapWithAttribute.Index));
+        }
 
-            // this check is for unit test which cannot easily inject other named arguments into attribute data
-            if (args.IsDefault)
+        public static bool GetMapCompleteCollection(this AttributeData attributeData)
+        {
+            return GetAttributeNamedArgument<bool>(attributeData, nameof(MapWithAttribute.MapCompleteCollection));
+        }
+
+        private static TValue? GetAttributeNamedArgument<TValue>(AttributeData attributeData, string name)
+        {
+            var args = attributeData.NamedArguments;
+            if (args.FirstOrDefault(x => x.Key == name).Value.Value is TValue value)
             {
-                return 0;
+                return value;
             }
 
-            return args.FirstOrDefault(x => x.Key == "Index").Value.Value as int? ?? 0;
+            return default;
         }
     }
 }
