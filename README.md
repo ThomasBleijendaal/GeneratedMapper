@@ -72,6 +72,22 @@ public class SourceDTO
 
 Don't delay, generate your object-to-object mappers at compile-time today!
 
+## Features
+
+### Mapping
+
+- Property to property mapping (`Title` -> `target.Title = source.Title`).
+- Property to property mapping with different names (`[MapWith("TheTitle")] Title` -> `target.TheTitle = source.Title`).
+- Property to property mapping using (extension) method (`[MapWith("TheTitle", "Substring")] Title` -> `target.TheTitle = source.Title.Substring(startIndex)`).
+- Property to property mapping using resolver (`[MapWith("TheTitle", typeof(Resolver))] Title` -> `target.TheTitle = resolver.Resolve(source.Title)`).
+- Enumeration mapping (`Codes` -> `target.Codes = (source.Codes ?? Enumerable.Empty<string>()).ToArray()`).
+- Dictionary mapping (`Definitions` -> `target.Definitions = (source.Codes ?? Enumerable.Empty<KeyValuePair<string, string>>()).ToDictionary(x => x.Key, x => x.Value)`).
+
+### Configuration
+
+Use `[assembly: MapperGeneratorConfiguration()]` to configure the mapper, like always including certain namespaces if the mapper fails to recognize them,
+or configure what exceptions should be thrown when the mapper encounters null.
+
 ## More information
 
 Please review the Example project to find more examples. The GeneratedMapper.Tests project contains
