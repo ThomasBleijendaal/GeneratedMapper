@@ -129,9 +129,9 @@ namespace GeneratedMapper.Parsers
             else
             {
                 throw new ParseException(DiagnosticsHelper.UnmappableEnumerableProperty(propertyMapping.BelongsToMapping.AttributeData,
-                    propertyMapping.BelongsToMapping.SourceType?.Name!,
+                    propertyMapping.BelongsToMapping.SourceType?.ToDisplayString()!,
                     propertyMapping.SourcePropertyName!,
-                    propertyMapping.BelongsToMapping.DestinationType?.Name!,
+                    propertyMapping.BelongsToMapping.DestinationType?.ToDisplayString()!,
                     propertyMapping.DestinationPropertyName!));
             }
         }

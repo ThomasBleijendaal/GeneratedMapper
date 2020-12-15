@@ -171,7 +171,7 @@ namespace GeneratedMapper
                 }
                 else
                 {
-                    mapping.BelongsToMapping.ReportIssue(DiagnosticsHelper.MultipleMappingInformation(mapping.BelongsToMapping.AttributeData, mapping.MapperFromType?.Name, mapping.MapperToType?.Name));
+                    mapping.BelongsToMapping.ReportIssue(DiagnosticsHelper.MultipleMappingInformation(mapping.BelongsToMapping.AttributeData, mapping.MapperFromType?.ToDisplayString(), mapping.MapperToType?.ToDisplayString()));
                 }
             }
         }
