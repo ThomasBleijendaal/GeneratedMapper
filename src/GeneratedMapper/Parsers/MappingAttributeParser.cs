@@ -57,36 +57,35 @@ namespace GeneratedMapper.Parsers
                 var destinationPropertyExclusions = TargetPropertiesToIgnore(attributedType, mappingInformation.AttributeIndex);
 
                 var attributedTypeProperties = mappingInformation.MappingType == MappingType.MapTo ? GetMappableGetPropertiesOfType(attributedType) : GetMappableSetPropertiesOfType(attributedType);
-                var allTargetTypeProperties = mappingInformation.MappingType == MappingType.MapFrom ? GetMappableGetPropertiesOfType(targetType) : GetMappableSetPropertiesOfType(targetType);
+                var targetTypeProperties = mappingInformation.MappingType == MappingType.MapFrom ? GetMappableGetPropertiesOfType(targetType) : GetMappableSetPropertiesOfType(targetType);
 
-                foreach (var targetTypeProperty in destinationPropertyExclusions.Where(name => !allTargetTypeProperties.Any(target => target.Name == name)))
+                foreach (var targetTypeProperty in destinationPropertyExclusions.Where(name => !targetTypeProperties.ContainsKey(name)))
                 {
                     mappingInformation.ReportIssue(DiagnosticsHelper.MissingIgnoreInTarget(attributeData, targetType.ToDisplayString(), targetTypeProperty));
                 }
 
-                var targetTypeProperties = allTargetTypeProperties
-                    .Where(x => !destinationPropertyExclusions.Contains(x.Name))
-                    .ToList();
+                var processedTargetProperties = new List<string>();
 
-                var processedTargetProperties = new List<IPropertySymbol>();
-
-                foreach (var attributedTypeProperty in attributedTypeProperties.Where(x => !ShouldIgnoreProperty(x, mappingInformation.AttributeIndex)))
+                foreach (var kv in attributedTypeProperties.Where(x => !ShouldIgnoreProperty(x.Value.First(), mappingInformation.AttributeIndex)))
                 {
-                    var mapWithAttributes = Enumerable.DefaultIfEmpty(attributedTypeProperty.FindAttributes(_mapWithAttribute, mappingInformation.AttributeIndex));
+                    var attributedTypePropertyName = kv.Key;
+                    var attributedTypePropertySet = kv.Value;
+
+                    var mapWithAttributes = Enumerable.DefaultIfEmpty(attributedTypePropertySet.FindAttributes(_mapWithAttribute, mappingInformation.AttributeIndex));
 
                     foreach (var mapWithAttribute in mapWithAttributes)
                     {
                         var targetPropertyToFind = mapWithAttribute?.ConstructorArgument<string>(0)
-                            ?? attributedTypeProperty.Name;
+                            ?? attributedTypePropertyName;
 
-                        var targetTypeProperty = targetTypeProperties.FirstOrDefault(property => property.Name == targetPropertyToFind);
-                        if (targetTypeProperty == null)
+                        if (!targetTypeProperties.ContainsKey(targetPropertyToFind))
                         {
                             mappingInformation.ReportIssue(DiagnosticsHelper.UnmappableProperty(attributeData, attributedType.ToDisplayString(), targetPropertyToFind, targetType.ToDisplayString()));
                             continue;
                         }
+                        var targetTypePropertySet = targetTypeProperties[targetPropertyToFind];
 
-                        var property = _propertyParser.ParseProperty(mappingInformation, mapWithAttribute, attributedTypeProperty, targetTypeProperty);
+                        var property = _propertyParser.ParseProperty(mappingInformation, mapWithAttribute, attributedTypePropertySet.First(), targetTypePropertySet.First());
 
                         if (mappingInformation.Mappings.Any(x => x.DestinationPropertyName == property.DestinationPropertyName))
                         {
@@ -97,13 +96,13 @@ namespace GeneratedMapper.Parsers
                             mappingInformation.AddProperty(property);
                         }
 
-                        processedTargetProperties.Add(targetTypeProperty);
+                        processedTargetProperties.Add(targetPropertyToFind);
                     }
                 }
 
-                foreach (var remainingTargetProperty in targetTypeProperties.Except(processedTargetProperties))
+                foreach (var remainingTargetProperty in targetTypeProperties.Where(x => !destinationPropertyExclusions.Contains(x.Key) && !processedTargetProperties.Contains(x.Key)))
                 {
-                    mappingInformation.ReportIssue(DiagnosticsHelper.LeftOverProperty(attributeData, targetType.ToDisplayString(), remainingTargetProperty.Name, attributedType.ToDisplayString()));
+                    mappingInformation.ReportIssue(DiagnosticsHelper.LeftOverProperty(attributeData, targetType.ToDisplayString(), remainingTargetProperty.Key, attributedType.ToDisplayString()));
                 }
             }
             catch (ParseException ex)
@@ -118,25 +117,36 @@ namespace GeneratedMapper.Parsers
             return mappingInformation;
         }
 
-        private static IEnumerable<IPropertySymbol> GetMappableGetPropertiesOfType(ITypeSymbol targetType)
+        private static IReadOnlyDictionary<string, IReadOnlyList<IPropertySymbol>> GetMappableGetPropertiesOfType(ITypeSymbol targetType)
             => GetMappablePropertiesOfType(targetType, x => x.GetMethod is not null && x.GetMethod.DeclaredAccessibility == Accessibility.Public);
-        private static IEnumerable<IPropertySymbol> GetMappableSetPropertiesOfType(ITypeSymbol targetType)
+        private static IReadOnlyDictionary<string, IReadOnlyList<IPropertySymbol>> GetMappableSetPropertiesOfType(ITypeSymbol targetType)
             => GetMappablePropertiesOfType(targetType, x => x.SetMethod is not null && x.SetMethod.DeclaredAccessibility == Accessibility.Public);
 
-        private static IEnumerable<IPropertySymbol> GetMappablePropertiesOfType(ITypeSymbol targetType, Func<IPropertySymbol, bool> requirement)
+        private static IReadOnlyDictionary<string, IReadOnlyList<IPropertySymbol>> GetMappablePropertiesOfType(ITypeSymbol targetType, Func<IPropertySymbol, bool> requirement)
         {
+            var properties = new Dictionary<string, List<IPropertySymbol>>();
+
+            foreach (var typeProperty in targetType.GetMembers().OfType<IPropertySymbol>().Where(requirement))
+            {
+                properties[typeProperty.Name] = new List<IPropertySymbol> { typeProperty };
+            }
+
             if (targetType.BaseType != null)
             {
                 foreach (var inheritedProperty in GetMappablePropertiesOfType(targetType.BaseType, requirement))
                 {
-                    yield return inheritedProperty;
+                    if (properties.ContainsKey(inheritedProperty.Key))
+                    {
+                        properties[inheritedProperty.Key].AddRange(inheritedProperty.Value);
+                    }
+                    else
+                    {
+                        properties[inheritedProperty.Key] = inheritedProperty.Value.ToList();
+                    }
                 }
             }
 
-            foreach (var typeProperty in targetType.GetMembers().OfType<IPropertySymbol>().Where(requirement))
-            {
-                yield return typeProperty;
-            }
+            return properties.ToDictionary(x => x.Key, x => (IReadOnlyList<IPropertySymbol>)x.Value);
         }
 
         private IEnumerable<string> TargetPropertiesToIgnore(ITypeSymbol attributedType, int index)

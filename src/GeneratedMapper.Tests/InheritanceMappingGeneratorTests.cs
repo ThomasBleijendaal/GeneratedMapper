@@ -43,9 +43,9 @@ namespace A
             
             var target = new B.B
             {
-                Name3 = (self.Name3 ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name3 is null."")),
-                Name2 = (self.Name2 ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name2 is null."")),
                 Name1 = (self.Name1 ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name1 is null."")),
+                Name2 = (self.Name2 ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name2 is null."")),
+                Name3 = (self.Name3 ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name3 is null."")),
             };
             
             return target;
@@ -94,8 +94,8 @@ namespace A
             
             var target = new B.B
             {
-                Name3 = (self.Name3 ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name3 is null."")),
                 Name1 = (self.Name1 ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name1 is null."")),
+                Name3 = (self.Name3 ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name3 is null."")),
             };
             
             return target;

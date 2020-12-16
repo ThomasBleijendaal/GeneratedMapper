@@ -14,7 +14,7 @@ namespace GeneratedMapper.Attributes
         }
 
         /// <summary>
-        /// Set when using multiple Map attributes on the same class with different configurations.
+        /// Set >= 1 when using multiple Map attributes on the same class with different configurations.
         /// </summary>
         public int Index { get; set; }
     }

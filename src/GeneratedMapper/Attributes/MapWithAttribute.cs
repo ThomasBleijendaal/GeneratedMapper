@@ -2,7 +2,7 @@
 
 namespace GeneratedMapper.Attributes
 {
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple = true, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = true, Inherited = true)]
     public class MapWithAttribute : Attribute
     {
         /// <summary>
@@ -50,7 +50,7 @@ namespace GeneratedMapper.Attributes
         public Type? ResolverType { get; }
 
         /// <summary>
-        /// Set when using multiple Map attributes on the same class with different configurations.
+        /// Set >= 1 when using multiple Map attributes on the same class with different configurations.
         /// </summary>
         public int Index { get; set; }
 
