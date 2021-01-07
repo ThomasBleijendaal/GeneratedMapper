@@ -6,7 +6,7 @@ namespace GeneratedMapper.Attributes
     {
         public MapperGeneratorConfigurationAttribute()
         {
-            
+
         }
 
         /// <summary>
@@ -37,5 +37,17 @@ namespace GeneratedMapper.Attributes
         /// Instruct the mapper to always include these namespaces.
         /// </summary>
         public string[] NamespacesToInclude { get; set; } = new string[0];
+
+        /// <summary>
+        /// Instruct the mapper to also create the IEnumerable&lt;X&gt;.MapToY() for each of the mappings.
+        /// </summary>
+        public bool GenerateEnumerableMethods { get; set; }
+
+        /// <summary>
+        /// Instruct the mapper to also create an ExpressionX.ToY = Expression&lt;Func&lt;X, Y&gt;&gt; for each of the mappings.
+        /// 
+        /// Only mappers which do not rely on any resolver or mapper will be created as expression.
+        /// </summary>
+        public bool GenerateExpressions { get; set; }
     }
 }

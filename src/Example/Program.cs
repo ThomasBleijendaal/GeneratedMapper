@@ -5,7 +5,10 @@ using System.Text.Json;
 using Example.Records;
 using Example.Sources;
 
-[assembly: GeneratedMapper.Attributes.MapperGeneratorConfiguration(ThrowWhenNotNullableElementIsNull = false, ThrowWhenNotNullablePropertyIsNull = false)]
+[assembly: GeneratedMapper.Attributes.MapperGeneratorConfiguration(
+    ThrowWhenNotNullableElementIsNull = false, 
+    ThrowWhenNotNullablePropertyIsNull = false,
+    GenerateEnumerableMethods = true)]
 namespace Example
 {
     public class Program
@@ -57,14 +60,18 @@ namespace Example
 
             // if this example is run with GeneratorMapper as NuGet package, intellisense will work correctly
 
-            Console.WriteLine(JsonSerializer.Serialize(source.MapToSimpleDestination(), new JsonSerializerOptions { WriteIndented = true }));
-            Console.WriteLine(JsonSerializer.Serialize(source.MapToComplexDestination(7, new[] { 1.2, 1.3 }, CultureInfo.CurrentCulture), new JsonSerializerOptions { WriteIndented = true }));
+            var options = new JsonSerializerOptions { WriteIndented = true };
+
+            Console.WriteLine(JsonSerializer.Serialize(source.MapToSimpleDestination(), options));
+            Console.WriteLine(JsonSerializer.Serialize(source.MapToComplexDestination(7, new[] { 1.2, 1.3 }, CultureInfo.CurrentCulture), options));
 
             var record = new TestRecord("Test");
 
             var destination = record.MapToTestRecordDestination();
 
-            Console.WriteLine(JsonSerializer.Serialize(destination, new JsonSerializerOptions { WriteIndented = true }));
+            var destinations = new[] { record }.MapToTestRecordDestination();
+
+            Console.WriteLine(JsonSerializer.Serialize(destination, options));
         }
     }
 }
