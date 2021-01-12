@@ -20,5 +20,10 @@ namespace GeneratedMapper.Attributes
         /// Set >= 1 when using multiple Map attributes on the same class with different configurations.
         /// </summary>
         public int Index { get; set; }
+
+        /// <summary>
+        /// Set the maximum depth a recursive expression is allowed to reach. Defaults to 3.
+        /// </summary>
+        public int MaxRecursion { get; set; } = 3;
     }
 }

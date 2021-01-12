@@ -13,8 +13,11 @@ namespace GeneratedMapper.Builders
 {
     internal sealed class MappingBuilder : BuilderBase
     {
+        private readonly List<PropertyMappingBuilder> _propertyMappingBuilders;
+
         public MappingBuilder(MappingInformation information) : base(information)
         {
+            _propertyMappingBuilders = information.Mappings.Select(mapping => new PropertyMappingBuilder(mapping)).ToList();
         }
 
         public SourceText GenerateSourceText()
@@ -23,9 +26,9 @@ namespace GeneratedMapper.Builders
             using var indentWriter = new IndentedTextWriter(writer,
                 _information.ConfigurationValues.IndentStyle == IndentStyle.Tab ? "\t" : new string(' ', (int)_information.ConfigurationValues.IndentSize));
 
-            WriteUsingNamespaces(indentWriter);
+            WriteUsingNamespaces(indentWriter, _propertyMappingBuilders.SelectMany(map => map.NamespacesUsed()));
             WriteOptionalNullableEnablePragma(indentWriter);
-            WriteOpenNamespaceAndStaticClass(indentWriter, $"{_information.SourceType?.Name}MapToExtensions");
+            WriteOpenNamespaceAndStaticClass(indentWriter, "", $"{_information.SourceType?.Name}MapToExtensions");
 
             WriteMapToExtensionMethod(indentWriter);
             
@@ -59,13 +62,13 @@ namespace GeneratedMapper.Builders
                 WriteNullCheck(indentWriter, SourceInstanceName, _information.SourceType.ToDisplayString(), _information.DestinationType?.ToDisplayString());
             }
 
-            indentWriter.WriteLines(GenerateCode(map => map.PreConstructionInitialization()), true);
+            indentWriter.WriteLines(GenerateCode(_propertyMappingBuilders, map => map.PreConstructionInitialization()), true);
 
             indentWriter.WriteLine($"var {TargetInstanceName} = new {_information.DestinationType?.ToDisplayString()}");
             indentWriter.WriteLine("{");
             indentWriter.Indent++;
 
-            indentWriter.WriteLines(GenerateCode(map => map.InitializerString(SourceInstanceName)));
+            indentWriter.WriteLines(GenerateCode(_propertyMappingBuilders, map => map.InitializerString(SourceInstanceName)));
 
             indentWriter.Indent--;
             indentWriter.WriteLine("};");

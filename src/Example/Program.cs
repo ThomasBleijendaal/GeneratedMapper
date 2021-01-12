@@ -8,7 +8,8 @@ using Example.Sources;
 [assembly: GeneratedMapper.Attributes.MapperGeneratorConfiguration(
     ThrowWhenNotNullableElementIsNull = false, 
     ThrowWhenNotNullablePropertyIsNull = false,
-    GenerateEnumerableMethods = true)]
+    GenerateEnumerableMethods = true,
+    GenerateExpressions = true)]
 namespace Example
 {
     public class Program
@@ -69,7 +70,13 @@ namespace Example
 
             var destination = record.MapToTestRecordDestination();
 
+            // when GenerateEnumerableMethods == true, an extension method for easily mapping enumerations is also generated
             var destinations = new[] { record }.MapToTestRecordDestination();
+
+            // when GenerateExpressions == true, an expression is also generated for easy mapping objects in EF for example
+            // Resolvers are not supported and the expression can contain instructions which cannot be parsed by EF / CosmosDB if it's too complicated.
+            var destinationExpression = Sources.Expressions.Source.ToComplexDestination(7, new[] { 1.2, 1.3 }, CultureInfo.CurrentCulture);
+            var destinationLambda = destinationExpression.Compile();
 
             Console.WriteLine(JsonSerializer.Serialize(destination, options));
         }

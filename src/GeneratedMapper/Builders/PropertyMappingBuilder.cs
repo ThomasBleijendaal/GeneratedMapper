@@ -7,7 +7,7 @@ using GeneratedMapper.Information;
 
 namespace GeneratedMapper.Builders
 {
-    internal sealed class PropertyMappingBuilder
+    internal sealed class PropertyMappingBuilder : PropertyBuilderBase
     {
         private readonly PropertyMappingInformation _information;
 
@@ -16,6 +16,7 @@ namespace GeneratedMapper.Builders
             _information = information;
         }
 
+        // TODO: move sourceInstanceName to constructor
         public string? InitializerString(string sourceInstanceName)
         {
             if (_information.BelongsToMapping.SourceType == null || _information.BelongsToMapping.DestinationType == null)
@@ -71,7 +72,7 @@ namespace GeneratedMapper.Builders
             }
             else
             {
-                sourceExpression = $"{GetElementMapping(_information, $"{sourceInstanceName}.{_information.SourcePropertyName}", propertyThrowWhenNull)}";
+                sourceExpression = GetElementMapping(_information, $"{sourceInstanceName}.{_information.SourcePropertyName}", propertyThrowWhenNull);
             }
 
             return $"{_information.DestinationPropertyName} = {sourceExpression},";
@@ -146,12 +147,6 @@ namespace GeneratedMapper.Builders
                     .SelectMany(x => x.MapParametersRequired)
                     .Select(x => x.ToArgument(string.Empty))
                     .Distinct());
-
-        private static string GetMethodArguments(PropertyBaseMappingInformation info)
-            => info.SourcePropertyMethodParameters == null
-                ? string.Empty
-                : string.Join(", ", info.SourcePropertyMethodParameters
-                    .Select(x => x.ToArgument(string.Empty)));
 
         private static string GetEmptyCollectionCreation(PropertyMappingInformation info)
             => info.DestinationIsNullable || !info.SourceIsNullable ? string.Empty

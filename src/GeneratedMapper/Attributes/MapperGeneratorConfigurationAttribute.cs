@@ -44,7 +44,7 @@ namespace GeneratedMapper.Attributes
         public bool GenerateEnumerableMethods { get; set; }
 
         /// <summary>
-        /// Instruct the mapper to also create an ExpressionX.ToY = Expression&lt;Func&lt;X, Y&gt;&gt; for each of the mappings.
+        /// Instruct the mapper to also create an Expressions.X.ToY = Expression&lt;Func&lt;X, Y&gt;&gt; for each of the mappings.
         /// 
         /// Only mappers which do not rely on any resolver or mapper will be created as expression.
         /// </summary>

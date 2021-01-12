@@ -6,6 +6,6 @@
         public bool ThrowWhenNotNullableElementIsNull { get; set; } = true;
         public string[] NamespacesToInclude { get; set; } = new string[0];
         public bool GenerateEnumerableMethods { get; set; }
-        public bool GenerateExpressions { get; set; } // TODO: skip maps with resolvers, extension methods, mappers
+        public bool GenerateExpressions { get; set; }
     }
 }
