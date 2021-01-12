@@ -242,6 +242,7 @@ namespace A
 ",
 @"using System;
 using System.Linq.Expressions;
+using A;
 
 namespace A.Expressions
 {
@@ -296,6 +297,7 @@ namespace A
 ",
 @"using System;
 using System.Linq.Expressions;
+using A;
 
 namespace A.Expressions
 {

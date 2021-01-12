@@ -3,6 +3,7 @@ using NUnit.Framework;
 
 namespace GeneratedMapper.Tests
 {
+    // TODO: add expression mapping too
     public class DeepMappingGeneratorTests
     {
         [Test]

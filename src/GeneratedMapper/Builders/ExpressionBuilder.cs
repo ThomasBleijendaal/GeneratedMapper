@@ -24,9 +24,8 @@ namespace GeneratedMapper.Builders
             using var writer = new StringWriter();
             using var indentWriter = new IndentedTextWriter(writer,
                 _information.ConfigurationValues.IndentStyle == IndentStyle.Tab ? "\t" : new string(' ', (int)_information.ConfigurationValues.IndentSize));
-
-            // TODO:
-            WriteUsingNamespaces(indentWriter, new string[] { "System", "System.Linq.Expressions" });
+            
+            WriteUsingNamespaces(indentWriter, new string[] { "System", "System.Linq.Expressions" }.Union(_information.Mappings.SelectMany(x => x.NamespacesUsed)));
             WriteOpenNamespaceAndStaticClass(indentWriter, ".Expressions", _information.SourceType?.Name ?? "");
 
             WriteMethod(indentWriter);
@@ -62,6 +61,11 @@ namespace GeneratedMapper.Builders
 
         public void WriteClass(IndentedTextWriter indentWriter)
         {
+            if (_context.MaxRecursion < 0)
+            {
+                return;
+            }
+
             indentWriter.WriteLine($"new {_context.Information.DestinationType?.ToDisplayString()}");
             indentWriter.WriteLine("{");
             indentWriter.Indent++;
@@ -103,17 +107,27 @@ namespace GeneratedMapper.Builders
 
             if (_context.Information.PropertyType != default)
             {
-                string expression;
+                if (_context.MaxRecursion <= 0)
+                {
+                    return;
+                }
+
                 if (_context.Information.CollectionElements.Count == 1)
                 {
                     var enumerationMethod = _context.Information.PropertyType == PropertyType.List ? ".ToList()"
                         : _context.Information.PropertyType == PropertyType.Array ? ".ToArray()"
                         : string.Empty;
 
-                    indentWriter.Write($"{_context.Information.DestinationPropertyName} = {_context.SourceInstanceName}.{_context.Information.SourcePropertyName}");
+                    var elementName = GetElementName(_context.SourceInstanceName, "element");
 
-                    WriteElementExpression(indentWriter, new ExpressionContext<PropertyBaseMappingInformation>(
-                        _context.Information.CollectionElements[0], "element", _context.MaxRecursion));
+                    indentWriter.Write($"{_context.Information.DestinationPropertyName} = {nullEvaluation}{_context.SourceInstanceName}.{_context.Information.SourcePropertyName}.Select({elementName} => ");
+
+                    WriteElementExpression(indentWriter,
+                        new ExpressionContext<PropertyBaseMappingInformation>(_context.Information.CollectionElements[0], elementName, _context.MaxRecursion),
+                        null,
+                        _context.Information.SourcePropertyName!);
+
+                    indentWriter.Write($"){enumerationMethod}");
                 }
                 else if (_context.Information.CollectionElements.Count == 2)
                 {
@@ -121,37 +135,48 @@ namespace GeneratedMapper.Builders
                 }
                 else
                 {
-
+                    return;
                 }
 
-
+                indentWriter.WriteLine(",");
             }
             else
             {
-                WriteElementExpression(indentWriter, _context, _context.Information.DestinationPropertyName, _context.Information.SourcePropertyName);
+                if (WriteElementExpression(indentWriter,
+                    _context,
+                    _context.Information.DestinationPropertyName!,
+                    _context.Information.SourcePropertyName!))
+                {
+                    indentWriter.WriteLine(",");
+                } 
             }
 
-            indentWriter.WriteLine(",");
         }
 
-        private static void WriteElementExpression(IndentedTextWriter indentWriter, ExpressionContext<PropertyBaseMappingInformation> context, string target, string source)
+        private static bool WriteElementExpression<T>(IndentedTextWriter indentWriter, ExpressionContext<T> context, string? target, string source)
+            where T : PropertyBaseMappingInformation
         {
             var sourceCanBeNull = context.Information.SourceIsNullable || !context.Information.SourceIsValueType;
             var destinationCanHandleNull = context.Information.DestinationIsNullable;
 
             var nullEvaluation = sourceCanBeNull && destinationCanHandleNull
-                ? $"{source} == null ? null : "
+                ? $"{context.SourceInstanceName}.{source} == null ? null : "
                 : "";
 
             if (context.Information.MappingInformationOfMapperToUse != null)
             {
-                if (context.SourceInstanceName.Split('.').Length > context.MaxRecursion)
+                if (context.MaxRecursion <= 0)
                 {
-                    // return;
+                    return false;
                 }
 
-                indentWriter.Write($"{} = ");
-                var nestedClassBuilder = new ClassExpressionBuilder(context.NestCall(context.Information.MappingInformationOfMapperToUse, context.Information.SourcePropertyName!));
+                if (target != null)
+                {
+                    indentWriter.Write($"{target} = ");
+                }
+                var nestedClassBuilder = new ClassExpressionBuilder(target == null 
+                    ? context.NestCall(context.Information.MappingInformationOfMapperToUse)
+                    : context.NestCall(context.Information.MappingInformationOfMapperToUse, source));
 
                 nestedClassBuilder.WriteClass(indentWriter);
             }
@@ -159,13 +184,20 @@ namespace GeneratedMapper.Builders
             {
                 if (context.Information.SourcePropertyMethodToCall != null)
                 {
-                    indentWriter.Write($"{context.Information.DestinationPropertyName} = {nullEvaluation}{context.SourceInstanceName}.{context.Information.SourcePropertyName}.{context.Information.SourcePropertyMethodToCall}({GetMethodArguments(_information)})");
+                    indentWriter.Write($"{target} = {nullEvaluation}{context.SourceInstanceName}.{source}.{context.Information.SourcePropertyMethodToCall}({GetMethodArguments(context.Information)})");
                 }
                 else
                 {
-                    indentWriter.Write($"{context.Information.DestinationPropertyName} = {context.SourceInstanceName}.{context.Information.SourcePropertyName}");
+                    indentWriter.Write($"{target} = {context.SourceInstanceName}.{source}");
                 }
             }
+
+            return true;
+        }
+
+        private static string GetElementName(string instanceName, string elementName)
+        {
+            return $"{instanceName.ToFirstLetterLower()}{elementName.ToFirstLetterUpper()}";
         }
     }
 
@@ -182,9 +214,12 @@ namespace GeneratedMapper.Builders
         public string SourceInstanceName { get; set; }
         public int MaxRecursion { get; set; }
 
-        public ExpressionContext<TInfo> NestCall<TInfo>(TInfo information, string property)
-            => new ExpressionContext<TInfo>(information, $"{SourceInstanceName}.{property}", MaxRecursion);
+        public ExpressionContext<TInfo> NestCall<TInfo>(TInfo information)
+            => new ExpressionContext<TInfo>(information, SourceInstanceName, MaxRecursion - 1);
+
+        public ExpressionContext<TInfo> NestCall<TInfo>(TInfo information, string propertyName)
+            => new ExpressionContext<TInfo>(information, $"{SourceInstanceName}.{propertyName}", MaxRecursion - 1);
     }
 
-    
+
 }
