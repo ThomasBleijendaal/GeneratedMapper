@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using GeneratedMapper.Enums;
+using GeneratedMapper.Extensions;
 using GeneratedMapper.Helpers;
 using Microsoft.CodeAnalysis;
 
@@ -41,16 +42,16 @@ namespace GeneratedMapper.Information
             CollectionElements.Add(element);
         }
 
-        protected override IEnumerable<Diagnostic> Validate(AttributeData attributeData)
+        protected override IEnumerable<Diagnostic> Validate(AttributeData mapAttributeData, AttributeData? mapWithAttributeData)
         {
             if (string.IsNullOrWhiteSpace(SourcePropertyName) || string.IsNullOrWhiteSpace(DestinationPropertyName))
             {
-                yield return DiagnosticsHelper.UnrecognizedTypes(attributeData);
+                yield return DiagnosticsHelper.UnrecognizedTypes(mapAttributeData);
             }
 
-            if (SourceIsNullable && !DestinationIsNullable && PropertyType == default)
+            if (SourceIsNullable && !DestinationIsNullable && PropertyType == default && mapWithAttributeData?.GetIgnoreNullIncompatibility() != true)
             {
-                yield return DiagnosticsHelper.IncorrectNullability(attributeData, SourcePropertyName!, DestinationPropertyName!);
+                yield return DiagnosticsHelper.IncorrectNullability(mapAttributeData, SourcePropertyName!, DestinationPropertyName!);
             }
 
             if ((!string.IsNullOrWhiteSpace(ResolverTypeToUse) && !string.IsNullOrWhiteSpace(SourcePropertyMethodToCall)) ||
@@ -58,7 +59,7 @@ namespace GeneratedMapper.Information
                 (!string.IsNullOrWhiteSpace(SourcePropertyMethodToCall) && RequiresMappingInformationOfMapper) ||
                 (SourceIsValueType != DestinationIsValueType && string.IsNullOrWhiteSpace(ResolverTypeToUse) && string.IsNullOrWhiteSpace(SourcePropertyMethodToCall) && !RequiresMappingInformationOfMapper))
             {
-                yield return DiagnosticsHelper.ConflictingMappingInformation(attributeData, SourcePropertyName!);
+                yield return DiagnosticsHelper.ConflictingMappingInformation(mapAttributeData, SourcePropertyName!);
             }
         }
     }

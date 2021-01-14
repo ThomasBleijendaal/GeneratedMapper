@@ -28,11 +28,11 @@ namespace GeneratedMapper.Information
             DestinationIsValueType = type.IsValueType;
         }
 
-        protected override IEnumerable<Diagnostic> Validate(AttributeData attributeData)
+        protected override IEnumerable<Diagnostic> Validate(AttributeData mapAttributeData, AttributeData? mapWithAttributeData)
         {
             if (string.IsNullOrWhiteSpace(SourceTypeName) || string.IsNullOrWhiteSpace(DestinationTypeName))
             {
-                yield return DiagnosticsHelper.UnrecognizedTypes(attributeData);
+                yield return DiagnosticsHelper.UnrecognizedTypes(mapAttributeData);
             }
         }
     }

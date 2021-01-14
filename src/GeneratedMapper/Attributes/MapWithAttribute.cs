@@ -58,5 +58,12 @@ namespace GeneratedMapper.Attributes
         /// Set when mapping each element is unwanted and complete property should be mapped by resolver or (extension) method.
         /// </summary>
         public bool MapCompleteCollection { get; set; }
+
+        /// <summary>
+        /// Set when mapping to or from a property which has not annotated its nullablility correctly.
+        /// 
+        /// NOTE: this will treat the source property as not-nullable if the target property is not-nullable.
+        /// </summary>
+        public bool IgnoreNullIncompatibility { get; set; }
     }
 }

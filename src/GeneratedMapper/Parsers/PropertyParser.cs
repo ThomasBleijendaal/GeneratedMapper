@@ -57,6 +57,10 @@ namespace GeneratedMapper.Parsers
             var propertyMapping = new PropertyMappingInformation(mappingInformation);
             propertyMapping.MapFrom(sourceProperty);
             propertyMapping.MapTo(destinationProperty);
+            if (mapWithAttribute != null)
+            {
+                propertyMapping.HasMapWithAttribute(mapWithAttribute);
+            }
 
             try
             {
@@ -68,7 +72,7 @@ namespace GeneratedMapper.Parsers
                 // check if property is collection to collection
                 var isCollectionToCollection = sourcePropertyCollectionType is not null && destinationPropertyCollectionType is not null &&
                     sourcePropertyCollectionType.Count == destinationPropertyCollectionType.Count;
-                
+
                 if (isCollectionToCollection && !mapCollectionAsProperty)
                 {
                     MapPropertyAsCollection(mapWithAttribute, propertyMapping, sourceProperty, destinationProperty);
@@ -112,7 +116,7 @@ namespace GeneratedMapper.Parsers
             if (sourceCollectionItemTypes is not null && destinationCollectionItemTypes is not null)
             {
                 propertyMapping.AsCollection(listType);
-                
+
                 for (var i = 0; i < sourceCollectionItemTypes.Count; i++)
                 {
                     var element = new PropertyElementMappingInformation(propertyMapping.BelongsToMapping);

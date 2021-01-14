@@ -6,20 +6,13 @@ namespace GeneratedMapper.Extensions
 {
     internal static class AttributeDataExtensions
     {
-        public static int GetIndex(this AttributeData attributeData)
-        {
-            return GetAttributeNamedArgument<int>(attributeData, nameof(MapWithAttribute.Index));
-        }
+        public static int GetIndex(this AttributeData attributeData) => GetAttributeNamedArgument<int>(attributeData, nameof(MapWithAttribute.Index));
 
-        public static int? GetMaxRecursion(this AttributeData attributeData)
-        {
-            return GetAttributeNamedArgument<int?>(attributeData, nameof(MapFromAttribute.MaxRecursion));
-        }
+        public static int? GetMaxRecursion(this AttributeData attributeData) => GetAttributeNamedArgument<int?>(attributeData, nameof(MapFromAttribute.MaxRecursion));
 
-        public static bool GetMapCompleteCollection(this AttributeData attributeData)
-        {
-            return GetAttributeNamedArgument<bool>(attributeData, nameof(MapWithAttribute.MapCompleteCollection));
-        }
+        public static bool GetMapCompleteCollection(this AttributeData attributeData) => GetAttributeNamedArgument<bool>(attributeData, nameof(MapWithAttribute.MapCompleteCollection));
+
+        public static bool GetIgnoreNullIncompatibility(this AttributeData attributeData) => GetAttributeNamedArgument<bool>(attributeData, nameof(MapWithAttribute.IgnoreNullIncompatibility));
 
         private static TValue? GetAttributeNamedArgument<TValue>(AttributeData attributeData, string name)
         {

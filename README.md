@@ -88,7 +88,13 @@ Don't delay, generate your object-to-object mappers at compile-time today!
 Use `[assembly: MapperGeneratorConfiguration()]` to configure the mapper, like always including certain namespaces if the mapper fails to recognize them,
 or configure what exceptions should be thrown when the mapper encounters null.
 
+- `ThrowWhenNotNullablePropertyIsNull`: Configures whether the mapper should throw when a non-nullable property is null.
+- `ThrowWhenNotNullableElementIsNull`: Configures whether the mapper should throw when a non-nullable element in a collection is null.
+- `NamespacesToInclude`: Configures extra namespaces to include in mappers when they prove to be too hard to be recognized by the mapper.
+- `GenerateEnumerableMethods`: Configures if for every X.MapToY() also a IEnumerable<X>.MapToYs() must be generated.
+- `GenerateExpressions`: Configures if for every mapper, the mapping should also be available as `Expression<Func<X, Y>>` for use in APIs which require expressions (like EF or Mongo).
+
 ## More information
 
 Please review the Example project to find more examples. The GeneratedMapper.Tests project contains
-a lot of unit tests which also show what's possible.
+a lot of unit tests which also show what is possible.

@@ -24,6 +24,13 @@ namespace GeneratedMapper.Information
 
         public PropertyType PropertyType { get; protected set; }
 
+        public void HasMapWithAttribute(AttributeData attributeData)
+        {
+            MapWithAttribute = attributeData;
+        }
+
+        public AttributeData? MapWithAttribute { get; protected set; }
+
         public bool SourceIsNullable { get; protected set; }
         public bool SourceIsValueType { get; protected set; }
         public bool DestinationIsNullable { get; protected set; }
@@ -110,7 +117,7 @@ namespace GeneratedMapper.Information
         {
             var messages = new List<Diagnostic>();
 
-            messages.AddRange(Validate(attributeData));
+            messages.AddRange(Validate(attributeData, MapWithAttribute));
 
             if (RequiresMappingInformationOfMapper && MappingInformationOfMapperToUse == null)
             {
@@ -119,14 +126,14 @@ namespace GeneratedMapper.Information
 
             foreach (var element in CollectionElements)
             {
-                messages.AddRange(element.Validate(attributeData));
+                messages.AddRange(element.Validate(attributeData, MapWithAttribute));
             }
 
             diagnostics = messages;
             return messages.Count == 0;
         }
 
-        protected virtual IEnumerable<Diagnostic> Validate(AttributeData attributeData) => Enumerable.Empty<Diagnostic>();
+        protected virtual IEnumerable<Diagnostic> Validate(AttributeData mapAttributeData, AttributeData? mapWithAttributeData) => Enumerable.Empty<Diagnostic>();
 
         private IEnumerable<ParameterInformation> AllParameters
         {
