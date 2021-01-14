@@ -5,7 +5,11 @@ using System.Text.Json;
 using Example.Records;
 using Example.Sources;
 
-[assembly: GeneratedMapper.Attributes.MapperGeneratorConfiguration(ThrowWhenNotNullableElementIsNull = false, ThrowWhenNotNullablePropertyIsNull = false)]
+[assembly: GeneratedMapper.Attributes.MapperGeneratorConfiguration(
+    ThrowWhenNotNullableElementIsNull = true, 
+    ThrowWhenNotNullablePropertyIsNull = true,
+    GenerateEnumerableMethods = true,
+    GenerateExpressions = true)]
 namespace Example
 {
     public class Program
@@ -57,14 +61,35 @@ namespace Example
 
             // if this example is run with GeneratorMapper as NuGet package, intellisense will work correctly
 
-            Console.WriteLine(JsonSerializer.Serialize(source.MapToSimpleDestination(), new JsonSerializerOptions { WriteIndented = true }));
-            Console.WriteLine(JsonSerializer.Serialize(source.MapToComplexDestination(7, new[] { 1.2, 1.3 }, CultureInfo.CurrentCulture), new JsonSerializerOptions { WriteIndented = true }));
+            var options = new JsonSerializerOptions { WriteIndented = true };
+
+            Console.WriteLine(JsonSerializer.Serialize(source.MapToSimpleDestination(), options));
+            Console.WriteLine(JsonSerializer.Serialize(source.MapToComplexDestination(7, new[] { 1.2, 1.3 }, CultureInfo.CurrentCulture), options));
 
             var record = new TestRecord("Test");
 
             var destination = record.MapToTestRecordDestination();
 
-            Console.WriteLine(JsonSerializer.Serialize(destination, new JsonSerializerOptions { WriteIndented = true }));
+            Console.WriteLine(JsonSerializer.Serialize(destination, options));
+
+            // when GenerateEnumerableMethods == true, an extension method for easily mapping enumerations is also generated
+            var destinations = new[] { record }.MapToTestRecordDestination();
+
+            // when GenerateExpressions == true, an expression is also generated for easy mapping objects in EF for example
+            // Resolvers are not supported and skipped, and the expression can contain instructions which cannot be parsed by EF / CosmosDB if it's too complicated.
+            var destinationExpression = Sources.Expressions.Source.ToComplexDestination(7, new[] { 1.2, 1.3 }, CultureInfo.CurrentCulture);
+            var destinationLambda = destinationExpression.Compile();
+
+            var destinationViaExpression = destinationLambda.Invoke(source);
+
+            Console.WriteLine(JsonSerializer.Serialize(destinationViaExpression, options));
+
+            var companyExpression = Sources.Expressions.Company.ToCompanyDestination(1, new[] { 1.2, 1.3 }, CultureInfo.CurrentCulture);
+            var companyLambda = companyExpression.Compile();
+
+            var companyViaExpression = companyLambda.Invoke(source.Company);
+
+            Console.WriteLine(JsonSerializer.Serialize(companyViaExpression, options));
         }
     }
 }

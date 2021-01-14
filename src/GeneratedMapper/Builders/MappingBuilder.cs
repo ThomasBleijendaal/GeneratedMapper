@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using GeneratedMapper.Builders.Base;
 using GeneratedMapper.Enums;
 using GeneratedMapper.Extensions;
 using GeneratedMapper.Information;
@@ -11,16 +12,12 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace GeneratedMapper.Builders
 {
-    internal sealed class MappingBuilder
+    internal sealed class MappingBuilder : BuilderBase
     {
-        private const string SourceInstanceName = "self";
-        private const string TargetInstanceName = "target";
-        private readonly MappingInformation _information;
         private readonly List<PropertyMappingBuilder> _propertyMappingBuilders;
 
-        public MappingBuilder(MappingInformation information)
+        public MappingBuilder(MappingInformation information) : base(information)
         {
-            _information = information;
             _propertyMappingBuilders = information.Mappings.Select(mapping => new PropertyMappingBuilder(mapping)).ToList();
         }
 
@@ -30,66 +27,40 @@ namespace GeneratedMapper.Builders
             using var indentWriter = new IndentedTextWriter(writer,
                 _information.ConfigurationValues.IndentStyle == IndentStyle.Tab ? "\t" : new string(' ', (int)_information.ConfigurationValues.IndentSize));
 
-            var usingStatements = new List<string>();
+            WriteUsingNamespaces(indentWriter, _propertyMappingBuilders.SelectMany(map => map.NamespacesUsed()));
+            WriteOptionalNullableEnablePragma(indentWriter);
+            WriteOpenNamespaceAndStaticClass(indentWriter, "", $"{_information.SourceType?.Name}MapToExtensions");
 
-            usingStatements.AddRange(_propertyMappingBuilders
-                .SelectMany(map => map.NamespacesUsed())
-                .Select(@namespace => $"using {@namespace};"));
-
-            usingStatements.AddRange(_information.ConfigurationValues.Customizations.NamespacesToInclude.Select(n => $"using {n};"));
-
-            foreach (var usingStatement in usingStatements.Distinct().OrderBy(x => x.StartsWith("using System") ? 1 : 2).ThenBy(x => x.Replace(".", "").Replace(";", "")))
-            {
-                indentWriter.WriteLine(usingStatement);
-            }
-
-            if (usingStatements.Count > 0)
-            {
-                indentWriter.WriteLine();
-            }
+            WriteMapToExtensionMethod(indentWriter);
             
-            if (_information.RequiresNullableContext)
-            {
-                indentWriter.WriteLine("#nullable enable");
-                indentWriter.WriteLine();
-            }
+            WriteEnumerableMapToExtensionMethod(indentWriter);
+            
+            WriteCloseStaticClassAndNamespace(indentWriter);
 
-            if (_information.SourceType != null && !_information.SourceType.ContainingNamespace.IsGlobalNamespace)
-            {
-                indentWriter.WriteLine($"namespace {_information.SourceType.ContainingNamespace.ToDisplayString()}");
-                indentWriter.WriteLine("{");
-                indentWriter.Indent++;
-            }
+            return SourceText.From(writer.ToString(), Encoding.UTF8);
+        }
 
-            indentWriter.WriteLine($"public static partial class {_information.SourceType?.Name}MapToExtensions");
-            indentWriter.WriteLine("{");
-            indentWriter.Indent++;
-
-            var mapArguments = new[] { $"this {_information.SourceType?.ToDisplayString()} {SourceInstanceName}" }
+        private void WriteMapToExtensionMethod(IndentedTextWriter indentWriter)
+        {
+            var mapParameters = new[] { $"this {_information.SourceType?.ToDisplayString()} {SourceInstanceName}" }
                 .Union(_propertyMappingBuilders.SelectMany(x => x.MapArgumentsRequired().Select(x => x.ToMethodParameter(string.Empty))).Distinct());
 
-            indentWriter.WriteLine($"public static {_information.DestinationType?.ToDisplayString()} MapTo{_information.DestinationType?.Name}({string.Join(", ", mapArguments)})");
+            indentWriter.WriteLine($"public static {_information.DestinationType?.ToDisplayString()} MapTo{_information.DestinationType?.Name}({string.Join(", ", mapParameters)})");
             indentWriter.WriteLine("{");
             indentWriter.Indent++;
 
             if (_information.SourceType != null && !_information.SourceType.IsValueType)
             {
-                indentWriter.WriteLine($"if ({SourceInstanceName} is null)");
-                indentWriter.WriteLine("{");
-                indentWriter.Indent++;
-                indentWriter.WriteLine($@"throw new ArgumentNullException(nameof(self), ""{_information.SourceType.ToDisplayString()} -> {_information.DestinationType?.ToDisplayString()}: Source is null."");");
-                indentWriter.Indent--;
-                indentWriter.WriteLine("}");
-                indentWriter.WriteLine();
+                WriteNullCheck(indentWriter, SourceInstanceName, _information.SourceType.ToDisplayString(), _information.DestinationType?.ToDisplayString());
             }
 
-            indentWriter.WriteLines(WriteMappingCode(map => map.PreConstructionInitialization()), true);
+            indentWriter.WriteLines(GenerateCode(_propertyMappingBuilders, map => map.PreConstructionInitialization()), true);
 
             indentWriter.WriteLine($"var {TargetInstanceName} = new {_information.DestinationType?.ToDisplayString()}");
             indentWriter.WriteLine("{");
             indentWriter.Indent++;
 
-            indentWriter.WriteLines(WriteMappingCode(map => map.InitializerString(SourceInstanceName)));
+            indentWriter.WriteLines(GenerateCode(_propertyMappingBuilders, map => map.InitializerString(SourceInstanceName)));
 
             indentWriter.Indent--;
             indentWriter.WriteLine("};");
@@ -97,38 +68,42 @@ namespace GeneratedMapper.Builders
             indentWriter.WriteLine($"return {TargetInstanceName};");
             indentWriter.Indent--;
             indentWriter.WriteLine("}");
-            indentWriter.Indent--;
-            indentWriter.WriteLine("}");
+        }
 
-            if (_information.SourceType != null && !_information.SourceType.ContainingNamespace.IsGlobalNamespace)
+        private void WriteEnumerableMapToExtensionMethod(IndentedTextWriter indentWriter)
+        {
+            if (_information.ConfigurationValues.Customizations.GenerateEnumerableMethods)
             {
+                var mapEnumerableParameters = new[] { $"this IEnumerable<{_information.SourceType?.ToDisplayString()}> {SourceInstanceName}" }
+                   .Union(_propertyMappingBuilders.SelectMany(x => x.MapArgumentsRequired().Select(x => x.ToMethodParameter(string.Empty))).Distinct());
+
+                var mapToArguments = _propertyMappingBuilders.SelectMany(x => x.MapArgumentsRequired().Select(x => x.ToArgument(string.Empty))).Distinct();
+
+                indentWriter.WriteLine();
+                indentWriter.WriteLine($"public static IEnumerable<{_information.DestinationType?.ToDisplayString()}> MapTo{_information.DestinationType?.Name}({string.Join(", ", mapEnumerableParameters)})");
+                indentWriter.WriteLine("{");
+                indentWriter.Indent++;
+
+                if (_information.SourceType != null && !_information.SourceType.IsValueType)
+                {
+                    WriteNullCheck(indentWriter, SourceInstanceName, $"IEnumerable<{_information.SourceType.ToDisplayString()}>", $"IEnumerable<{_information.DestinationType?.ToDisplayString()}>");
+                }
+
+                indentWriter.WriteLine($"return {SourceInstanceName}.Select(x => x.MapTo{_information.DestinationType?.Name}({string.Join(", ", mapToArguments)}));");
                 indentWriter.Indent--;
                 indentWriter.WriteLine("}");
             }
-
-            return SourceText.From(writer.ToString(), Encoding.UTF8);
         }
 
-        private IEnumerable<string> WriteMappingCode(Func<PropertyMappingBuilder, string?> mappingFeature)
+        private static void WriteNullCheck(IndentedTextWriter indentWriter, string instanceName, string sourceType, string? destinationType)
         {
-            foreach (var feature in _propertyMappingBuilders
-                .Select(map => mappingFeature.Invoke(map))
-                .Where(feature => feature is not null)
-                .Distinct())
-            {
-                yield return feature!;
-            }
-        }
-
-        private IEnumerable<string> WriteMappingCode(Func<PropertyMappingBuilder, IEnumerable<string>> mappingFeature)
-        {
-            foreach (var feature in _propertyMappingBuilders
-                .SelectMany(map => mappingFeature.Invoke(map))
-                .Where(feature => feature is not null)
-                .Distinct())
-            {
-                yield return feature!;
-            }
+            indentWriter.WriteLine($"if ({instanceName} is null)");
+            indentWriter.WriteLine("{");
+            indentWriter.Indent++;
+            indentWriter.WriteLine($@"throw new ArgumentNullException(nameof(self), ""{sourceType} -> {destinationType}: Source is null."");");
+            indentWriter.Indent--;
+            indentWriter.WriteLine("}");
+            indentWriter.WriteLine();
         }
     }
 }

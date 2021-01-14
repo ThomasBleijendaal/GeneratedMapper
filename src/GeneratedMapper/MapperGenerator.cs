@@ -36,9 +36,7 @@ namespace GeneratedMapper
 
                 foreach (var information in foundMappings)
                 {
-                    var (name, text) = GenerateMapping(information);
-
-                    if (name is not null && text is not null)
+                    foreach (var (name, text) in GenerateMappings(information))
                     {
                         context.AddSource(name, text);
                     }
@@ -124,24 +122,38 @@ namespace GeneratedMapper
                     {
                         switch (argument.Key)
                         {
-                            case nameof(MapperCustomizations.NamespacesToInclude):
+                            case nameof(MapperGeneratorConfigurationAttribute.NamespacesToInclude):
                                 if (argument.Value.Values.Select(x => x.Value?.ToString() ?? string.Empty) is IEnumerable<string> namespaces)
                                 {
                                     customizations.NamespacesToInclude = namespaces.ToArray();
                                 }
                                 break;
 
-                            case nameof(MapperCustomizations.ThrowWhenNotNullablePropertyIsNull):
+                            case nameof(MapperGeneratorConfigurationAttribute.ThrowWhenNotNullablePropertyIsNull):
                                 if (argument.Value.Value is bool throwWhenPropertyIsNull)
                                 {
                                     customizations.ThrowWhenNotNullablePropertyIsNull = throwWhenPropertyIsNull;
                                 }
                                 break;
 
-                            case nameof(MapperCustomizations.ThrowWhenNotNullableElementIsNull):
+                            case nameof(MapperGeneratorConfigurationAttribute.ThrowWhenNotNullableElementIsNull):
                                 if (argument.Value.Value is bool throwWhenElementIsNull)
                                 {
                                     customizations.ThrowWhenNotNullableElementIsNull = throwWhenElementIsNull;
+                                }
+                                break;
+
+                            case nameof(MapperGeneratorConfigurationAttribute.GenerateEnumerableMethods):
+                                if (argument.Value.Value is bool generateEnumerableMethods)
+                                {
+                                    customizations.GenerateEnumerableMethods = generateEnumerableMethods;
+                                }
+                                break;
+
+                            case nameof(MapperGeneratorConfigurationAttribute.GenerateExpressions):
+                                if (argument.Value.Value is bool generateExpressions)
+                                {
+                                    customizations.GenerateExpressions = generateExpressions;
                                 }
                                 break;
                         }
@@ -190,15 +202,19 @@ namespace GeneratedMapper
             }
         }
 
-        private static (string? name, SourceText? text) GenerateMapping(MappingInformation information)
+        private static IEnumerable<(string name, SourceText text)> GenerateMappings(MappingInformation information)
         {
             if (information.SourceType != null && information.DestinationType != null)
             {
                 var text = new MappingBuilder(information).GenerateSourceText();
-                return ($"{information.SourceType.Name}_To_{information.DestinationType.Name}_Map.g.cs", text);
-            }
+                yield return ($"{information.SourceType.Name}_To_{information.DestinationType.Name}_Map.g.cs", text);
 
-            return (null, null);
+                if (information.ConfigurationValues.Customizations.GenerateExpressions)
+                {
+                    var expressionText = new ExpressionBuilder(information).GenerateSourceText();
+                    yield return ($"{information.SourceType.Name}_To_{information.DestinationType.Name}_Expression.g.cs", expressionText);
+                }
+            }
         }
     }
 }

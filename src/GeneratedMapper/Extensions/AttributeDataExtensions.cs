@@ -11,6 +11,11 @@ namespace GeneratedMapper.Extensions
             return GetAttributeNamedArgument<int>(attributeData, nameof(MapWithAttribute.Index));
         }
 
+        public static int? GetMaxRecursion(this AttributeData attributeData)
+        {
+            return GetAttributeNamedArgument<int?>(attributeData, nameof(MapFromAttribute.MaxRecursion));
+        }
+
         public static bool GetMapCompleteCollection(this AttributeData attributeData)
         {
             return GetAttributeNamedArgument<bool>(attributeData, nameof(MapWithAttribute.MapCompleteCollection));
