@@ -167,6 +167,8 @@ namespace A
 @"using System;
 using System.Linq.Expressions;
 
+#nullable enable
+
 namespace A.Expressions
 {
     public static partial class A
@@ -244,6 +246,8 @@ namespace A
 using System.Linq.Expressions;
 using A;
 
+#nullable enable
+
 namespace A.Expressions
 {
     public static partial class A1
@@ -298,6 +302,8 @@ namespace A
 @"using System;
 using System.Linq.Expressions;
 using A;
+
+#nullable enable
 
 namespace A.Expressions
 {
@@ -370,6 +376,8 @@ namespace A
 ",
 @"using System;
 using System.Linq.Expressions;
+
+#nullable enable
 
 namespace A.Expressions
 {

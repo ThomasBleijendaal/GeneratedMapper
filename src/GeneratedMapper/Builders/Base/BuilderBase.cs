@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using GeneratedMapper.Information;
 
-namespace GeneratedMapper.Builders
+namespace GeneratedMapper.Builders.Base
 {
     internal abstract class BuilderBase
     {
@@ -16,32 +16,6 @@ namespace GeneratedMapper.Builders
         public BuilderBase(MappingInformation information)
         {
             _information = information;
-        }
-
-        protected void WriteCloseStaticClassAndNamespace(IndentedTextWriter indentWriter)
-        {
-            indentWriter.Indent--;
-            indentWriter.WriteLine("}");
-
-            if (_information.SourceType != null && !_information.SourceType.ContainingNamespace.IsGlobalNamespace)
-            {
-                indentWriter.Indent--;
-                indentWriter.WriteLine("}");
-            }
-        }
-
-        protected void WriteOpenNamespaceAndStaticClass(IndentedTextWriter indentWriter, string extraNamespaceName, string className)
-        {
-            if (_information.SourceType != null && !_information.SourceType.ContainingNamespace.IsGlobalNamespace)
-            {
-                indentWriter.WriteLine($"namespace {_information.SourceType.ContainingNamespace.ToDisplayString()}{extraNamespaceName}");
-                indentWriter.WriteLine("{");
-                indentWriter.Indent++;
-            }
-
-            indentWriter.WriteLine($"public static partial class {className}");
-            indentWriter.WriteLine("{");
-            indentWriter.Indent++;
         }
 
         protected void WriteUsingNamespaces(IndentedTextWriter indentWriter, IEnumerable<string> namespaces)
@@ -65,6 +39,40 @@ namespace GeneratedMapper.Builders
             if (namespacesUsed.Count > 0)
             {
                 indentWriter.WriteLine();
+            }
+        }
+
+        protected void WriteOptionalNullableEnablePragma(IndentedTextWriter indentWriter)
+        {
+            if (_information.RequiresNullableContext)
+            {
+                indentWriter.WriteLine("#nullable enable");
+                indentWriter.WriteLine();
+            }
+        }
+        protected void WriteOpenNamespaceAndStaticClass(IndentedTextWriter indentWriter, string extraNamespaceName, string className)
+        {
+            if (_information.SourceType != null && !_information.SourceType.ContainingNamespace.IsGlobalNamespace)
+            {
+                indentWriter.WriteLine($"namespace {_information.SourceType.ContainingNamespace.ToDisplayString()}{extraNamespaceName}");
+                indentWriter.WriteLine("{");
+                indentWriter.Indent++;
+            }
+
+            indentWriter.WriteLine($"public static partial class {className}");
+            indentWriter.WriteLine("{");
+            indentWriter.Indent++;
+        }
+
+        protected void WriteCloseStaticClassAndNamespace(IndentedTextWriter indentWriter)
+        {
+            indentWriter.Indent--;
+            indentWriter.WriteLine("}");
+
+            if (_information.SourceType != null && !_information.SourceType.ContainingNamespace.IsGlobalNamespace)
+            {
+                indentWriter.Indent--;
+                indentWriter.WriteLine("}");
             }
         }
 

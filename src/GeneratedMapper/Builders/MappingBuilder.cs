@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using GeneratedMapper.Builders.Base;
 using GeneratedMapper.Enums;
 using GeneratedMapper.Extensions;
 using GeneratedMapper.Information;
@@ -37,15 +38,6 @@ namespace GeneratedMapper.Builders
             WriteCloseStaticClassAndNamespace(indentWriter);
 
             return SourceText.From(writer.ToString(), Encoding.UTF8);
-        }
-
-        private void WriteOptionalNullableEnablePragma(IndentedTextWriter indentWriter)
-        {
-            if (_information.RequiresNullableContext)
-            {
-                indentWriter.WriteLine("#nullable enable");
-                indentWriter.WriteLine();
-            }
         }
 
         private void WriteMapToExtensionMethod(IndentedTextWriter indentWriter)

@@ -6,8 +6,8 @@ using Example.Records;
 using Example.Sources;
 
 [assembly: GeneratedMapper.Attributes.MapperGeneratorConfiguration(
-    ThrowWhenNotNullableElementIsNull = false, 
-    ThrowWhenNotNullablePropertyIsNull = false,
+    ThrowWhenNotNullableElementIsNull = true, 
+    ThrowWhenNotNullablePropertyIsNull = true,
     GenerateEnumerableMethods = true,
     GenerateExpressions = true)]
 namespace Example
@@ -70,15 +70,26 @@ namespace Example
 
             var destination = record.MapToTestRecordDestination();
 
+            Console.WriteLine(JsonSerializer.Serialize(destination, options));
+
             // when GenerateEnumerableMethods == true, an extension method for easily mapping enumerations is also generated
             var destinations = new[] { record }.MapToTestRecordDestination();
 
             // when GenerateExpressions == true, an expression is also generated for easy mapping objects in EF for example
-            // Resolvers are not supported and the expression can contain instructions which cannot be parsed by EF / CosmosDB if it's too complicated.
+            // Resolvers are not supported and skipped, and the expression can contain instructions which cannot be parsed by EF / CosmosDB if it's too complicated.
             var destinationExpression = Sources.Expressions.Source.ToComplexDestination(7, new[] { 1.2, 1.3 }, CultureInfo.CurrentCulture);
             var destinationLambda = destinationExpression.Compile();
 
-            Console.WriteLine(JsonSerializer.Serialize(destination, options));
+            var destinationViaExpression = destinationLambda.Invoke(source);
+
+            Console.WriteLine(JsonSerializer.Serialize(destinationViaExpression, options));
+
+            var companyExpression = Sources.Expressions.Company.ToCompanyDestination(1, new[] { 1.2, 1.3 }, CultureInfo.CurrentCulture);
+            var companyLambda = companyExpression.Compile();
+
+            var companyViaExpression = companyLambda.Invoke(source.Company);
+
+            Console.WriteLine(JsonSerializer.Serialize(companyViaExpression, options));
         }
     }
 }

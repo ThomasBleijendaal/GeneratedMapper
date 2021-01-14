@@ -133,7 +133,7 @@ namespace A
             
             var target = new B.B
             {
-                Obj = (self.Obj ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Obj is null."")).Where(element => element is not null).Select(element => element.MapToB()),
+                Obj = (self.Obj ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Obj is null."")).Where(element => element != null).Select(element => element.MapToB()),
             };
             
             return target;

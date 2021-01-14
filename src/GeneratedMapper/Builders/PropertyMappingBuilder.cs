@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using GeneratedMapper.Enums;
+using GeneratedMapper.Builders.Base;
 using GeneratedMapper.Exceptions;
 using GeneratedMapper.Information;
 
@@ -45,17 +45,14 @@ namespace GeneratedMapper.Builders
                 if (_information.CollectionElements.Count == 1)
                 {
                     var elementThrowWhenNull = GetThrowWhenNull(_information.CollectionElements[0], throwWhenNotNullableElementIsNull, $"An item of the property {_information.SourcePropertyName}");
-
-                    var enumerationMethod = _information.PropertyType == PropertyType.List ? ".ToList()"
-                        : _information.PropertyType == PropertyType.Array ? ".ToArray()"
-                        : string.Empty;
-
+                    var enumerationMethod = GetEnumerationMethod(_information);
                     var elementExpression = GetElementMapping(_information.CollectionElements[0], "element", elementThrowWhenNull);
 
                     mapExpression = elementExpression == "element"
                         ? enumerationMethod
                         : $".Select(element => {elementExpression}){enumerationMethod}";
                 }
+                // TODO: this can be replaced with a loop to also support tuples
                 else if (_information.CollectionElements.Count == 2)
                 {
                     var keyThrowWhenNull = GetThrowWhenNull(_information.CollectionElements[0], throwWhenNotNullableElementIsNull, $"A key of the property {_information.SourcePropertyName}");
@@ -68,7 +65,14 @@ namespace GeneratedMapper.Builders
                     mapExpression = string.Empty;
                 }
 
-                sourceExpression = $"{propertyRead}{safePropagationCollection}{optionalWhere}{mapExpression}";
+                if (string.IsNullOrWhiteSpace($"{optionalWhere}{mapExpression}"))
+                {
+                    sourceExpression = propertyRead;
+                }
+                else
+                {
+                    sourceExpression = $"{propertyRead}{safePropagationCollection}{optionalWhere}{mapExpression}";
+                }
             }
             else
             {
@@ -147,41 +151,5 @@ namespace GeneratedMapper.Builders
                     .SelectMany(x => x.MapParametersRequired)
                     .Select(x => x.ToArgument(string.Empty))
                     .Distinct());
-
-        private static string GetEmptyCollectionCreation(PropertyMappingInformation info)
-            => info.DestinationIsNullable || !info.SourceIsNullable ? string.Empty
-                : info.CollectionElements.Count == 1 ? $" ?? Enumerable.Empty<{info.CollectionElements[0].SourceTypeName}>()"
-                : info.CollectionElements.Count == 2 ? $" ?? Enumerable.Empty<KeyValuePair<{info.CollectionElements[0].SourceTypeName}, {info.CollectionElements[1].SourceTypeName}>>()"
-                : throw new InvalidOperationException($"Cannot create empty collection with collection containing {info.CollectionElements.Count} elements.");
-
-        private static string GetFilterDefaultItems(PropertyMappingInformation info)
-        {
-            if (info.CollectionElements.Count == 1)
-            {
-                if (info.CollectionElements[0].SourceIsNullable && !info.CollectionElements[0].DestinationIsNullable)
-                {
-                    return ".Where(element => element is not null)";
-                }
-            }
-            else if (info.CollectionElements.Count == 2)
-            {
-                var checks = new List<string>();
-                if (info.CollectionElements[0].SourceIsNullable && !info.CollectionElements[0].DestinationIsNullable)
-                {
-                    checks.Add("element.Key is not null");
-                }
-                if (info.CollectionElements[1].SourceIsNullable && !info.CollectionElements[1].DestinationIsNullable)
-                {
-                    checks.Add("element.Value is not null");
-                }
-
-                if (checks.Any())
-                {
-                    return $".Where(element => {string.Join(" && ", checks)})";
-                }
-            }
-
-            return string.Empty;
-        }
     }
 }
