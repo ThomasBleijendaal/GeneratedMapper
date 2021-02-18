@@ -11,6 +11,9 @@ namespace GeneratedMapper.Builders.Base
         protected const string SourceInstanceName = "self";
         protected const string TargetInstanceName = "target";
 
+        protected const string PartialSourceInstanceName = "source";
+        protected const string PartialTargetInstanceName = "target";
+
         protected readonly MappingInformation _information;
 
         public BuilderBase(MappingInformation information)

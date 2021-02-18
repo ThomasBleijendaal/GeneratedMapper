@@ -49,5 +49,10 @@ namespace GeneratedMapper.Attributes
         /// Only mappers which do not rely on any resolver or mapper will be created as expression.
         /// </summary>
         public bool GenerateExpressions { get; set; }
+
+        /// <summary>
+        /// Instruct the mapper to also create the AfterMap method in each mapping.
+        /// </summary>
+        public bool GenerateAfterMapPartial { get; set; }
     }
 }

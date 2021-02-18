@@ -69,7 +69,6 @@ namespace A.Expressions
 ");
         }
 
-
         [Test]
         public void MapSingleDictionaryOneStringOneClassPropertyFromSourceToDestination_WithExpressionMapToMethod()
         {

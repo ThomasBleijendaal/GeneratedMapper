@@ -1,5 +1,4 @@
-﻿using System;
-using System.CodeDom.Compiler;
+﻿using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -32,9 +31,9 @@ namespace GeneratedMapper.Builders
             WriteOpenNamespaceAndStaticClass(indentWriter, "", $"{_information.SourceType?.Name}MapToExtensions");
 
             WriteMapToExtensionMethod(indentWriter);
-            
+
             WriteEnumerableMapToExtensionMethod(indentWriter);
-            
+
             WriteCloseStaticClassAndNamespace(indentWriter);
 
             return SourceText.From(writer.ToString(), Encoding.UTF8);
@@ -45,7 +44,9 @@ namespace GeneratedMapper.Builders
             var mapParameters = new[] { $"this {_information.SourceType?.ToDisplayString()} {SourceInstanceName}" }
                 .Union(_propertyMappingBuilders.SelectMany(x => x.MapArgumentsRequired().Select(x => x.ToMethodParameter(string.Empty))).Distinct());
 
-            indentWriter.WriteLine($"public static {_information.DestinationType?.ToDisplayString()} MapTo{_information.DestinationType?.Name}({string.Join(", ", mapParameters)})");
+            var extensionMethodName = $"MapTo{_information.DestinationType?.Name}";
+
+            indentWriter.WriteLine($"public static {_information.DestinationType?.ToDisplayString()} {extensionMethodName}({string.Join(", ", mapParameters)})");
             indentWriter.WriteLine("{");
             indentWriter.Indent++;
 
@@ -65,9 +66,30 @@ namespace GeneratedMapper.Builders
             indentWriter.Indent--;
             indentWriter.WriteLine("};");
             indentWriter.WriteLine();
+
+            if (_information.ConfigurationValues.Customizations.GenerateAfterMapPartial)
+            {
+                var partialArguments = new[] { SourceInstanceName }
+                    .Union(_propertyMappingBuilders.SelectMany(x => x.MapArgumentsRequired().Select(x => x.ToArgument(string.Empty))).Distinct())
+                    .Append(TargetInstanceName);
+
+                indentWriter.WriteLine($"After{extensionMethodName}({string.Join(", ", partialArguments)});");
+                indentWriter.WriteLine();
+            }
+
             indentWriter.WriteLine($"return {TargetInstanceName};");
             indentWriter.Indent--;
             indentWriter.WriteLine("}");
+
+            if (_information.ConfigurationValues.Customizations.GenerateAfterMapPartial)
+            {
+                var partialParameters = new[] { $"{_information.SourceType?.ToDisplayString()} {PartialSourceInstanceName}" }
+                    .Union(_propertyMappingBuilders.SelectMany(x => x.MapArgumentsRequired().Select(x => x.ToMethodParameter(string.Empty))).Distinct())
+                    .Append($"{_information.DestinationType?.ToDisplayString()} {PartialTargetInstanceName}");
+
+                indentWriter.WriteLine();
+                indentWriter.WriteLine($"static partial void After{extensionMethodName}({string.Join(", ", partialParameters)});");
+            }
         }
 
         private void WriteEnumerableMapToExtensionMethod(IndentedTextWriter indentWriter)

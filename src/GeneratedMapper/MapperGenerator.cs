@@ -156,6 +156,13 @@ namespace GeneratedMapper
                                     customizations.GenerateExpressions = generateExpressions;
                                 }
                                 break;
+
+                            case nameof(MapperGeneratorConfigurationAttribute.GenerateAfterMapPartial):
+                                if (argument.Value.Value is bool generateAfterMapPartial)
+                                {
+                                    customizations.GenerateAfterMapPartial = generateAfterMapPartial;
+                                }
+                                break;
                         }
                     }
                 }

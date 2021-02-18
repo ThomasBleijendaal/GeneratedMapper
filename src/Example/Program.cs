@@ -6,10 +6,12 @@ using Example.Records;
 using Example.Sources;
 
 [assembly: GeneratedMapper.Attributes.MapperGeneratorConfiguration(
-    ThrowWhenNotNullableElementIsNull = true, 
+    ThrowWhenNotNullableElementIsNull = true,
     ThrowWhenNotNullablePropertyIsNull = true,
     GenerateEnumerableMethods = true,
-    GenerateExpressions = true)]
+    GenerateExpressions = true,
+    // see SourceMapToExtensions how to use partial method
+    GenerateAfterMapPartial = true)]
 namespace Example
 {
     public class Program

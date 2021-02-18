@@ -240,5 +240,52 @@ namespace A
 }
 ");
         }
+
+        [Test]
+        public void MapSinglePropertyFromSourceToDestination_WithBeforeAndAfterMapMethods()
+        {
+            GeneratorTestHelper.TestGeneratedCode(@"using System;
+using GeneratedMapper.Attributes;
+
+[assembly: MapperGeneratorConfiguration(GenerateAfterMapPartial = true)]
+namespace A {
+    [MapTo(typeof(B.B))]
+    public class A { [MapWith(""Name"", ""Substring"")] public string Name { get; set; } }
+}
+
+namespace B {
+    public class B { public string Name { get; set; } }
+}
+}",
+@"using System;
+
+#nullable enable
+
+namespace A
+{
+    public static partial class AMapToExtensions
+    {
+        public static B.B MapToB(this A.A self, int startIndex)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self), ""A.A -> B.B: Source is null."");
+            }
+            
+            var target = new B.B
+            {
+                Name = (self.Name ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name is null."")).Substring(startIndex),
+            };
+            
+            AfterMapToB(self, startIndex, target);
+            
+            return target;
+        }
+        
+        static partial void AfterMapToB(A.A source, int startIndex, B.B target);
+    }
+}
+");
+        }
     }
 }
