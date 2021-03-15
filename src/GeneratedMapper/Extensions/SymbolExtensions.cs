@@ -20,7 +20,7 @@ namespace GeneratedMapper.Extensions
                 ?.Any(x => x.ConstructorArgument<ITypeSymbol>(constructorArgument)?.Equals(constructorArgumentValue, SymbolEqualityComparer.Default) == true) == true;
         }
 
-        
+
         public static IEnumerable<AttributeData>? FindAttributes(this IEnumerable<IPropertySymbol> propertySet, INamedTypeSymbol attribute, int? index)
         {
             if (propertySet.FirstOrDefault()?.FindAttributes(attribute, index) is IEnumerable<AttributeData> attributes && attributes.Any())
@@ -31,10 +31,26 @@ namespace GeneratedMapper.Extensions
             {
                 // attributes in base classes are only valid with Index = 0
                 return propertySet.Skip(1).FindAttributes(attribute, 0);
-            } 
+            }
             else
             {
                 return Enumerable.Empty<AttributeData>();
+            }
+        }
+
+        public static IEnumerable<AttributeData>? FindAttributes(this IEnumerable<IPropertySymbol> propertySet, IEnumerable<INamedTypeSymbol> attributes, int? index)
+        {
+            foreach (var attribute in attributes)
+            {
+                var attributeDatas = FindAttributes(propertySet, attribute, index);
+
+                if (attributeDatas != null)
+                {
+                    foreach (var attributeData in attributeDatas)
+                    {
+                        yield return attributeData;
+                    }
+                }
             }
         }
 

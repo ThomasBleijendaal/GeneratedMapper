@@ -94,15 +94,36 @@ namespace GeneratedMapper.Builders
             string itemMapping;
             if (info.MappingInformationOfMapperToUse != null && info.MappingInformationOfMapperToUse.DestinationType != null)
             {
-                itemMapping = $"{elementExpression}{safePropagationElement}.MapTo{info.MappingInformationOfMapperToUse.DestinationType.Name}({GetMappingArguments(info)})";
+                if (info.IsAsync)
+                {
+                    itemMapping = $"await {elementExpression}{safePropagationElement}.MapTo{info.MappingInformationOfMapperToUse.DestinationType.Name}Async({GetMappingArguments(info)})";
+                }
+                else
+                {
+                    itemMapping = $"{elementExpression}{safePropagationElement}.MapTo{info.MappingInformationOfMapperToUse.DestinationType.Name}({GetMappingArguments(info)})";
+                }
             }
             else if (info.SourcePropertyMethodToCall != null)
             {
-                itemMapping = $"{elementExpression}{safePropagationElement}.{info.SourcePropertyMethodToCall}({GetMethodArguments(info)})";
+                if (info.IsAsync)
+                {
+                    itemMapping = $"await {elementExpression}{safePropagationElement}.{info.SourcePropertyMethodToCall}({GetMethodArguments(info)})";
+                }
+                else
+                {
+                    itemMapping = $"{elementExpression}{safePropagationElement}.{info.SourcePropertyMethodToCall}({GetMethodArguments(info)})";
+                }
             }
             else if (info.ResolverTypeToUse != null)
             {
-                itemMapping = $"{info.ResolverInstanceName}.Resolve({elementExpression})";
+                if (info.IsAsync)
+                {
+                    itemMapping = $"await {info.ResolverInstanceName}.ResolveAsync({elementExpression})";
+                }
+                else
+                {
+                    itemMapping = $"{info.ResolverInstanceName}.Resolve({elementExpression})";
+                }
             }
             else
             {

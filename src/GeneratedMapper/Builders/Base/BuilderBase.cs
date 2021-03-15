@@ -31,6 +31,11 @@ namespace GeneratedMapper.Builders.Base
                 namespacesUsed.Add("System.Linq");
             }
 
+            if (_information.IsAsync)
+            {
+                namespacesUsed.Add("System.Threading.Tasks");
+            }
+
             namespacesUsed.AddRange(namespaces);
             namespacesUsed.AddRange(_information.ConfigurationValues.Customizations.NamespacesToInclude);
 

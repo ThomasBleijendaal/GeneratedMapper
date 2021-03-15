@@ -24,9 +24,10 @@ namespace GeneratedMapper.Information
 
         public PropertyType PropertyType { get; protected set; }
 
-        public void HasMapWithAttribute(AttributeData attributeData)
+        public void HasMapWithAttribute(AttributeData attributeData, bool isAsync)
         {
             MapWithAttribute = attributeData;
+            IsAsync = isAsync;
         }
 
         public AttributeData? MapWithAttribute { get; protected set; }
@@ -58,6 +59,8 @@ namespace GeneratedMapper.Information
 
         public ITypeSymbol? MapperFromType { get; private set; }
         public ITypeSymbol? MapperToType { get; private set; }
+
+        public bool IsAsync { get; private set; }
 
         public MappingInformation? MappingInformationOfMapperToUse { get; private set; }
 
@@ -111,7 +114,6 @@ namespace GeneratedMapper.Information
             RequiresMappingInformationOfMapper ||
             (!string.IsNullOrEmpty(SourcePropertyMethodToCall) && !((SourceIsValueType && !SourceIsNullable) || (DestinationIsValueType && !DestinationIsNullable))) ||
             CollectionElements.Any(x => x.RequiresNullableContext);
-
 
         public bool TryValidateMapping(AttributeData attributeData, out IEnumerable<Diagnostic> diagnostics)
         {

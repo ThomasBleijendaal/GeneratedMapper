@@ -46,7 +46,14 @@ namespace GeneratedMapper.Builders
 
             var extensionMethodName = $"MapTo{_information.DestinationType?.Name}";
 
-            indentWriter.WriteLine($"public static {_information.DestinationType?.ToDisplayString()} {extensionMethodName}({string.Join(", ", mapParameters)})");
+            if (_information.IsAsync)
+            {
+                indentWriter.WriteLine($"public static async Task<{_information.DestinationType?.ToDisplayString()}> {extensionMethodName}Async({string.Join(", ", mapParameters)})");
+            }
+            else
+            {
+                indentWriter.WriteLine($"public static {_information.DestinationType?.ToDisplayString()} {extensionMethodName}({string.Join(", ", mapParameters)})");
+            }
             indentWriter.WriteLine("{");
             indentWriter.Indent++;
 
