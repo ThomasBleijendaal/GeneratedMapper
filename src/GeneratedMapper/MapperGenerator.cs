@@ -85,7 +85,7 @@ namespace GeneratedMapper
 
         private static List<ExtensionMethodInformation> FindExtensionMethods(GeneratorExecutionContext context)
         {
-            var parser = new ExtensionMethodParser(new ParameterParser(context));
+            var parser = new ExtensionMethodParser(context, new ParameterParser(context));
 
             var foundExtensionMethods = new List<ExtensionMethodInformation>();
 

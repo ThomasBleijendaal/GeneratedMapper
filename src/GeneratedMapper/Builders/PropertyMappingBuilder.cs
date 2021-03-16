@@ -94,7 +94,7 @@ namespace GeneratedMapper.Builders
             string itemMapping;
             if (info.MappingInformationOfMapperToUse != null && info.MappingInformationOfMapperToUse.DestinationType != null)
             {
-                if (info.IsAsync)
+                if (info.MappingInformationOfMapperToUse.IsAsync)
                 {
                     itemMapping = $"await {elementExpression}{safePropagationElement}.MapTo{info.MappingInformationOfMapperToUse.DestinationType.Name}Async({GetMappingArguments(info)})";
                 }

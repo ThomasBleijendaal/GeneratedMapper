@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Text.Json;
 using Example.Records;
 using Example.Sources;
+using A;
 
 [assembly: GeneratedMapper.Attributes.MapperGeneratorConfiguration(
     ThrowWhenNotNullableElementIsNull = true,

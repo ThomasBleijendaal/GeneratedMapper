@@ -168,7 +168,8 @@ namespace GeneratedMapper.Parsers
                 }
                 else if (_extensionMethods.FirstOrDefault(extensionMethod => extensionMethod.MethodName == propertyMethodToCall &&
                     sourceType.Equals(extensionMethod.AcceptsType, SymbolEqualityComparer.Default) &&
-                    destinationType.Equals(extensionMethod.ReturnsType, SymbolEqualityComparer.Default)) is ExtensionMethodInformation extensionMethod)
+                    destinationType.Equals(extensionMethod.ReturnsType, SymbolEqualityComparer.Default) &&
+                    extensionMethod.IsAsync == propertyMapping.IsAsync) is ExtensionMethodInformation extensionMethod)
                 {
                     propertyMapping.UsingMethod(propertyMethodToCall, extensionMethod.PartOfType.ContainingNamespace.ToDisplayString(), extensionMethod.Parameters);
                 }
