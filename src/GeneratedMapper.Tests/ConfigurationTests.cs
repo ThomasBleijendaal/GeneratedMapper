@@ -242,7 +242,7 @@ namespace A
         }
 
         [Test]
-        public void MapSinglePropertyFromSourceToDestination_WithBeforeAndAfterMapMethods()
+        public void MapSinglePropertyFromSourceToDestination_WithAfterMapMethod()
         {
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;

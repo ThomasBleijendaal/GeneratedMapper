@@ -38,6 +38,7 @@ namespace GeneratedMapper.Builders
         {
             return _context.Information.Mappings
                 .Where(x => string.IsNullOrEmpty(x.ResolverTypeToUse))
+                .Where(x => !x.IsAsync)
                 .Select(x => new PropertyExpressionBuilder(new ExpressionContext<PropertyMappingInformation>(x, _context.SourceInstanceName, _context.MaxRecursion)));
         }
     }

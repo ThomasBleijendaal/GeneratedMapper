@@ -121,7 +121,7 @@ namespace GeneratedMapper.Parsers
 
                 for (var i = 0; i < sourceCollectionItemTypes.Count; i++)
                 {
-                    var element = new PropertyElementMappingInformation(propertyMapping.BelongsToMapping);
+                    var element = new PropertyElementMappingInformation(propertyMapping);
 
                     element.MapFrom(sourceCollectionItemTypes[i]);
                     element.MapTo(destinationCollectionItemTypes[i]);

@@ -14,10 +14,12 @@ namespace GeneratedMapper.Information
         {
             "System"
         };
-        
-        public PropertyBaseMappingInformation(MappingInformation belongsToMapping)
+        private bool _isAsync;
+
+        public PropertyBaseMappingInformation(MappingInformation mappingInformation)
         {
-            BelongsToMapping = belongsToMapping ?? throw new ArgumentNullException(nameof(belongsToMapping));
+            BelongsToMapping = mappingInformation ?? throw new ArgumentNullException(nameof(mappingInformation));
+            IsAsync = mappingInformation.IsAsync;
         }
 
         public MappingInformation BelongsToMapping { get; private set; }
@@ -60,7 +62,7 @@ namespace GeneratedMapper.Information
         public ITypeSymbol? MapperFromType { get; private set; }
         public ITypeSymbol? MapperToType { get; private set; }
 
-        public bool IsAsync { get; private set; }
+        public bool IsAsync { get => _isAsync; protected set => _isAsync = _isAsync || value; }
 
         public MappingInformation? MappingInformationOfMapperToUse { get; private set; }
 
@@ -81,6 +83,7 @@ namespace GeneratedMapper.Information
         public void SetMappingInformation(MappingInformation information)
         {
             MappingInformationOfMapperToUse = information;
+            IsAsync = information.IsAsync;
 
             if (information.SourceType != null)
             {

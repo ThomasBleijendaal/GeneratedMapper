@@ -17,7 +17,7 @@ namespace GeneratedMapper.Builders
 
         public MappingBuilder(MappingInformation information) : base(information)
         {
-            _propertyMappingBuilders = information.Mappings.Select(mapping => new PropertyMappingBuilder(mapping)).ToList();
+            _propertyMappingBuilders = information.Mappings.Select(mapping => new PropertyMappingBuilder(mapping, SourceInstanceName)).ToList();
         }
 
         public SourceText GenerateSourceText()
@@ -44,16 +44,11 @@ namespace GeneratedMapper.Builders
             var mapParameters = new[] { $"this {_information.SourceType?.ToDisplayString()} {SourceInstanceName}" }
                 .Union(_propertyMappingBuilders.SelectMany(x => x.MapArgumentsRequired().Select(x => x.ToMethodParameter(string.Empty))).Distinct());
 
-            var extensionMethodName = $"MapTo{_information.DestinationType?.Name}";
+            var extensionMethodName = $"MapTo{_information.DestinationType?.Name}{(_information.IsAsync ? "Async" : "")}";
+            var returnType = _information.IsAsync ? $"async Task<{_information.DestinationType?.ToDisplayString()}>" : _information.DestinationType?.ToDisplayString();
 
-            if (_information.IsAsync)
-            {
-                indentWriter.WriteLine($"public static async Task<{_information.DestinationType?.ToDisplayString()}> {extensionMethodName}Async({string.Join(", ", mapParameters)})");
-            }
-            else
-            {
-                indentWriter.WriteLine($"public static {_information.DestinationType?.ToDisplayString()} {extensionMethodName}({string.Join(", ", mapParameters)})");
-            }
+            indentWriter.WriteLine($"public static {returnType} {extensionMethodName}({string.Join(", ", mapParameters)})");
+            
             indentWriter.WriteLine("{");
             indentWriter.Indent++;
 
@@ -68,7 +63,7 @@ namespace GeneratedMapper.Builders
             indentWriter.WriteLine("{");
             indentWriter.Indent++;
 
-            indentWriter.WriteLines(GenerateCode(_propertyMappingBuilders, map => map.InitializerString(SourceInstanceName)));
+            indentWriter.WriteLines(GenerateCode(_propertyMappingBuilders, map => map.InitializerString()));
 
             indentWriter.Indent--;
             indentWriter.WriteLine("};");
@@ -107,9 +102,14 @@ namespace GeneratedMapper.Builders
                    .Union(_propertyMappingBuilders.SelectMany(x => x.MapArgumentsRequired().Select(x => x.ToMethodParameter(string.Empty))).Distinct());
 
                 var mapToArguments = _propertyMappingBuilders.SelectMany(x => x.MapArgumentsRequired().Select(x => x.ToArgument(string.Empty))).Distinct();
+                var extensionMethodName = $"MapTo{_information.DestinationType?.Name}{(_information.IsAsync ? "Async" : "")}";
+
+                var enumerableType = _information.IsAsync
+                    ? $"async IAsyncEnumerable<{_information.DestinationType?.ToDisplayString()}>"
+                    : $"IEnumerable<{_information.DestinationType?.ToDisplayString()}>";
 
                 indentWriter.WriteLine();
-                indentWriter.WriteLine($"public static IEnumerable<{_information.DestinationType?.ToDisplayString()}> MapTo{_information.DestinationType?.Name}({string.Join(", ", mapEnumerableParameters)})");
+                indentWriter.WriteLine($"public static {enumerableType} {extensionMethodName}({string.Join(", ", mapEnumerableParameters)})");
                 indentWriter.WriteLine("{");
                 indentWriter.Indent++;
 
@@ -118,7 +118,21 @@ namespace GeneratedMapper.Builders
                     WriteNullCheck(indentWriter, SourceInstanceName, $"IEnumerable<{_information.SourceType.ToDisplayString()}>", $"IEnumerable<{_information.DestinationType?.ToDisplayString()}>");
                 }
 
-                indentWriter.WriteLine($"return {SourceInstanceName}.Select(x => x.MapTo{_information.DestinationType?.Name}({string.Join(", ", mapToArguments)}));");
+                if (_information.IsAsync)
+                {
+                    indentWriter.WriteLine($"foreach (var element in {SourceInstanceName})");
+                    indentWriter.WriteLine("{");
+                    indentWriter.Indent++;
+
+                    indentWriter.WriteLine($"yield return await element.{extensionMethodName}({string.Join(", ", mapToArguments)});");
+
+                    indentWriter.Indent--;
+                    indentWriter.WriteLine("}");
+                }
+                else
+                {
+                    indentWriter.WriteLine($"return {SourceInstanceName}.Select(x => x.{extensionMethodName}({string.Join(", ", mapToArguments)}));");
+                }
                 indentWriter.Indent--;
                 indentWriter.WriteLine("}");
             }

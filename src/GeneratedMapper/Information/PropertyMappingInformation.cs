@@ -8,7 +8,7 @@ namespace GeneratedMapper.Information
 {
     internal sealed class PropertyMappingInformation : PropertyBaseMappingInformation
     {
-        public PropertyMappingInformation(MappingInformation belongsToMapping) : base(belongsToMapping)
+        public PropertyMappingInformation(MappingInformation mappingInformation) : base(mappingInformation)
         {
         }
 
@@ -52,6 +52,11 @@ namespace GeneratedMapper.Information
             if (SourceIsNullable && !DestinationIsNullable && PropertyType == default && mapWithAttributeData?.GetIgnoreNullIncompatibility() != true)
             {
                 yield return DiagnosticsHelper.IncorrectNullability(mapAttributeData, SourcePropertyName!, DestinationPropertyName!);
+            }
+
+            if (SourceIsNullable && IsAsync && mapWithAttributeData?.GetIgnoreNullIncompatibility() != true)
+            {
+                yield return DiagnosticsHelper.CannotAwaitNull(mapAttributeData, BelongsToMapping.SourceType?.Name!, SourcePropertyName!);
             }
 
             if ((!string.IsNullOrWhiteSpace(ResolverTypeToUse) && !string.IsNullOrWhiteSpace(SourcePropertyMethodToCall)) ||

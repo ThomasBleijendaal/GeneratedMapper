@@ -11,13 +11,15 @@ namespace GeneratedMapper.Builders
     {
         private readonly PropertyMappingInformation _information;
 
-        public PropertyMappingBuilder(PropertyMappingInformation information)
+        public string SourceInstanceName { get; }
+
+        public PropertyMappingBuilder(PropertyMappingInformation information, string sourceInstanceName)
         {
             _information = information;
+            SourceInstanceName = sourceInstanceName;
         }
 
-        // TODO: move sourceInstanceName to constructor
-        public string? InitializerString(string sourceInstanceName)
+        public string? InitializerString()
         {
             if (_information.BelongsToMapping.SourceType == null || _information.BelongsToMapping.DestinationType == null)
             {
@@ -38,8 +40,8 @@ namespace GeneratedMapper.Builders
                 var safePropagationCollection = _information.DestinationIsNullable && string.IsNullOrEmpty(propertyThrowWhenNull) && string.IsNullOrEmpty(optionalEmptyCollectionCreation) ? "?" : "";
 
                 var propertyRead = !string.IsNullOrEmpty(propertyThrowWhenNull) || !string.IsNullOrEmpty(optionalEmptyCollectionCreation)
-                    ? $"({sourceInstanceName}.{_information.SourcePropertyName}{propertyThrowWhenNull}{optionalEmptyCollectionCreation})"
-                    : $"{sourceInstanceName}.{_information.SourcePropertyName}";
+                    ? $"({SourceInstanceName}.{_information.SourcePropertyName}{propertyThrowWhenNull}{optionalEmptyCollectionCreation})"
+                    : $"{SourceInstanceName}.{_information.SourcePropertyName}";
 
                 string mapExpression;
                 if (_information.CollectionElements.Count == 1)
@@ -69,14 +71,18 @@ namespace GeneratedMapper.Builders
                 {
                     sourceExpression = propertyRead;
                 }
-                else
+                else if (_information.IsAsync)
                 {
+                    sourceExpression = $"await Task.WhenAll({propertyRead}{safePropagationCollection}{optionalWhere}{mapExpression})";
+                }
+                else
+                { 
                     sourceExpression = $"{propertyRead}{safePropagationCollection}{optionalWhere}{mapExpression}";
                 }
             }
             else
             {
-                sourceExpression = GetElementMapping(_information, $"{sourceInstanceName}.{_information.SourcePropertyName}", propertyThrowWhenNull);
+                sourceExpression = GetElementMapping(_information, $"{SourceInstanceName}.{_information.SourcePropertyName}", propertyThrowWhenNull);
             }
 
             return $"{_information.DestinationPropertyName} = {sourceExpression},";
@@ -84,46 +90,30 @@ namespace GeneratedMapper.Builders
 
         private static string GetElementMapping(PropertyBaseMappingInformation info, string element, string optionalThrow)
         {
-            var sourceCanBeNull = info.SourceIsNullable || !info.SourceIsValueType;
+            var sourceCanBeNull = (info.SourceIsNullable || !info.SourceIsValueType) && !info.IsAsync;
             var destinationCanHandleNull = info.DestinationIsNullable;
 
             var safePropagationElement = sourceCanBeNull && destinationCanHandleNull ? "?" : "";
 
             var elementExpression = string.IsNullOrEmpty(optionalThrow) ? element : $"({element}{optionalThrow})";
 
+            var await = info.IsAsync && info is PropertyMappingInformation ? "await " : "";
+
             string itemMapping;
             if (info.MappingInformationOfMapperToUse != null && info.MappingInformationOfMapperToUse.DestinationType != null)
             {
-                if (info.MappingInformationOfMapperToUse.IsAsync)
-                {
-                    itemMapping = $"await {elementExpression}{safePropagationElement}.MapTo{info.MappingInformationOfMapperToUse.DestinationType.Name}Async({GetMappingArguments(info)})";
-                }
-                else
-                {
-                    itemMapping = $"{elementExpression}{safePropagationElement}.MapTo{info.MappingInformationOfMapperToUse.DestinationType.Name}({GetMappingArguments(info)})";
-                }
+                var mapperExtensionMethodName = $"MapTo{info.MappingInformationOfMapperToUse.DestinationType.Name}{(info.IsAsync ? "Async" : "")}";
+
+                itemMapping = $"{await}{elementExpression}{safePropagationElement}.{mapperExtensionMethodName}({GetMappingArguments(info)})";
             }
             else if (info.SourcePropertyMethodToCall != null)
             {
-                if (info.IsAsync)
-                {
-                    itemMapping = $"await {elementExpression}{safePropagationElement}.{info.SourcePropertyMethodToCall}({GetMethodArguments(info)})";
-                }
-                else
-                {
-                    itemMapping = $"{elementExpression}{safePropagationElement}.{info.SourcePropertyMethodToCall}({GetMethodArguments(info)})";
-                }
+                itemMapping = $"{await}{elementExpression}{safePropagationElement}.{info.SourcePropertyMethodToCall}({GetMethodArguments(info)})";
             }
             else if (info.ResolverTypeToUse != null)
             {
-                if (info.IsAsync)
-                {
-                    itemMapping = $"await {info.ResolverInstanceName}.ResolveAsync({elementExpression})";
-                }
-                else
-                {
-                    itemMapping = $"{info.ResolverInstanceName}.Resolve({elementExpression})";
-                }
+                var resolverMethodName = info.IsAsync ? "ResolveAsync" : "Resolve";
+                itemMapping = $"{await}{info.ResolverInstanceName}.{resolverMethodName}({elementExpression})";
             }
             else
             {

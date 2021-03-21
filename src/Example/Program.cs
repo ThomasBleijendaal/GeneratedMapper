@@ -4,7 +4,8 @@ using System.Globalization;
 using System.Text.Json;
 using Example.Records;
 using Example.Sources;
-using A;
+using Ax;
+using System.Threading.Tasks;
 
 [assembly: GeneratedMapper.Attributes.MapperGeneratorConfiguration(
     ThrowWhenNotNullableElementIsNull = true,
@@ -17,8 +18,20 @@ namespace Example
 {
     public class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
+            var a = new A()
+            {
+                Names = new[] { "fdsa" }
+            };
+
+            var aa = new[] { a };
+
+            await foreach (var i in aa.MapToBAsync())
+            {
+
+            }
+
             Console.WriteLine("Hello World!");
 
             var source = new Source

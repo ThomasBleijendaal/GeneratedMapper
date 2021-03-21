@@ -125,6 +125,14 @@ namespace GeneratedMapper.Helpers
             Severity = DiagnosticSeverity.Error
         };
 
+        private static DiagStruct _cannotAwaitNull = new()
+        {
+            Id = "GM0016",
+            Title = "Cannot await null",
+            Message = "The property '{1}' of type '{0}' is marked as nullable, which cannot be used in async mapping. Use a resolver or extension method and set IgnoreNullIncompatibility to true.",
+            Severity = DiagnosticSeverity.Error
+        };
+
         public static Diagnostic NoParameterlessConstructor(AttributeData attributeData)
             => GetDiagnostic(_noParameterlessConstructor, attributeData);
         public static Diagnostic UnrecognizedTypes(AttributeData attributeData)
@@ -155,6 +163,8 @@ namespace GeneratedMapper.Helpers
             => GetDiagnostic(_emptyMapper, attributeData, sourceType, destinationType);
         public static Diagnostic MissingIgnoreInTarget(AttributeData attributeData, string targetType, string targetProperty)
             => GetDiagnostic(_cannotFindPropertyToIgnore, attributeData, targetType, targetProperty);
+        public static Diagnostic CannotAwaitNull(AttributeData attributeData, string sourceType, string sourceProperty)
+            => GetDiagnostic(_cannotAwaitNull, attributeData, sourceType, sourceProperty);
 
 
         public static Diagnostic Debug(Exception ex) => Debug($"{ex.Message } -- {ex.StackTrace.Replace("\n", "--").Replace("\r", "")}");
