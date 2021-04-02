@@ -144,7 +144,11 @@ namespace GeneratedMapper.Parsers
         {
             if (mapWithAttribute is not null && GetMapWithResolverType(mapWithAttribute) is INamedTypeSymbol resolverType)
             {
-                propertyMapping.UsingResolver(resolverType.Name,
+                var resolverName = !resolverType.IsGenericType
+                    ? resolverType.Name
+                    : $"{resolverType.Name}_{string.Join("_", resolverType.TypeArguments.Select(x => x.Name.ToFirstLetterLower()))}";
+
+                propertyMapping.UsingResolver(resolverName,
                     resolverType.ToDisplayString(),
                     _parameterParser.ParseConstructorParameters(resolverType));
             }
