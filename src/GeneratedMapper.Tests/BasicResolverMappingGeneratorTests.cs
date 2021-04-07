@@ -218,12 +218,12 @@ namespace A
             
             var resolver_string = new R.Resolver<string>();
             
-            var resolver_int32 = new R.Resolver<int>();
+            var resolver_int = new R.Resolver<int>();
             
             var target = new B.B
             {
                 StringTarget = resolver_string.Resolve((self.StringValue ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property StringValue is null.""))),
-                IntTarget = resolver_int32.Resolve(self.IntValue),
+                IntTarget = resolver_int.Resolve(self.IntValue),
             };
             
             return target;
@@ -275,12 +275,69 @@ namespace A
             
             var resolver_string_string = new R.Resolver<string, string>();
             
-            var resolver_int32_string = new R.Resolver<int, string>();
+            var resolver_int_string = new R.Resolver<int, string>();
             
             var target = new B.B
             {
                 StringTarget = resolver_string_string.Resolve((self.StringValue ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property StringValue is null.""))),
-                IntTarget = resolver_int32_string.Resolve(self.IntValue),
+                IntTarget = resolver_int_string.Resolve(self.IntValue),
+            };
+            
+            return target;
+        }
+    }
+}
+");
+        }
+
+        [Test]
+        public void MapMultiplePropertyFromSourceToDestination_WithGenericGenericResolver()
+        {
+            GeneratorTestHelper.TestGeneratedCode(@"using System;
+using GeneratedMapper.Attributes;
+
+namespace R {
+    public class Resolver<TInput, TOutput> { public TOutput Resolve(TInput input) { return default(TOutput); } }
+}
+
+namespace A {
+    [MapTo(typeof(B.B))]
+    public class A { 
+        [MapWith(""StringTarget"", typeof(R.Resolver<string, Dictionary<string, string>>))]
+        public string StringValue { get; set; } 
+        [MapWith(""IntTarget"", typeof(R.Resolver<int, Dictionary<string, string>>))]
+        public int IntValue { get; set; } 
+    }
+}
+
+namespace B {
+    public class B { 
+        public Dictionary<string, string> StringTarget { get; set; } 
+        public Dictionary<string, string> IntTarget { get; set; } 
+    }
+}
+}",
+@"using System;
+
+namespace A
+{
+    public static partial class AMapToExtensions
+    {
+        public static B.B MapToB(this A.A self)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self), ""A.A -> B.B: Source is null."");
+            }
+            
+            var resolver_string_dictionarystringstring = new R.Resolver<string, Dictionary<string, string>>();
+            
+            var resolver_int_dictionarystringstring = new R.Resolver<int, Dictionary<string, string>>();
+            
+            var target = new B.B
+            {
+                StringTarget = resolver_string_dictionarystringstring.Resolve((self.StringValue ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property StringValue is null.""))),
+                IntTarget = resolver_int_dictionarystringstring.Resolve(self.IntValue),
             };
             
             return target;

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 
 namespace GeneratedMapper.Extensions
@@ -54,5 +55,8 @@ namespace GeneratedMapper.Extensions
             var value = attribute.ConstructorArguments.ElementAtOrDefault(index).Value;
             return value is T t ? t : default;
         }
+
+        public static string ToVariableSafeDisplayString(this ITypeSymbol type)
+            => Regex.Replace(type.ToDisplayString(), "[^a-zA-Z0-9]+", "").ToFirstLetterLower();
     }
 }

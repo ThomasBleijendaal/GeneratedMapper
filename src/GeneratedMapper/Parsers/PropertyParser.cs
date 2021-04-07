@@ -146,7 +146,7 @@ namespace GeneratedMapper.Parsers
             {
                 var resolverName = !resolverType.IsGenericType
                     ? resolverType.Name
-                    : $"{resolverType.Name}_{string.Join("_", resolverType.TypeArguments.Select(x => x.Name.ToFirstLetterLower()))}";
+                    : $"{resolverType.Name}_{string.Join("_", resolverType.TypeArguments.Select(x => x.ToVariableSafeDisplayString()))}";
 
                 propertyMapping.UsingResolver(resolverName,
                     resolverType.ToDisplayString(),
