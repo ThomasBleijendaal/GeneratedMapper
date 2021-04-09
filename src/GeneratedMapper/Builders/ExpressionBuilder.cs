@@ -26,7 +26,11 @@ namespace GeneratedMapper.Builders
             using var indentWriter = new IndentedTextWriter(writer,
                 _information.ConfigurationValues.IndentStyle == IndentStyle.Tab ? "\t" : new string(' ', (int)_information.ConfigurationValues.IndentSize));
 
-            WriteUsingNamespaces(indentWriter, new string[] { "System", "System.Linq.Expressions" }.Union(_information.Mappings.SelectMany(x => x.NamespacesUsed)));
+            WriteUsingNamespaces(indentWriter, 
+                new string[] { "System", "System.Linq.Expressions" }
+                    .Union(_information.Mappings.Where(x => !x.IsAsync)
+                    .SelectMany(x => x.NamespacesUsed)),
+                allowNamespacesForAsync: false);
             WriteOptionalNullableEnablePragma(indentWriter);
             WriteOpenNamespaceAndStaticClass(indentWriter, ".Expressions", _information.SourceType?.Name ?? "");
 
@@ -39,7 +43,7 @@ namespace GeneratedMapper.Builders
 
         public void WriteMethod(IndentedTextWriter indentWriter)
         {
-            var mapParameters = _information.Mappings.SelectMany(x => x.MapParametersRequired.Select(x => x.ToMethodParameter(string.Empty))).Distinct();
+            var mapParameters = _information.Mappings.Where(x => !x.IsAsync).SelectMany(x => x.MapParametersRequired.Select(x => x.ToMethodParameter(string.Empty))).Distinct();
 
             indentWriter.WriteLine($"public static Expression<Func<{_information.SourceType?.ToDisplayString()}, {_information.DestinationType?.ToDisplayString()}>> To{_information.DestinationType?.Name}({string.Join(", ", mapParameters)}) => ({_information.SourceType?.ToDisplayString()} {SourceInstanceName}) =>");
             indentWriter.Indent++;

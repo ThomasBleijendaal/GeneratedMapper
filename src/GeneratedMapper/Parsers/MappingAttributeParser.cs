@@ -16,18 +16,18 @@ namespace GeneratedMapper.Parsers
     internal sealed class MappingAttributeParser
     {
         private readonly INamedTypeSymbol _mapWithAttribute;
+        private readonly INamedTypeSymbol _mapAsyncWithAttribute;
         private readonly INamedTypeSymbol _ignoreAttribute;
         private readonly INamedTypeSymbol _ignoreInTargetAttribute;
 
-        private readonly GeneratorExecutionContext _context;
         private readonly PropertyParser _propertyParser;
 
         public MappingAttributeParser(GeneratorExecutionContext context, PropertyParser propertyParser)
         {
             _mapWithAttribute = context.Compilation.GetTypeByMetadataName(typeof(MapWithAttribute).FullName) ?? throw new InvalidOperationException("Cannot find MapWithAttribute");
+            _mapAsyncWithAttribute = context.Compilation.GetTypeByMetadataName(typeof(MapAsyncWithAttribute).FullName) ?? throw new InvalidOperationException("Cannot find MapWithAttribute");
             _ignoreAttribute = context.Compilation.GetTypeByMetadataName(typeof(IgnoreAttribute).FullName) ?? throw new InvalidOperationException("Cannot find IgnoreAttribute");
             _ignoreInTargetAttribute = context.Compilation.GetTypeByMetadataName(typeof(IgnoreInTargetAttribute).FullName) ?? throw new InvalidOperationException("Cannot find IgnoreInTargetAttribute");
-            _context = context;
             _propertyParser = propertyParser ?? throw new ArgumentNullException(nameof(propertyParser));
         }
 
@@ -71,7 +71,7 @@ namespace GeneratedMapper.Parsers
                     var attributedTypePropertyName = kv.Key;
                     var attributedTypePropertySet = kv.Value;
 
-                    var mapWithAttributes = Enumerable.DefaultIfEmpty(attributedTypePropertySet.FindAttributes(_mapWithAttribute, mappingInformation.AttributeIndex));
+                    var mapWithAttributes = Enumerable.DefaultIfEmpty(attributedTypePropertySet.FindAttributes(new[] { _mapWithAttribute, _mapAsyncWithAttribute }, mappingInformation.AttributeIndex));
 
                     foreach (var mapWithAttribute in mapWithAttributes)
                     {

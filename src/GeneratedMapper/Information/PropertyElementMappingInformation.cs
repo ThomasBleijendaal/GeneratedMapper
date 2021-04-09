@@ -6,8 +6,9 @@ namespace GeneratedMapper.Information
 {
     internal sealed class PropertyElementMappingInformation : PropertyBaseMappingInformation
     {
-        public PropertyElementMappingInformation(MappingInformation belongsToMapping) : base(belongsToMapping)
+        public PropertyElementMappingInformation(PropertyMappingInformation propertyMappingInformation) : base(propertyMappingInformation.BelongsToMapping)
         {
+            IsAsync = propertyMappingInformation.IsAsync;
         }
 
         public string? SourceTypeName { get; private set; }

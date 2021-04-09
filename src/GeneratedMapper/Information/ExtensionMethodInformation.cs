@@ -24,9 +24,12 @@ namespace GeneratedMapper.Information
 
         public ITypeSymbol? ReturnsType { get; private set; }
 
-        public ExtensionMethodInformation Returns(ITypeSymbol type)
+        public bool IsAsync { get; private set; }
+
+        public ExtensionMethodInformation Returns(ITypeSymbol type, bool isAsync)
         {
             ReturnsType = type;
+            IsAsync = isAsync;
 
             return this;
         }

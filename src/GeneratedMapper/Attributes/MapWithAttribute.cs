@@ -66,4 +66,22 @@ namespace GeneratedMapper.Attributes
         /// </summary>
         public bool IgnoreNullIncompatibility { get; set; }
     }
+
+    public class MapAsyncWithAttribute : MapWithAttribute
+    {
+        /// <inheritdoc />
+        public MapAsyncWithAttribute(Type resolverType) : base(resolverType)
+        {
+        }
+
+        /// <inheritdoc />
+        public MapAsyncWithAttribute(string targetName, string methodName) : base(targetName, methodName)
+        {
+        }
+
+        /// <inheritdoc />
+        public MapAsyncWithAttribute(string targetName, Type resolverType) : base(targetName, resolverType)
+        {
+        }
+    }
 }

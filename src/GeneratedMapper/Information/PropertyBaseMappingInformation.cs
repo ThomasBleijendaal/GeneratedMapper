@@ -14,19 +14,22 @@ namespace GeneratedMapper.Information
         {
             "System"
         };
-        
-        public PropertyBaseMappingInformation(MappingInformation belongsToMapping)
+        private bool _isAsync;
+
+        public PropertyBaseMappingInformation(MappingInformation mappingInformation)
         {
-            BelongsToMapping = belongsToMapping ?? throw new ArgumentNullException(nameof(belongsToMapping));
+            BelongsToMapping = mappingInformation ?? throw new ArgumentNullException(nameof(mappingInformation));
+            IsAsync = mappingInformation.IsAsync;
         }
 
         public MappingInformation BelongsToMapping { get; private set; }
 
         public PropertyType PropertyType { get; protected set; }
 
-        public void HasMapWithAttribute(AttributeData attributeData)
+        public void HasMapWithAttribute(AttributeData attributeData, bool isAsync)
         {
             MapWithAttribute = attributeData;
+            IsAsync = isAsync;
         }
 
         public AttributeData? MapWithAttribute { get; protected set; }
@@ -59,6 +62,8 @@ namespace GeneratedMapper.Information
         public ITypeSymbol? MapperFromType { get; private set; }
         public ITypeSymbol? MapperToType { get; private set; }
 
+        public bool IsAsync { get => _isAsync; protected set => _isAsync = _isAsync || value; }
+
         public MappingInformation? MappingInformationOfMapperToUse { get; private set; }
 
         public void UsingMapper(ITypeSymbol sourceType, ITypeSymbol destinationType)
@@ -78,6 +83,7 @@ namespace GeneratedMapper.Information
         public void SetMappingInformation(MappingInformation information)
         {
             MappingInformationOfMapperToUse = information;
+            IsAsync = information.IsAsync;
 
             if (information.SourceType != null)
             {
@@ -111,7 +117,6 @@ namespace GeneratedMapper.Information
             RequiresMappingInformationOfMapper ||
             (!string.IsNullOrEmpty(SourcePropertyMethodToCall) && !((SourceIsValueType && !SourceIsNullable) || (DestinationIsValueType && !DestinationIsNullable))) ||
             CollectionElements.Any(x => x.RequiresNullableContext);
-
 
         public bool TryValidateMapping(AttributeData attributeData, out IEnumerable<Diagnostic> diagnostics)
         {

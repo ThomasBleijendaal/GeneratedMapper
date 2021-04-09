@@ -67,10 +67,9 @@ namespace GeneratedMapper.Information
             return this;
         }
 
-        public bool IsFullyResolved => this.DoRecursionSafe(
-                x => x.Mappings,
-                x => x.Mappings.Select(x => x.MappingInformationOfMapperToUse))
-            .All(x => !x.RequiresMappingInformationOfMapper || x.MappingInformationOfMapperToUse != null);
+        public bool IsFullyResolved => AllMappings.All(x => !x.RequiresMappingInformationOfMapper || x.MappingInformationOfMapperToUse != null);
+
+        public bool IsAsync => AllMappings.Any(x => x.IsAsync);
 
         public bool TryValidate(out IEnumerable<Diagnostic> diagnostics)
         {
@@ -87,5 +86,9 @@ namespace GeneratedMapper.Information
         }
 
         public bool RequiresNullableContext => _propertyMappings.Any(x => x.RequiresNullableContext);
+
+        private IEnumerable<PropertyMappingInformation> AllMappings => this.DoRecursionSafe(
+            x => x.Mappings,
+            x => x.Mappings.Select(x => x.MappingInformationOfMapperToUse));
     }
 }

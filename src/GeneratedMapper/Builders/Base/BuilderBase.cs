@@ -21,7 +21,7 @@ namespace GeneratedMapper.Builders.Base
             _information = information;
         }
 
-        protected void WriteUsingNamespaces(IndentedTextWriter indentWriter, IEnumerable<string> namespaces)
+        protected void WriteUsingNamespaces(IndentedTextWriter indentWriter, IEnumerable<string> namespaces, bool allowNamespacesForAsync = true)
         {
             var namespacesUsed = new List<string>();
 
@@ -29,6 +29,11 @@ namespace GeneratedMapper.Builders.Base
             {
                 namespacesUsed.Add("System.Collections.Generic");
                 namespacesUsed.Add("System.Linq");
+            }
+
+            if (allowNamespacesForAsync && _information.IsAsync)
+            {
+                namespacesUsed.Add("System.Threading.Tasks");
             }
 
             namespacesUsed.AddRange(namespaces);

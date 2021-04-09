@@ -23,6 +23,7 @@ namespace GeneratedMapper.Parsers
 
         private readonly INamedTypeSymbol _mapToAttribute;
         private readonly INamedTypeSymbol _mapFromAttribute;
+        private readonly INamedTypeSymbol _mapAsyncWithAttribute;
 
         private readonly ParameterParser _parameterParser;
         private readonly List<ExtensionMethodInformation> _extensionMethods;
@@ -41,6 +42,7 @@ namespace GeneratedMapper.Parsers
 
             _mapToAttribute = context.Compilation.GetTypeByMetadataName(typeof(MapToAttribute).FullName) ?? throw new InvalidOperationException("Cannot find MapToAttribute");
             _mapFromAttribute = context.Compilation.GetTypeByMetadataName(typeof(MapFromAttribute).FullName) ?? throw new InvalidOperationException("Cannot find MapFromAttribute");
+            _mapAsyncWithAttribute = context.Compilation.GetTypeByMetadataName(typeof(MapAsyncWithAttribute).FullName) ?? throw new InvalidOperationException("Cannot find MapWithAttribute");
             _parameterParser = parameterParser;
             _extensionMethods = extensionMethods;
         }
@@ -59,7 +61,7 @@ namespace GeneratedMapper.Parsers
             propertyMapping.MapTo(destinationProperty);
             if (mapWithAttribute != null)
             {
-                propertyMapping.HasMapWithAttribute(mapWithAttribute);
+                propertyMapping.HasMapWithAttribute(mapWithAttribute, mapWithAttribute.AttributeClass?.Equals(_mapAsyncWithAttribute, SymbolEqualityComparer.Default) ?? false);
             }
 
             try
@@ -119,7 +121,7 @@ namespace GeneratedMapper.Parsers
 
                 for (var i = 0; i < sourceCollectionItemTypes.Count; i++)
                 {
-                    var element = new PropertyElementMappingInformation(propertyMapping.BelongsToMapping);
+                    var element = new PropertyElementMappingInformation(propertyMapping);
 
                     element.MapFrom(sourceCollectionItemTypes[i]);
                     element.MapTo(destinationCollectionItemTypes[i]);
@@ -166,7 +168,8 @@ namespace GeneratedMapper.Parsers
                 }
                 else if (_extensionMethods.FirstOrDefault(extensionMethod => extensionMethod.MethodName == propertyMethodToCall &&
                     sourceType.Equals(extensionMethod.AcceptsType, SymbolEqualityComparer.Default) &&
-                    destinationType.Equals(extensionMethod.ReturnsType, SymbolEqualityComparer.Default)) is ExtensionMethodInformation extensionMethod)
+                    destinationType.Equals(extensionMethod.ReturnsType, SymbolEqualityComparer.Default) &&
+                    extensionMethod.IsAsync == propertyMapping.IsAsync) is ExtensionMethodInformation extensionMethod)
                 {
                     propertyMapping.UsingMethod(propertyMethodToCall, extensionMethod.PartOfType.ContainingNamespace.ToDisplayString(), extensionMethod.Parameters);
                 }

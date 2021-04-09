@@ -112,8 +112,6 @@ namespace A
 ");
         }
 
-
-
         [Test]
         public void MapSinglePropertyFromSourceToDestination_WithNullables()
         {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Example.Records;
 using Example.Sources;
 
@@ -16,8 +17,8 @@ namespace Example
 {
     public class Program
     {
-        static void Main(string[] args)
-        {
+        static async Task Main(string[] args)
+        { 
             Console.WriteLine("Hello World!");
 
             var source = new Source
