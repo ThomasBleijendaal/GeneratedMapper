@@ -3,71 +3,23 @@ using NUnit.Framework;
 
 namespace GeneratedMapper.Tests
 {
-    public class AsyncMappingGeneratorTests
+    public class AsyncMappingNullabilityTests
     {
         [Test]
-        public void MapWithAsyncResolver()
-        {
-            GeneratorTestHelper.TestGeneratedCode(@"using System;
-using System.Threading.Tasks;
-using GeneratedMapper.Attributes;
-
-namespace A {
-    [MapTo(typeof(B.B))]
-    public class A { [MapAsyncWith(""Name"", typeof(R.AsyncResolver))] public string Name { get; set; } }
-}
-
-namespace R {
-    public class AsyncResolver {
-        public Task<string> ResolveAsync(string input) { return Task.FromResult(input); }
-    }
-}
-
-namespace B {
-    public class B { public string Name { get; set; } }
-}",
-@"using System;
-using System.Threading.Tasks;
-
-namespace A
-{
-    public static partial class AMapToExtensions
-    {
-        public static async Task<B.B> MapToBAsync(this A.A self)
-        {
-            if (self is null)
-            {
-                throw new ArgumentNullException(nameof(self), ""A.A -> B.B: Source is null."");
-            }
-            
-            var asyncResolver = new R.AsyncResolver();
-            
-            var target = new B.B
-            {
-                Name = await asyncResolver.ResolveAsync((self.Name ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name is null.""))),
-            };
-            
-            return target;
-        }
-    }
-}
-");
-        }
-
-        [Test]
-        public void MapWithAsyncMethod()
+        public void MapSinglePropertyFromSourceToDestination()
         {
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
 namespace A {
     [MapTo(typeof(B.B))]
-    public class A { [MapAsyncWith(""Name"", ""ToStringAsync"")] public string Name { get; set; } }
+    public class A { 
+        [MapAsyncWith(""Obj"", ""ToBAsync"")] public A Obj { get; set; } 
+    }
 }
 
 namespace B {
-    public class B { public string Name { get; set; } }
-}
+    public class B { public B Obj { get; set; } }
 }",
 @"using System;
 using System.Threading.Tasks;
@@ -87,7 +39,7 @@ namespace A
             
             var target = new B.B
             {
-                Name = await (self.Name ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name is null."")).ToStringAsync(),
+                Obj = await (self.Obj ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Obj is null."")).ToBAsync(),
             };
             
             return target;
@@ -98,18 +50,38 @@ namespace A
         }
 
         [Test]
-        public void MapWithAsyncMapper()
+        public void MapSinglePropertyFromSourceToDestination_WithNullableSource()
+        {
+            GeneratorTestHelper.TestReportedDiagnostics(@"using System;
+using GeneratedMapper.Attributes;
+
+namespace A {
+    [MapTo(typeof(B.B))]
+    public class A { 
+        [MapAsyncWith(""Obj"", ""ToBAsync"")] public A? Obj { get; set; } 
+    }
+}
+
+namespace B {
+    public class B { public B Obj { get; set; } }
+}", "GM0004", "GM0016");
+        }
+
+        [Test]
+        public void MapSinglePropertyFromSourceToDestination_WithIgnoringNullableSource()
         {
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
 namespace A {
     [MapTo(typeof(B.B))]
-    public class A { [MapAsyncWith(""Name"", ""ToStringAsync"")] public string Name { get; set; } public A Parent { get; set; } }
+    public class A { 
+        [MapAsyncWith(""Obj"", ""ToBAsync"", IgnoreNullIncompatibility = true)] public A Obj { get; set; } 
+    }
 }
 
 namespace B {
-    public class B { public string Name { get; set; } public B Parent { get; set; } }
+    public class B { public B Obj { get; set; } }
 }",
 @"using System;
 using System.Threading.Tasks;
@@ -129,8 +101,7 @@ namespace A
             
             var target = new B.B
             {
-                Name = await (self.Name ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name is null."")).ToStringAsync(),
-                Parent = await (self.Parent ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Parent is null."")).MapToBAsync(),
+                Obj = await (self.Obj ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Obj is null."")).ToBAsync(),
             };
             
             return target;
@@ -141,27 +112,23 @@ namespace A
         }
 
         [Test]
-        public void MapWithAsyncExtensionMethod()
+        public void MapSinglePropertyFromSourceToDestination_WithNullableDestination()
         {
             GeneratorTestHelper.TestGeneratedCode(@"using System;
-using System.Threading.Tasks;
 using GeneratedMapper.Attributes;
 
 namespace A {
     [MapTo(typeof(B.B))]
-    public class A { [MapAsyncWith(""Name"", ""ExtensionAsync"")] public string Name { get; set; } }
-}
-
-namespace E {
-    public static class E { public static Task<string> ExtensionAsync(this string input) { return Task.FromResult(input); } }
+    public class A { 
+        [MapAsyncWith(""Obj"", ""ToBAsync"")] public A Obj { get; set; } 
+    }
 }
 
 namespace B {
-    public class B { public string Name { get; set; } }
+    public class B { public B? Obj { get; set; } }
 }",
 @"using System;
 using System.Threading.Tasks;
-using E;
 
 #nullable enable
 
@@ -178,7 +145,69 @@ namespace A
             
             var target = new B.B
             {
-                Name = await (self.Name ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name is null."")).ExtensionAsync(),
+                Obj = await (self.Obj ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Obj is null."")).ToBAsync(),
+            };
+            
+            return target;
+        }
+    }
+}
+");
+        }
+
+        [Test]
+        public void MapSinglePropertyFromSourceToDestination_WithNullables()
+        {
+            GeneratorTestHelper.TestReportedDiagnostics(@"using System;
+using GeneratedMapper.Attributes;
+
+namespace A {
+    [MapTo(typeof(B.B))]
+    public class A { 
+        [MapAsyncWith(""Obj"", ""ToBAsync"")] public A? Obj { get; set; } 
+    }
+}
+
+namespace B {
+    public class B { public B? Obj { get; set; } }
+}", "GM0016");
+        }
+
+        [Test]
+        public void MapSinglePropertyFromSourceToDestination_WithNullablesIgnoringNullableSource()
+        {
+            GeneratorTestHelper.TestGeneratedCode(@"using System;
+using GeneratedMapper.Attributes;
+
+namespace A {
+    [MapTo(typeof(B.B))]
+    public class A { 
+        [MapAsyncWith(""Obj"", ""ToBAsync"", IgnoreNullIncompatibility = true)] public A? Obj { get; set; } 
+    }
+}
+
+namespace B {
+    public class B { public B? Obj { get; set; } }
+}",
+@"using System;
+using System.Threading.Tasks;
+
+#nullable enable
+
+namespace A
+{
+    public static partial class AMapToExtensions
+    {
+        public static async Task<B.B> MapToBAsync(this A.A self)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self), ""A.A -> B.B: Source is null."");
+            }
+            
+            var target = new B.B
+            {
+                Obj = await self.Obj.ToBAsync(),
             };
             
             return target;

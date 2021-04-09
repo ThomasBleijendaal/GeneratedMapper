@@ -145,7 +145,9 @@ namespace GeneratedMapper.Builders
         }
 
         private static string GetThrowWhenNull(PropertyBaseMappingInformation info, bool customizationValue, string type)
-            => customizationValue && !info.SourceIsValueType && !info.SourceIsNullable && !info.DestinationIsNullable
+            => customizationValue && (
+                    (!info.IsAsync && !info.SourceIsValueType && !info.SourceIsNullable && !info.DestinationIsNullable) || 
+                    (info.IsAsync && !info.SourceIsValueType && !info.SourceIsNullable))
                 ? $@" ?? throw new {typeof(PropertyNullException).FullName}(""{info.BelongsToMapping.SourceType?.ToDisplayString()} -> {info.BelongsToMapping.DestinationType?.ToDisplayString()}: {type} is null."")"
                 : string.Empty;
 
