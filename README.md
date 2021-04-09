@@ -82,6 +82,7 @@ Don't delay, generate your object-to-object mappers at compile-time today!
 - Property to property mapping using resolver (`[MapWith("TheTitle", typeof(Resolver))] Title` -> `target.TheTitle = resolver.Resolve(source.Title)`).
 - Enumeration mapping (`Codes` -> `target.Codes = (source.Codes ?? Enumerable.Empty<string>()).ToArray()`).
 - Dictionary mapping (`Definitions` -> `target.Definitions = (source.Codes ?? Enumerable.Empty<KeyValuePair<string, string>>()).ToDictionary(x => x.Key, x => x.Value)`).
+- Async mapping using `[MapAsyncWith("Property", "AsyncMethodAsync")]`, `[MapAsyncWith("Property", "AsyncExtensionMethodAsync")]`, or `[MapAsyncWith("Property", typeof(AsyncResolver))]`.
 
 ### Configuration
 
