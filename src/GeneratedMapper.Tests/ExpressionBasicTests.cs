@@ -331,7 +331,6 @@ namespace A.Expressions
 ");
         }
 
-
         [Test]
         public void MapSingleRecursivePropertyFromSourceToDestination_WithBiggerRecursionExpressionMapToMethod()
         {
