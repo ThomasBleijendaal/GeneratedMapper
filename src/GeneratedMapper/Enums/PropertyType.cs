@@ -6,6 +6,7 @@
         Enumerable,
         Array,
         List,
-        Dictionary
+        Dictionary,
+        Tuple
     }
 }

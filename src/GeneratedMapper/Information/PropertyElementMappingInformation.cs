@@ -20,6 +20,15 @@ namespace GeneratedMapper.Information
             SourceIsValueType = type.IsValueType;
         }
 
+        public string? SourceFieldName { get; private set; }
+
+        public void MapFrom(IFieldSymbol field)
+        {
+            MapFrom(field.Type);
+
+            SourceFieldName = field.Name;
+        }
+
         public string? DestinationTypeName { get; private set; }
 
         public void MapTo(ITypeSymbol type)
@@ -27,6 +36,15 @@ namespace GeneratedMapper.Information
             DestinationTypeName = type.ToDisplayString();
             DestinationIsNullable = type.NullableAnnotation == NullableAnnotation.Annotated;
             DestinationIsValueType = type.IsValueType;
+        }
+
+        public string? DestinationFieldName { get; set; }
+
+        public void MapTo(IFieldSymbol field)
+        {
+            MapTo(field.Type);
+
+            DestinationFieldName = field.Name;
         }
 
         protected override IEnumerable<Diagnostic> Validate(AttributeData mapAttributeData, AttributeData? mapWithAttributeData)

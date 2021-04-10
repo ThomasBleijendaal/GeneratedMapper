@@ -1,6 +1,7 @@
 ﻿using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Linq;
+using GeneratedMapper.Enums;
 using GeneratedMapper.Information;
 
 namespace GeneratedMapper.Builders
@@ -39,6 +40,7 @@ namespace GeneratedMapper.Builders
             return _context.Information.Mappings
                 .Where(x => string.IsNullOrEmpty(x.ResolverTypeToUse))
                 .Where(x => !x.IsAsync)
+                .Where(x => x.PropertyType != PropertyType.Tuple)
                 .Select(x => new PropertyExpressionBuilder(new ExpressionContext<PropertyMappingInformation>(x, _context.SourceInstanceName, _context.MaxRecursion)));
         }
     }
