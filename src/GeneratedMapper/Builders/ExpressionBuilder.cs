@@ -10,7 +10,6 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace GeneratedMapper.Builders
 {
-    // TODO: nullables in collections + nullables in elements
     internal sealed class ExpressionBuilder : BuilderBase
     {
         private readonly int _maxRecursion;

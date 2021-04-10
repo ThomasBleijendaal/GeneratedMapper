@@ -1,5 +1,7 @@
-﻿using System.CodeDom.Compiler;
+﻿using System;
+using System.CodeDom.Compiler;
 using GeneratedMapper.Builders.Base;
+using GeneratedMapper.Enums;
 using GeneratedMapper.Extensions;
 using GeneratedMapper.Information;
 
@@ -18,7 +20,11 @@ namespace GeneratedMapper.Builders
         {
             var nullEvaluation = GetNullEvaluation(_context.Information, $"{_context.SourceInstanceName}.{_context.Information.SourcePropertyName}");
 
-            if (_context.Information.PropertyType != default)
+            if (_context.Information.PropertyType == PropertyType.Tuple)
+            {
+                throw new InvalidOperationException("Expressions do not support tuples.");
+            }
+            else if (_context.Information.PropertyType != default)
             {
                 if (_context.MaxRecursion <= 0)
                 {
@@ -47,7 +53,6 @@ namespace GeneratedMapper.Builders
 
                     indentWriter.Write($"){enumerationMethod}");
                 }
-                // TODO: this can be replaced with a loop to also support tuples
                 else if (_context.Information.CollectionElements.Count == 2)
                 {
                     var nullEvaluationKey = GetNullEvaluation(_context.Information.CollectionElements[0], elementName);
