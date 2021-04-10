@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using GeneratedMapper.Builders.Base;
+using GeneratedMapper.Enums;
 using GeneratedMapper.Exceptions;
 using GeneratedMapper.Information;
 
@@ -32,7 +33,19 @@ namespace GeneratedMapper.Builders
             var propertyThrowWhenNull = GetThrowWhenNull(_information, throwWhenNotNullablePropertyIsNull, $"Property {_information.SourcePropertyName}");
 
             string sourceExpression;
-            if (_information.PropertyType != default)
+            if (_information.PropertyType == PropertyType.Tuple)
+            {
+                
+                var tupleElements = _information.CollectionElements.Select(element =>
+                {
+                    var elementThrowWhenNull = GetThrowWhenNull(element, throwWhenNotNullableElementIsNull, $"Tuple element {_information.SourcePropertyName}.{element.SourceFieldName}");
+
+                    return GetElementMapping(element, $"{SourceInstanceName}.{_information.SourcePropertyName}.{element.SourceFieldName}", elementThrowWhenNull);
+                });
+
+                sourceExpression = $"({string.Join(", ", tupleElements)})";
+            }
+            else if (_information.PropertyType != default)
             {
                 var optionalEmptyCollectionCreation = GetEmptyCollectionCreation(_information);
                 var optionalWhere = GetFilterDefaultItems(_information);
@@ -54,8 +67,7 @@ namespace GeneratedMapper.Builders
                         ? enumerationMethod
                         : $".Select(element => {elementExpression}){enumerationMethod}";
                 }
-                // TODO: this can be replaced with a loop to also support tuples
-                else if (_information.CollectionElements.Count == 2)
+                else if (_information.PropertyType == PropertyType.Dictionary)
                 {
                     var keyThrowWhenNull = GetThrowWhenNull(_information.CollectionElements[0], throwWhenNotNullableElementIsNull, $"A key of the property {_information.SourcePropertyName}");
                     var valueThrowWhenNull = GetThrowWhenNull(_information.CollectionElements[1], throwWhenNotNullableElementIsNull, $"A value of the property {_information.SourcePropertyName}");
@@ -76,7 +88,7 @@ namespace GeneratedMapper.Builders
                     sourceExpression = $"await Task.WhenAll({propertyRead}{safePropagationCollection}{optionalWhere}{mapExpression})";
                 }
                 else
-                { 
+                {
                     sourceExpression = $"{propertyRead}{safePropagationCollection}{optionalWhere}{mapExpression}";
                 }
             }
@@ -146,7 +158,7 @@ namespace GeneratedMapper.Builders
 
         private static string GetThrowWhenNull(PropertyBaseMappingInformation info, bool customizationValue, string type)
             => customizationValue && (
-                    (!info.IsAsync && !info.SourceIsValueType && !info.SourceIsNullable && !info.DestinationIsNullable) || 
+                    (!info.IsAsync && !info.SourceIsValueType && !info.SourceIsNullable && !info.DestinationIsNullable) ||
                     (info.IsAsync && !info.SourceIsValueType && !info.SourceIsNullable))
                 ? $@" ?? throw new {typeof(PropertyNullException).FullName}(""{info.BelongsToMapping.SourceType?.ToDisplayString()} -> {info.BelongsToMapping.DestinationType?.ToDisplayString()}: {type} is null."")"
                 : string.Empty;

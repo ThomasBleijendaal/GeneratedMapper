@@ -71,13 +71,24 @@ namespace GeneratedMapper.Parsers
                 var sourcePropertyCollectionType = GetCollectionType(sourceProperty);
                 var destinationPropertyCollectionType = GetCollectionType(destinationProperty);
 
-                // check if property is collection to collection
+                // check if mapping is collection to collection
                 var isCollectionToCollection = sourcePropertyCollectionType is not null && destinationPropertyCollectionType is not null &&
                     sourcePropertyCollectionType.Count == destinationPropertyCollectionType.Count;
+
+                var sourcePropertyTupleElements = GetTupleElements(sourceProperty);
+                var destinationPropertyTupleElements = GetTupleElements(destinationProperty);
+
+                // check if mapping is tuple to tuple
+                var isTupleToTuple = sourcePropertyTupleElements is not null && destinationPropertyTupleElements is not null &&
+                    sourcePropertyTupleElements.Count == destinationPropertyTupleElements.Count;
 
                 if (isCollectionToCollection && !mapCollectionAsProperty)
                 {
                     MapPropertyAsCollection(mapWithAttribute, propertyMapping, sourceProperty, destinationProperty);
+                }
+                else if (isTupleToTuple)
+                {
+                    MapPropertyAsTuple(mapWithAttribute, propertyMapping, sourceProperty, destinationProperty);
                 }
                 else
                 {
@@ -117,7 +128,7 @@ namespace GeneratedMapper.Parsers
 
             if (sourceCollectionItemTypes is not null && destinationCollectionItemTypes is not null)
             {
-                propertyMapping.AsCollection(listType);
+                propertyMapping.AsType(listType);
 
                 for (var i = 0; i < sourceCollectionItemTypes.Count; i++)
                 {
@@ -134,11 +145,32 @@ namespace GeneratedMapper.Parsers
             }
             else
             {
+                // this is never hit
                 throw new ParseException(DiagnosticsHelper.UnmappableEnumerableProperty(propertyMapping.BelongsToMapping.AttributeData,
                     propertyMapping.BelongsToMapping.SourceType?.ToDisplayString()!,
                     propertyMapping.SourcePropertyName!,
                     propertyMapping.BelongsToMapping.DestinationType?.ToDisplayString()!,
                     propertyMapping.DestinationPropertyName!));
+            }
+        }
+
+        private void MapPropertyAsTuple(AttributeData? mapWithAttribute, PropertyMappingInformation propertyMapping, IPropertySymbol sourceProperty, IPropertySymbol destinationProperty)
+        {
+            propertyMapping.AsType(PropertyType.Tuple);
+
+            var sourceTupleElements = GetTupleElements(sourceProperty) ?? throw new PropertyNullException("Failed to get tuple elements from source property.");
+            var destinationTupleElements = GetTupleElements(destinationProperty) ?? throw new PropertyNullException("Failed to get tuple elements from destination property.");
+
+            for (var i = 0; i < sourceTupleElements.Count; i++)
+            {
+                var element = new PropertyElementMappingInformation(propertyMapping);
+
+                element.MapFrom(sourceTupleElements[i]);
+                element.MapTo(sourceTupleElements[i]);
+
+                DetermineMappingStrategy(mapWithAttribute, element, sourceTupleElements[i].Type, destinationTupleElements[i].Type);
+
+                propertyMapping.AddCollectionElementMapping(element);
             }
         }
 
@@ -231,6 +263,19 @@ namespace GeneratedMapper.Parsers
                 : PropertyType.Enumerable;
 
             return (listType, type.TypeArguments);
+        }
+
+        private IReadOnlyList<IFieldSymbol>? GetTupleElements(IPropertySymbol property)
+        {
+            if (property.Type is INamedTypeSymbol namedPropertyType &&
+                namedPropertyType.IsTupleType)
+            {
+                return namedPropertyType.TupleElements;
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }

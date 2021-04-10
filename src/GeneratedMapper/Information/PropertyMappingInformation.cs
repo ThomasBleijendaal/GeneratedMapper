@@ -30,11 +30,14 @@ namespace GeneratedMapper.Information
             DestinationIsValueType = property.Type.IsValueType;
         }
 
-        public void AsCollection(PropertyType destinationCollectionType)
+        public void AsType(PropertyType destinationCollectionType)
         {
             PropertyType = destinationCollectionType;
 
-            _namespacesRequired.Add("System.Linq");
+            if (PropertyType != PropertyType.Default && PropertyType != PropertyType.Tuple)
+            {
+                _namespacesRequired.Add("System.Linq");
+            }
         }
 
         public void AddCollectionElementMapping(PropertyElementMappingInformation element)
