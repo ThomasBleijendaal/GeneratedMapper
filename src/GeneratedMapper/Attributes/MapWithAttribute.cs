@@ -26,16 +26,19 @@ namespace GeneratedMapper.Attributes
         }
 
         /// <summary>
-        /// 
+        /// NOTE: IgnoreNullIncompatibility will be set to true assuming the resolver will handle the nulls correctly.
         /// </summary>
-        /// <param name="resolverType">Name of the resolver that will map this property (must resemble or implement IMapResolver&lt;TInput, TOutput&gt;).</param>
+        /// <param name="resolverType">
+        /// Name of the resolver that will map this property (must resemble or implement IMapResolver&lt;TInput, TOutput&gt;).
+        /// </param>
         public MapWithAttribute(Type resolverType)
         {
             ResolverType = resolverType;
+            IgnoreNullIncompatibility = true;
         }
 
         /// <summary>
-        /// 
+        /// NOTE: IgnoreNullIncompatibility will be set to true assuming the resolver will handle the nulls correctly.
         /// </summary>
         /// <param name="targetName">Name of the corresponding property in the other class.</param>
         /// <param name="resolverType">Name of the resolver that will map this property (must resemble or implement IMapResolver&lt;TInput, TOutput&gt;).</param>
@@ -43,6 +46,7 @@ namespace GeneratedMapper.Attributes
         {
             TargetName = targetName;
             ResolverType = resolverType;
+            IgnoreNullIncompatibility = true;
         }
 
         public string? TargetName { get; }
