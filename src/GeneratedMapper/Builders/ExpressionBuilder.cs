@@ -35,7 +35,8 @@ namespace GeneratedMapper.Builders
 
             WriteMethod(indentWriter);
 
-            WriteCloseStaticClassAndNamespace(indentWriter);
+            WriteCloseStaticClass(indentWriter);
+            WriteCloseNamespace(indentWriter);
 
             return SourceText.From(writer.ToString(), Encoding.UTF8);
         }

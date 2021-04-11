@@ -34,7 +34,11 @@ namespace GeneratedMapper.Builders
 
             WriteEnumerableMapToExtensionMethod(indentWriter);
 
-            WriteCloseStaticClassAndNamespace(indentWriter);
+            WriteCloseStaticClass(indentWriter);
+
+            WriteInjectableMapperClass(indentWriter);
+
+            WriteCloseNamespace(indentWriter);
 
             return SourceText.From(writer.ToString(), Encoding.UTF8);
         }
@@ -133,6 +137,28 @@ namespace GeneratedMapper.Builders
                 {
                     indentWriter.WriteLine($"return {SourceInstanceName}.Select(x => x.{extensionMethodName}({string.Join(", ", mapToArguments)}));");
                 }
+                indentWriter.Indent--;
+                indentWriter.WriteLine("}");
+            }
+        }
+
+        private void WriteInjectableMapperClass(IndentedTextWriter indentWriter)
+        {
+            if (_information.ConfigurationValues.Customizations.GenerateInjectableMappers)
+            {
+                var fromExpression = $@"(from ?? throw new ArgumentNullException(nameof(from), ""{_information.SourceType?.ToDisplayString()} -> {_information.DestinationType?.ToDisplayString()}: Source is null.""))";
+
+                var callToMapMethod = _information.IsAsync
+                    ? $"await {fromExpression}.MapTo{_information.DestinationType?.Name}Async()"
+                    : $"Task.FromResult({fromExpression}.MapTo{_information.DestinationType?.Name}())";
+
+                indentWriter.WriteLine();
+                indentWriter.WriteLine($"public class {_information.SourceType?.Name}MapTo{_information.DestinationType?.Name} : IMapper<{_information.SourceType?.ToDisplayString()}, {_information.DestinationType?.ToDisplayString()}>");
+                indentWriter.WriteLine("{");
+                indentWriter.Indent++;
+
+                indentWriter.WriteLine($"public Task<{_information.DestinationType?.ToDisplayString()}> MapAsync({_information.SourceType?.ToDisplayString()} from) => {callToMapMethod};");
+
                 indentWriter.Indent--;
                 indentWriter.WriteLine("}");
             }

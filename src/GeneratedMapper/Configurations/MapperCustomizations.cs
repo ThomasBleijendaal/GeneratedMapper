@@ -8,5 +8,6 @@
         public bool GenerateEnumerableMethods { get; set; }
         public bool GenerateExpressions { get; set; }
         public bool GenerateAfterMapPartial { get; set; }
+        public bool GenerateInjectableMappers { get; set; }
     }
 }

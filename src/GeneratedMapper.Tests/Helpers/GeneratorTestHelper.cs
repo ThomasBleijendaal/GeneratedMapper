@@ -41,7 +41,7 @@ namespace GeneratedMapper.Tests.Helpers
 
             for (var i = 0; i < expectedOutputSourceTexts.Length; i++)
             {
-                Assert.AreEqual(expectedOutputSourceTexts[i], output[i], $"Error in file index: {i}");
+                Assert.AreEqual(expectedOutputSourceTexts[i], output.ElementAtOrDefault(i) ?? "", $"Error in file index: {i}");
             }
         }
 
