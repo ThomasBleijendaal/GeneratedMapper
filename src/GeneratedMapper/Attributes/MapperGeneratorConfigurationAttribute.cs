@@ -54,5 +54,10 @@ namespace GeneratedMapper.Attributes
         /// Instruct the mapper to also create the AfterMap method in each mapping.
         /// </summary>
         public bool GenerateAfterMapPartial { get; set; }
+
+        /// <summary>
+        /// Instruct the code generator to also generate IMapper&lt;TFrom, TTo&gt; for each of the mappings. 
+        /// </summary>
+        public bool GenerateInjectableMappers { get; set; }
     }
 }

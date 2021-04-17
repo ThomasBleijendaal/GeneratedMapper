@@ -31,6 +31,12 @@ namespace GeneratedMapper.Builders.Base
                 namespacesUsed.Add("System.Linq");
             }
 
+            if (_information.ConfigurationValues.Customizations.GenerateInjectableMappers)
+            {
+                namespacesUsed.Add("System.Threading.Tasks");
+                namespacesUsed.Add("GeneratedMapper.Abstractions");
+            }
+
             if (allowNamespacesForAsync && _information.IsAsync)
             {
                 namespacesUsed.Add("System.Threading.Tasks");
@@ -72,11 +78,14 @@ namespace GeneratedMapper.Builders.Base
             indentWriter.Indent++;
         }
 
-        protected void WriteCloseStaticClassAndNamespace(IndentedTextWriter indentWriter)
+        protected static void WriteCloseStaticClass(IndentedTextWriter indentWriter)
         {
             indentWriter.Indent--;
             indentWriter.WriteLine("}");
+        }
 
+        protected void WriteCloseNamespace(IndentedTextWriter indentWriter)
+        {
             if (_information.SourceType != null && !_information.SourceType.ContainingNamespace.IsGlobalNamespace)
             {
                 indentWriter.Indent--;

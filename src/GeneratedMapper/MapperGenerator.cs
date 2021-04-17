@@ -41,6 +41,14 @@ namespace GeneratedMapper
                         context.AddSource(name, text);
                     }
                 }
+
+                var injectables = foundMappings.Where(x => x.ConfigurationValues.Customizations.GenerateInjectableMappers);
+                if (injectables.Any())
+                {
+                    var (name, text) = GenerateInjectableMappersServiceCollectionConfiguration(injectables);
+
+                    context.AddSource(name, text);
+                }
             }
             catch (Exception ex)
             {
@@ -163,6 +171,13 @@ namespace GeneratedMapper
                                     customizations.GenerateAfterMapPartial = generateAfterMapPartial;
                                 }
                                 break;
+
+                            case nameof(MapperGeneratorConfigurationAttribute.GenerateInjectableMappers):
+                                if (argument.Value.Value is bool generateInjectableMappers)
+                                {
+                                    customizations.GenerateInjectableMappers = generateInjectableMappers;
+                                }
+                                break;
                         }
                     }
                 }
@@ -222,6 +237,12 @@ namespace GeneratedMapper
                     yield return ($"{information.SourceType.Name}_To_{information.DestinationType.Name}_Expression.g.cs", expressionText);
                 }
             }
+        }
+
+        private static (string name, SourceText text) GenerateInjectableMappersServiceCollectionConfiguration(IEnumerable<MappingInformation> informations)
+        {
+            var text = new InjectableMapperServiceCollectionRegistrationBuilder(informations).GenerateSourceText();
+            return ("GeneratedMapperServiceCollectionRegistrations.g.cs", text);
         }
     }
 }
