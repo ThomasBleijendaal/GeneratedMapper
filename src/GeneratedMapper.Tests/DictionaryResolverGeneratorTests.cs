@@ -14,6 +14,7 @@ using GeneratedMapper.Attributes;
 
 using A;
 
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
 namespace R {
     public class Resolver { public string Resolve(string input) { return input; } public B.B Resolve(A.A input) { return input.MapToB(); } } }
 }
@@ -67,6 +68,7 @@ namespace A
 using System.Collections.Generic;
 using GeneratedMapper.Attributes;
 
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 
@@ -119,6 +121,7 @@ using GeneratedMapper.Attributes;
 
 using A;
 
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
 namespace R {
     public class Resolver { public Dictionary<string, B> Resolve(Dictionary<string, A> input) { return input.ToDictionary(x => x.Key, x => x.Value.MapToB()); } } }
 }

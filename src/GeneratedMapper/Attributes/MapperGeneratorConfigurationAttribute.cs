@@ -41,7 +41,7 @@ namespace GeneratedMapper.Attributes
         /// <summary>
         /// Instruct the mapper to also create the IEnumerable&lt;X&gt;.MapToY() for each of the mappings.
         /// </summary>
-        public bool GenerateEnumerableMethods { get; set; }
+        public bool GenerateEnumerableMethods { get; set; } = true;
 
         /// <summary>
         /// Instruct the mapper to also create an Expressions.X.ToY = Expression&lt;Func&lt;X, Y&gt;&gt; for each of the mappings.
@@ -53,7 +53,7 @@ namespace GeneratedMapper.Attributes
         /// <summary>
         /// Instruct the mapper to also create the AfterMap method in each mapping.
         /// </summary>
-        public bool GenerateAfterMapPartial { get; set; }
+        public bool GenerateAfterMapPartial { get; set; } = true;
 
         /// <summary>
         /// Instruct the code generator to also generate IMapper&lt;TFrom, TTo&gt; for each of the mappings. 

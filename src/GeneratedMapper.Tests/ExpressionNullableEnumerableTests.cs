@@ -12,7 +12,7 @@ namespace GeneratedMapper.Tests
 using System.Collections.Generic;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(ThrowWhenNotNullableElementIsNull = false, ThrowWhenNotNullablePropertyIsNull = false, GenerateExpressions = true)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false, ThrowWhenNotNullableElementIsNull = false, ThrowWhenNotNullablePropertyIsNull = false, GenerateExpressions = true)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { public string? Name { get; set; } public List<string>? Subs { get; set; } }
@@ -76,7 +76,7 @@ namespace A.Expressions
 using System.Collections.Generic;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(ThrowWhenNotNullableElementIsNull = false, ThrowWhenNotNullablePropertyIsNull = false, GenerateExpressions = true)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false, ThrowWhenNotNullableElementIsNull = false, ThrowWhenNotNullablePropertyIsNull = false, GenerateExpressions = true)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { public string? Name { get; set; } public List<string> Subs { get; set; } }
@@ -140,7 +140,7 @@ namespace A.Expressions
 using System.Collections.Generic;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(ThrowWhenNotNullableElementIsNull = false, ThrowWhenNotNullablePropertyIsNull = false, GenerateExpressions = true)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false, ThrowWhenNotNullableElementIsNull = false, ThrowWhenNotNullablePropertyIsNull = false, GenerateExpressions = true)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { public string? Name { get; set; } public Dictionary<string?, string?>? Subs { get; set; } }

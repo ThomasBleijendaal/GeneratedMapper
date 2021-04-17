@@ -11,6 +11,7 @@ namespace GeneratedMapper.Tests
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
 namespace R {
     public class Resolver { public Resolver(string arg1, string arg2) { } public string Resolve(string input) { return input; } }
 }
@@ -25,7 +26,6 @@ namespace A {
 
 namespace B {
     public class B { public string Name { get; set; } }
-}
 }",
 @"using System;
 
@@ -60,6 +60,7 @@ namespace A
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
 namespace R {
     public class Resolver { public Resolver(string arg1, string arg2) { } public string Resolve(string input) { return input; } }
 }
@@ -76,7 +77,6 @@ namespace A {
 
 namespace B {
     public class B { public string Target1 { get; set; } public string Target2 { get; set; } }
-}
 }",
 @"using System;
 
@@ -106,13 +106,13 @@ namespace A
 ");
         }
 
-
         [Test]
         public void MapSinglePropertyFromSourceToDestination_MultipleParametersDifferentResolver()
         {
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
 namespace R {
     public class Resolver1 { public Resolver1(string arg1, string arg2) { } public string Resolve(string input) { return input; } }
     public class Resolver2 { public Resolver2(string arg1, string? arg2 = ""default string"") { } public string Resolve(string input) { return input; } }
@@ -130,7 +130,6 @@ namespace A {
 
 namespace B {
     public class B { public string Target1 { get; set; } public string Target2 { get; set; } }
-}
 }",
 @"using System;
 

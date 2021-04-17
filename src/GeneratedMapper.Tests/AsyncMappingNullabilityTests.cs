@@ -11,6 +11,7 @@ namespace GeneratedMapper.Tests
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 
@@ -55,6 +56,7 @@ namespace A
             GeneratorTestHelper.TestReportedDiagnostics(@"using System;
 using GeneratedMapper.Attributes;
 
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 
@@ -73,6 +75,7 @@ namespace B {
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 
@@ -117,6 +120,7 @@ namespace A
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 
@@ -161,6 +165,7 @@ namespace A
             GeneratorTestHelper.TestReportedDiagnostics(@"using System;
 using GeneratedMapper.Attributes;
 
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 
@@ -179,6 +184,7 @@ namespace B {
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 

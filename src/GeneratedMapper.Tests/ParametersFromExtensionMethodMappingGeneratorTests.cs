@@ -11,6 +11,7 @@ namespace GeneratedMapper.Tests
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
 namespace Ex {
     public static class StringExtensions { public static string ExtensionMethod(this string subject, int startIndex) { } }
 }
@@ -61,6 +62,7 @@ namespace A
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
 namespace Ex {
     public static class StringExtensions { public static string ExtensionMethod(this string subject, int startIndex) { } }
 }
@@ -116,6 +118,7 @@ namespace A
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
 namespace Ex1 {
     public static class StringExtensions1 { 
         public static string ExtensionMethod1(this string subject, int startIndex) { } 

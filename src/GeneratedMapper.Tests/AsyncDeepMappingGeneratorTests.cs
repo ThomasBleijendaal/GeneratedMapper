@@ -13,6 +13,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using GeneratedMapper.Attributes;
 
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
 namespace R {
     public class Resolver { 
         private readonly CultureInfo _cultureInfo;

@@ -12,6 +12,7 @@ namespace GeneratedMapper.Tests
 using System.Threading.Tasks;
 using GeneratedMapper.Attributes;
 
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { [MapAsyncWith(""Name"", typeof(R.AsyncResolver))] public string Name { get; set; } }
@@ -60,6 +61,7 @@ namespace A
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { [MapAsyncWith(""Name"", ""ToStringAsync"")] public string Name { get; set; } }
@@ -103,6 +105,7 @@ namespace A
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { [MapAsyncWith(""Name"", ""ToStringAsync"")] public string Name { get; set; } public A Parent { get; set; } }
@@ -147,6 +150,7 @@ namespace A
 using System.Threading.Tasks;
 using GeneratedMapper.Attributes;
 
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { [MapAsyncWith(""Name"", ""ExtensionAsync"")] public string Name { get; set; } }

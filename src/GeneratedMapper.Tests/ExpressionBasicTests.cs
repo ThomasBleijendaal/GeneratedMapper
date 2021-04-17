@@ -11,7 +11,7 @@ namespace GeneratedMapper.Tests
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateExpressions = true)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false, GenerateExpressions = true)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { public string Name { get; set; } }
@@ -67,7 +67,7 @@ namespace A.Expressions
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateExpressions = true)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false, GenerateExpressions = true)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { [MapWith(typeof(R.Resolver))] public int Name { get; set; } }
@@ -128,7 +128,7 @@ namespace A.Expressions
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateExpressions = true)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false, GenerateExpressions = true)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { public string Name { get; set; } public A Sub { get; set; } }
@@ -201,7 +201,7 @@ namespace A.Expressions
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateExpressions = true)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false, GenerateExpressions = true)]
 namespace A {
     [MapTo(typeof(B.B1))]
     public class A1 { public string Name { get; set; } public A2 Sub { get; set; } }
@@ -337,7 +337,7 @@ namespace A.Expressions
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateExpressions = true)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false, GenerateExpressions = true)]
 namespace A {
     [MapTo(typeof(B.B), MaxRecursion = 5)]
     public class A { public string Name { get; set; } public A Sub { get; set; } }
