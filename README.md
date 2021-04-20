@@ -76,13 +76,13 @@ Don't delay, generate your object-to-object mappers at compile-time today!
 
 ### Mapping
 
-- Property to property mapping (`Title` -> `target.Title = source.Title`).
+- [Property to property mapping (`Title` -> `target.Title = source.Title`).](https://github.com/ThomasBleijendaal/GeneratedMapper/blob/main/src/GeneratedMapper.Tests/BasicMappingGeneratorTests.cs)
 - Property to property mapping with different names (`[MapWith("TheTitle")] Title` -> `target.TheTitle = source.Title`).
-- Property to property mapping using (extension) method (`[MapWith("TheTitle", "Substring")] Title` -> `target.TheTitle = source.Title.Substring(startIndex)`).
-- Property to property mapping using resolver (`[MapWith("TheTitle", typeof(Resolver))] Title` -> `target.TheTitle = resolver.Resolve(source.Title)`).
-- Enumeration mapping (`Codes` -> `target.Codes = (source.Codes ?? Enumerable.Empty<string>()).ToArray()`).
-- Dictionary mapping (`Definitions` -> `target.Definitions = (source.Codes ?? Enumerable.Empty<KeyValuePair<string, string>>()).ToDictionary(x => x.Key, x => x.Value)`).
-- Async mapping using `[MapAsyncWith("Property", "AsyncMethodAsync")]`, `[MapAsyncWith("Property", "AsyncExtensionMethodAsync")]`, or `[MapAsyncWith("Property", typeof(AsyncResolver))]`.
+- [Property to property mapping using (extension) method (`[MapWith("TheTitle", "Substring")] Title` -> `target.TheTitle = source.Title.Substring(startIndex)`).](https://github.com/ThomasBleijendaal/GeneratedMapper/blob/main/src/GeneratedMapper.Tests/BasicExtensionMethodMappingGeneratorTests.cs)
+- [Property to property mapping using resolver (`[MapWith("TheTitle", typeof(Resolver))] Title` -> `target.TheTitle = resolver.Resolve(source.Title)`).](https://github.com/ThomasBleijendaal/GeneratedMapper/blob/main/src/GeneratedMapper.Tests/BasicResolverMappingGeneratorTests.cs)
+- [Enumeration mapping (`Codes` -> `target.Codes = (source.Codes ?? Enumerable.Empty<string>()).ToArray()`).](https://github.com/ThomasBleijendaal/GeneratedMapper/blob/main/src/GeneratedMapper.Tests/CollectionEnumerableMappingGeneratorTests.cs)
+- [Dictionary mapping (`Definitions` -> `target.Definitions = (source.Codes ?? Enumerable.Empty<KeyValuePair<string, string>>()).ToDictionary(x => x.Key, x => x.Value)`).](https://github.com/ThomasBleijendaal/GeneratedMapper/blob/main/src/GeneratedMapper.Tests/DictionaryMapperGeneratorTests.cs)
+- [Async mapping using `[MapAsyncWith("Property", "AsyncMethodAsync")]`, `[MapAsyncWith("Property", "AsyncExtensionMethodAsync")]`, or `[MapAsyncWith("Property", typeof(AsyncResolver))]`.](https://github.com/ThomasBleijendaal/GeneratedMapper/blob/main/src/GeneratedMapper.Tests/AsyncMappingGeneratorTests.cs)
 
 ### Configuration
 
@@ -95,8 +95,9 @@ or configure what exceptions should be thrown when the mapper encounters null.
 - `GenerateEnumerableMethods`: Configures if for every X.MapToY() also a IEnumerable<X>.MapToYs() must be generated.
 - `GenerateExpressions`: Configures if for every mapper, the mapping should also be available as `Expression<Func<X, Y>>` for use in APIs which require expressions (like EF or Mongo).
 - `GenerateAfterMapPartial`: Configures a partial method to further configure the mapping.
+- `GenerateInjectableMappers`: Generates a `IMapper<From, To>` for each extension method, which can be added to the DI container using `services.AddMappers()`.
 
 ## More information
 
-Please review the Example project to find more examples. The GeneratedMapper.Tests project contains
+Please review the Example project to find more examples. The [GeneratedMapper.Tests project](https://github.com/ThomasBleijendaal/GeneratedMapper/tree/main/src/GeneratedMapper.Tests) contains
 a lot of unit tests which also show what is possible.

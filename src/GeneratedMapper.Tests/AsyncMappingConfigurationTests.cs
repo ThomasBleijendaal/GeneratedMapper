@@ -82,7 +82,7 @@ namespace A
 using System.Threading.Tasks;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateExpressions = true)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false, GenerateExpressions = true)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { [MapAsyncWith(""Name"", typeof(R.AsyncResolver))] public string Name { get; set; } }

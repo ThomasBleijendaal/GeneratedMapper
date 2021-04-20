@@ -12,6 +12,7 @@ namespace GeneratedMapper.Tests
 using System.Collections.Generic;
 using GeneratedMapper.Attributes;
 
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { public List<string> Prop { get; set; } }
@@ -56,6 +57,7 @@ namespace A
 using System.Collections.Generic;
 using GeneratedMapper.Attributes;
 
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { public List<string> Prop { get; set; } }
@@ -101,6 +103,7 @@ namespace A
 using System.Collections.Generic;
 using GeneratedMapper.Attributes;
 
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { public List<string> Prop { get; set; } }
@@ -145,6 +148,7 @@ namespace A
 using System.Collections.Generic;
 using GeneratedMapper.Attributes;
 
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { public List<string> Prop { get; set; } }
