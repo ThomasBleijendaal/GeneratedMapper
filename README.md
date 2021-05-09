@@ -1,4 +1,7 @@
 # GeneratedMapper
+
+[![#](https://img.shields.io/nuget/v/GeneratedMapper?style=flat-square)](https://www.nuget.org/packages/GeneratedMapper)
+
 Compile-time object-to-object mapper generator which generates extension methods for each of the mappings.
 
 ```
