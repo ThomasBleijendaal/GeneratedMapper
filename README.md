@@ -86,6 +86,7 @@ Don't delay, generate your object-to-object mappers at compile-time today!
 - [Enumeration mapping (`Codes` -> `target.Codes = (source.Codes ?? Enumerable.Empty<string>()).ToArray()`).](https://github.com/ThomasBleijendaal/GeneratedMapper/blob/main/src/GeneratedMapper.Tests/CollectionEnumerableMappingGeneratorTests.cs)
 - [Dictionary mapping (`Definitions` -> `target.Definitions = (source.Codes ?? Enumerable.Empty<KeyValuePair<string, string>>()).ToDictionary(x => x.Key, x => x.Value)`).](https://github.com/ThomasBleijendaal/GeneratedMapper/blob/main/src/GeneratedMapper.Tests/DictionaryMapperGeneratorTests.cs)
 - [Async mapping using `[MapAsyncWith("Property", "AsyncMethodAsync")]`, `[MapAsyncWith("Property", "AsyncExtensionMethodAsync")]`, or `[MapAsyncWith("Property", typeof(AsyncResolver))]`.](https://github.com/ThomasBleijendaal/GeneratedMapper/blob/main/src/GeneratedMapper.Tests/AsyncMappingGeneratorTests.cs)
+- [Simple nested property mapping (`[MapWith("Sys.Id")]Id` -> `target.Id = source.Sys?.Id`)](https://github.com/ThomasBleijendaal/GeneratedMapper/blob/main/src/GeneratedMapper.Tests/NestedMappingGeneratorTests.cs)
 
 ### Configuration
 

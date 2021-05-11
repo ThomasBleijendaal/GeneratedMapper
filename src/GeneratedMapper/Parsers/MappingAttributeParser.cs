@@ -78,25 +78,45 @@ namespace GeneratedMapper.Parsers
                         var targetPropertyToFind = mapWithAttribute?.ConstructorArgument<string>(0)
                             ?? attributedTypePropertyName;
 
-                        if (!targetTypeProperties.ContainsKey(targetPropertyToFind))
+                        if (targetPropertyToFind.Contains('.'))
                         {
-                            mappingInformation.ReportIssue(DiagnosticsHelper.UnmappableProperty(attributeData, attributedType.ToDisplayString(), targetPropertyToFind, targetType.ToDisplayString()));
-                            continue;
-                        }
-                        var targetTypePropertySet = targetTypeProperties[targetPropertyToFind];
+                            var property = _propertyParser.ParseNestedProperty(
+                                mappingInformation, 
+                                mapWithAttribute ?? throw new ParseException(DiagnosticsHelper.UnmappableProperty(attributeData, sourceType.Name, targetPropertyToFind, destinationType.Name)),
+                                targetPropertyToFind,
+                                attributedTypePropertySet.First());
 
-                        var property = _propertyParser.ParseProperty(mappingInformation, mapWithAttribute, attributedTypePropertySet.First(), targetTypePropertySet.First());
-
-                        if (mappingInformation.Mappings.Any(x => x.DestinationPropertyName == property.DestinationPropertyName))
-                        {
-                            mappingInformation.ReportIssue(DiagnosticsHelper.ConflictingMappingInformation(attributeData, property.SourcePropertyName!));
+                            mappingInformation.AddProperty(property);
                         }
                         else
                         {
-                            mappingInformation.AddProperty(property);
+                            if (!targetTypeProperties.ContainsKey(targetPropertyToFind))
+                            {
+                                mappingInformation.ReportIssue(DiagnosticsHelper.UnmappableProperty(attributeData, attributedType.ToDisplayString(), targetPropertyToFind, targetType.ToDisplayString()));
+                                continue;
+                            }
+                            var targetTypePropertySet = targetTypeProperties[targetPropertyToFind];
+
+                            var property = _propertyParser.ParseProperty(mappingInformation, mapWithAttribute, attributedTypePropertySet.First(), targetTypePropertySet.First());
+
+                            if (mappingInformation.Mappings.Any(x => x.DestinationPropertyName == property.DestinationPropertyName))
+                            {
+                                mappingInformation.ReportIssue(DiagnosticsHelper.ConflictingMappingInformation(attributeData, property.SourcePropertyName!));
+                            }
+                            else
+                            {
+                                mappingInformation.AddProperty(property);
+                            }
                         }
 
-                        processedTargetProperties.Add(targetPropertyToFind);
+                        if (targetPropertyToFind.Contains('.'))
+                        {
+                            processedTargetProperties.Add(targetPropertyToFind.Split('.').First());
+                        }
+                        else
+                        {
+                            processedTargetProperties.Add(targetPropertyToFind);
+                        }
                     }
                 }
 
