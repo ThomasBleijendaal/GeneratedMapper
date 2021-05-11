@@ -104,8 +104,20 @@ namespace GeneratedMapper.Parsers
                 mappingInformation.ReportIssue(DiagnosticsHelper.Debug(ex));
             }
 
-
             return propertyMapping;
+        }
+
+        public PropertyMappingInformation ParseNestedProperty(
+            MappingInformation mappingInformation,
+            AttributeData mapWithAttribute,
+            string sourceProperty,
+            IPropertySymbol targetProperty)
+        {
+            var property = new PropertyMappingInformation(mappingInformation);
+            property.MapFrom(sourceProperty);
+            property.MapTo(targetProperty);
+
+            return property;
         }
 
         private void MapPropertyAsCollection(AttributeData? mapWithAttribute, PropertyMappingInformation propertyMapping, IPropertySymbol sourceProperty, IPropertySymbol destinationProperty)

@@ -13,12 +13,20 @@ namespace GeneratedMapper.Information
         }
 
         public string? SourcePropertyName { get; private set; }
+        
+        public bool SourcePropertyIsNested { get; private set; }
 
         public void MapFrom(IPropertySymbol property)
         {
             SourcePropertyName = property.Name;
             SourceIsNullable = property.NullableAnnotation == NullableAnnotation.Annotated;
             SourceIsValueType = property.Type.IsValueType;
+        }
+
+        public void MapFrom(string property)
+        {
+            SourcePropertyName = property;
+            SourcePropertyIsNested = true;
         }
 
         public string? DestinationPropertyName { get; private set; }
@@ -28,6 +36,12 @@ namespace GeneratedMapper.Information
             DestinationPropertyName = property.Name;
             DestinationIsNullable = property.NullableAnnotation == NullableAnnotation.Annotated;
             DestinationIsValueType = property.Type.IsValueType;
+
+            if (SourcePropertyIsNested)
+            {
+                SourceIsValueType = DestinationIsValueType;
+                SourceIsNullable = DestinationIsNullable;
+            }
         }
 
         public void AsType(PropertyType destinationCollectionType)

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using GeneratedMapper.Builders.Base;
 using GeneratedMapper.Enums;
@@ -29,13 +28,13 @@ namespace GeneratedMapper.Builders
 
             var throwWhenNotNullablePropertyIsNull = _information.BelongsToMapping.ConfigurationValues.Customizations.ThrowWhenNotNullablePropertyIsNull;
             var throwWhenNotNullableElementIsNull = _information.BelongsToMapping.ConfigurationValues.Customizations.ThrowWhenNotNullableElementIsNull;
+            var throwForEachNestedLayer = _information.SourcePropertyIsNested && _information.DestinationIsValueType && !_information.DestinationIsNullable;
 
             var propertyThrowWhenNull = GetThrowWhenNull(_information, throwWhenNotNullablePropertyIsNull, $"Property {_information.SourcePropertyName}");
 
             string sourceExpression;
             if (_information.PropertyType == PropertyType.Tuple)
             {
-                
                 var tupleElements = _information.CollectionElements.Select(element =>
                 {
                     var elementThrowWhenNull = GetThrowWhenNull(element, throwWhenNotNullableElementIsNull, $"Tuple element {_information.SourcePropertyName}.{element.SourceFieldName}");
@@ -91,6 +90,24 @@ namespace GeneratedMapper.Builders
                 {
                     sourceExpression = $"{propertyRead}{safePropagationCollection}{optionalWhere}{mapExpression}";
                 }
+            }
+            else if (_information.SourcePropertyIsNested && !throwForEachNestedLayer)
+            {
+                sourceExpression = GetElementMapping(_information, $"{SourceInstanceName}.{_information.SourcePropertyName?.Replace(".", "?.")}", propertyThrowWhenNull);
+            }
+            else if (_information.SourcePropertyIsNested && throwForEachNestedLayer)
+            {
+                var layers = _information.SourcePropertyName!.Split('.');
+                var processedLayers = layers.First();
+
+                sourceExpression = GetElementMapping(_information, layers.Skip(1).Aggregate($"{SourceInstanceName}.{layers.First()}", (previousLayers, layer) =>
+                {
+                    var throwWhenNull = GetThrowWhenNull(_information, $"Property {processedLayers}");
+
+                    processedLayers += $".{layer}";
+
+                    return $"({previousLayers}{throwWhenNull}).{layer}";
+                }), string.Empty);
             }
             else
             {
@@ -160,8 +177,11 @@ namespace GeneratedMapper.Builders
             => customizationValue && (
                     (!info.IsAsync && !info.SourceIsValueType && !info.SourceIsNullable && !info.DestinationIsNullable) ||
                     (info.IsAsync && !info.SourceIsValueType && !info.SourceIsNullable))
-                ? $@" ?? throw new {typeof(PropertyNullException).FullName}(""{info.BelongsToMapping.SourceType?.ToDisplayString()} -> {info.BelongsToMapping.DestinationType?.ToDisplayString()}: {type} is null."")"
+                ? GetThrowWhenNull(info, type)
                 : string.Empty;
+
+        private static string GetThrowWhenNull(PropertyBaseMappingInformation info, string type) 
+            => $@" ?? throw new {typeof(PropertyNullException).FullName}(""{info.BelongsToMapping.SourceType?.ToDisplayString()} -> {info.BelongsToMapping.DestinationType?.ToDisplayString()}: {type} is null."")";
 
         private static string GetResolverArguments(PropertyBaseMappingInformation info)
             => info.ResolverConstructorParameters == null || info.ResolverInstanceName == null
