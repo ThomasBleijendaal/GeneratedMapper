@@ -2,6 +2,7 @@
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Linq;
+using GeneratedMapper.Helpers;
 using GeneratedMapper.Information;
 
 namespace GeneratedMapper.Builders.Base
@@ -64,33 +65,15 @@ namespace GeneratedMapper.Builders.Base
                 indentWriter.WriteLine();
             }
         }
-        protected void WriteOpenNamespaceAndStaticClass(IndentedTextWriter indentWriter, string extraNamespaceName, string className)
+        protected IDisposable WriteOpenNamespaceAndStaticClass(IndentedTextWriter indentWriter, string extraNamespaceName)
         {
             if (_information.SourceType != null && !_information.SourceType.ContainingNamespace.IsGlobalNamespace)
             {
                 indentWriter.WriteLine($"namespace {_information.SourceType.ContainingNamespace.ToDisplayString()}{extraNamespaceName}");
-                indentWriter.WriteLine("{");
-                indentWriter.Indent++;
+                return indentWriter.Braces();
             }
 
-            indentWriter.WriteLine($"public static partial class {className}");
-            indentWriter.WriteLine("{");
-            indentWriter.Indent++;
-        }
-
-        protected static void WriteCloseStaticClass(IndentedTextWriter indentWriter)
-        {
-            indentWriter.Indent--;
-            indentWriter.WriteLine("}");
-        }
-
-        protected void WriteCloseNamespace(IndentedTextWriter indentWriter)
-        {
-            if (_information.SourceType != null && !_information.SourceType.ContainingNamespace.IsGlobalNamespace)
-            {
-                indentWriter.Indent--;
-                indentWriter.WriteLine("}");
-            }
+            return indentWriter.NoIndent();
         }
 
         protected IEnumerable<string> GenerateCode<T>(IEnumerable<T> builders, Func<T, string?> mappingFeature)
