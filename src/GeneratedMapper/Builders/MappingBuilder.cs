@@ -6,7 +6,6 @@ using System.Text;
 using GeneratedMapper.Builders.Base;
 using GeneratedMapper.Enums;
 using GeneratedMapper.Extensions;
-using GeneratedMapper.Helpers;
 using GeneratedMapper.Information;
 using Microsoft.CodeAnalysis.Text;
 
@@ -29,7 +28,7 @@ namespace GeneratedMapper.Builders
 
             WriteUsingNamespaces(indentWriter, _propertyMappingBuilders.SelectMany(map => map.NamespacesUsed()));
             WriteOptionalNullableEnablePragma(indentWriter);
-            using (WriteOpenNamespaceAndStaticClass(indentWriter, ""))
+            using (WriteOpenNamespace(indentWriter, ""))
             {
                 indentWriter.WriteLine($"public static partial class {_information.SourceType?.Name}MapToExtensions");
                 using (indentWriter.Braces())

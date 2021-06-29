@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using GeneratedMapper.Enums;
-using GeneratedMapper.Helpers;
+using GeneratedMapper.Extensions;
 using GeneratedMapper.Information;
 using Microsoft.CodeAnalysis.Text;
 

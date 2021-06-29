@@ -1,7 +1,7 @@
 ﻿using System;
 using System.CodeDom.Compiler;
 
-namespace GeneratedMapper.Helpers
+namespace GeneratedMapper.Extensions
 {
     public static class IndentWriterExtensions
     {

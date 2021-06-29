@@ -2,7 +2,7 @@
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Linq;
-using GeneratedMapper.Helpers;
+using GeneratedMapper.Extensions;
 using GeneratedMapper.Information;
 
 namespace GeneratedMapper.Builders.Base
@@ -65,7 +65,7 @@ namespace GeneratedMapper.Builders.Base
                 indentWriter.WriteLine();
             }
         }
-        protected IDisposable WriteOpenNamespaceAndStaticClass(IndentedTextWriter indentWriter, string extraNamespaceName)
+        protected IDisposable WriteOpenNamespace(IndentedTextWriter indentWriter, string extraNamespaceName)
         {
             if (_information.SourceType != null && !_information.SourceType.ContainingNamespace.IsGlobalNamespace)
             {
