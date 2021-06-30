@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using GeneratedMapper.Enums;
+using GeneratedMapper.Extensions;
 using GeneratedMapper.Information;
 using Microsoft.CodeAnalysis.Text;
 
@@ -29,43 +30,32 @@ namespace GeneratedMapper.Builders
             indentWriter.WriteLine("using System;");
             indentWriter.WriteLine();
             indentWriter.WriteLine("namespace Microsoft.Extensions.DependencyInjection");
-            indentWriter.WriteLine("{");
-            indentWriter.Indent++;
-
-            indentWriter.WriteLine("public static class GeneratedMapperExtensions");
-
-            indentWriter.WriteLine("{");
-            indentWriter.Indent++;
-
-            indentWriter.WriteLine("public static IServiceCollection AddMappers(this IServiceCollection services)");
-
-            indentWriter.WriteLine("{");
-            indentWriter.Indent++;
-
-            foreach (var mappingInformation in _injectables)
+            using (indentWriter.Braces())
             {
-                var className = $"{mappingInformation.SourceType?.Name}MapTo{mappingInformation.DestinationType?.Name}";
+                indentWriter.WriteLine("public static class GeneratedMapperExtensions");
+                using (indentWriter.Braces())
+                {
+                    indentWriter.WriteLine("public static IServiceCollection AddMappers(this IServiceCollection services)");
+                    using (indentWriter.Braces())
+                    {
+                        foreach (var mappingInformation in _injectables)
+                        {
+                            var className = $"{mappingInformation.SourceType?.Name}MapTo{mappingInformation.DestinationType?.Name}";
 
-                var fullClassName = (mappingInformation.SourceType?.ContainingNamespace.IsGlobalNamespace != true)
-                    ? $"{mappingInformation.SourceType?.ContainingNamespace.ToDisplayString()}.{className}"
-                    : className;
+                            var fullClassName = (mappingInformation.SourceType?.ContainingNamespace.IsGlobalNamespace != true)
+                                ? $"{mappingInformation.SourceType?.ContainingNamespace.ToDisplayString()}.{className}"
+                                : className;
 
-                var interfaceName = $"IMapper<{mappingInformation.SourceType?.ToDisplayString()}, {mappingInformation.DestinationType?.ToDisplayString()}>";
+                            var interfaceName = $"IMapper<{mappingInformation.SourceType?.ToDisplayString()}, {mappingInformation.DestinationType?.ToDisplayString()}>";
 
-                indentWriter.WriteLine($"services.AddTransient<{interfaceName}, {fullClassName}>();");
+                            indentWriter.WriteLine($"services.AddTransient<{interfaceName}, {fullClassName}>();");
+                        }
+
+                        indentWriter.WriteLine();
+                        indentWriter.WriteLine("return services;");
+                    }
+                }
             }
-
-            indentWriter.WriteLine();
-            indentWriter.WriteLine("return services;");
-
-            indentWriter.Indent--;
-            indentWriter.WriteLine("}");
-
-            indentWriter.Indent--;
-            indentWriter.WriteLine("}");
-
-            indentWriter.Indent--;
-            indentWriter.WriteLine("}");
 
             return SourceText.From(writer.ToString(), Encoding.UTF8);
         }

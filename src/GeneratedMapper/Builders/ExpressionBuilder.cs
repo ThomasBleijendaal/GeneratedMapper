@@ -31,12 +31,14 @@ namespace GeneratedMapper.Builders
                     .SelectMany(x => x.NamespacesUsed)),
                 allowNamespacesForAsync: false);
             WriteOptionalNullableEnablePragma(indentWriter);
-            WriteOpenNamespaceAndStaticClass(indentWriter, ".Expressions", _information.SourceType?.Name ?? "");
-
-            WriteMethod(indentWriter);
-
-            WriteCloseStaticClass(indentWriter);
-            WriteCloseNamespace(indentWriter);
+            using(WriteOpenNamespace(indentWriter, ".Expressions"))
+            {
+                indentWriter.WriteLine($"public static partial class {_information.SourceType?.Name ?? ""}");
+                using (indentWriter.Braces())
+                {
+                    WriteMethod(indentWriter);
+                }
+            }
 
             return SourceText.From(writer.ToString(), Encoding.UTF8);
         }
@@ -46,13 +48,13 @@ namespace GeneratedMapper.Builders
             var mapParameters = _information.Mappings.Where(x => !x.IsAsync).SelectMany(x => x.MapParametersRequired.Select(x => x.ToMethodParameter(string.Empty))).Distinct();
 
             indentWriter.WriteLine($"public static Expression<Func<{_information.SourceType?.ToDisplayString()}, {_information.DestinationType?.ToDisplayString()}>> To{_information.DestinationType?.Name}({string.Join(", ", mapParameters)}) => ({_information.SourceType?.ToDisplayString()} {SourceInstanceName}) =>");
-            indentWriter.Indent++;
+            using (indentWriter.Indent())
+            {
+                var classBuilder = new ClassExpressionBuilder(new ExpressionContext<MappingInformation>(_information, SourceInstanceName, _maxRecursion));
 
-            var classBuilder = new ClassExpressionBuilder(new ExpressionContext<MappingInformation>(_information, SourceInstanceName, _maxRecursion));
-
-            classBuilder.WriteClass(indentWriter);
-            indentWriter.WriteLine(";");
-            indentWriter.Indent--;
+                classBuilder.WriteClass(indentWriter);
+                indentWriter.WriteLine(";");
+            }
         }
     }
 }

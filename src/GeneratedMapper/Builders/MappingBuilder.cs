@@ -28,17 +28,17 @@ namespace GeneratedMapper.Builders
 
             WriteUsingNamespaces(indentWriter, _propertyMappingBuilders.SelectMany(map => map.NamespacesUsed()));
             WriteOptionalNullableEnablePragma(indentWriter);
-            WriteOpenNamespaceAndStaticClass(indentWriter, "", $"{_information.SourceType?.Name}MapToExtensions");
+            using (WriteOpenNamespace(indentWriter, ""))
+            {
+                indentWriter.WriteLine($"public static partial class {_information.SourceType?.Name}MapToExtensions");
+                using (indentWriter.Braces())
+                {
+                    WriteMapToExtensionMethod(indentWriter);
 
-            WriteMapToExtensionMethod(indentWriter);
-
-            WriteEnumerableMapToExtensionMethod(indentWriter);
-
-            WriteCloseStaticClass(indentWriter);
-
-            WriteInjectableMapperClass(indentWriter);
-
-            WriteCloseNamespace(indentWriter);
+                    WriteEnumerableMapToExtensionMethod(indentWriter);
+                }
+                WriteInjectableMapperClass(indentWriter);
+            }
 
             return SourceText.From(writer.ToString(), Encoding.UTF8);
         }
@@ -53,40 +53,36 @@ namespace GeneratedMapper.Builders
 
             indentWriter.WriteLine($"public static {returnType} {extensionMethodName}({string.Join(", ", mapParameters)})");
 
-            indentWriter.WriteLine("{");
-            indentWriter.Indent++;
-
-            if (_information.SourceType != null && !_information.SourceType.IsValueType)
+            using (indentWriter.Braces())
             {
-                WriteNullCheck(indentWriter, SourceInstanceName, _information.SourceType.ToDisplayString(), _information.DestinationType?.ToDisplayString());
-            }
+                if (_information.SourceType != null && !_information.SourceType.IsValueType)
+                {
+                    WriteNullCheck(indentWriter, SourceInstanceName, _information.SourceType.ToDisplayString(), _information.DestinationType?.ToDisplayString());
+                }
 
-            indentWriter.WriteLines(GenerateCode(_propertyMappingBuilders, map => map.PreConstructionInitialization()), true);
+                indentWriter.WriteLines(GenerateCode(_propertyMappingBuilders, map => map.PreConstructionInitialization()), true);
 
-            indentWriter.WriteLine($"var {TargetInstanceName} = new {_information.DestinationType?.ToDisplayString()}");
-            indentWriter.WriteLine("{");
-            indentWriter.Indent++;
+                indentWriter.WriteLine($"var {TargetInstanceName} = new {_information.DestinationType?.ToDisplayString()}");
+                using (indentWriter.ClassSetters())
+                {
+                    indentWriter.WriteLines(GenerateCode(_propertyMappingBuilders, map => map.InitializerString()));
+                }
 
-            indentWriter.WriteLines(GenerateCode(_propertyMappingBuilders, map => map.InitializerString()));
-
-            indentWriter.Indent--;
-            indentWriter.WriteLine("};");
-            indentWriter.WriteLine();
-
-            if (_information.ConfigurationValues.Customizations.GenerateAfterMapPartial)
-            {
-                var partialArguments = new[] { SourceInstanceName }
-                    .Union(_propertyMappingBuilders.SelectMany(x => x.MapArgumentsRequired().Select(x => x.ToArgument(string.Empty))).Distinct())
-                    .Append(TargetInstanceName);
-
-                indentWriter.WriteLine($"After{extensionMethodName}({string.Join(", ", partialArguments)});");
                 indentWriter.WriteLine();
+
+                if (_information.ConfigurationValues.Customizations.GenerateAfterMapPartial)
+                {
+                    var partialArguments = new[] { SourceInstanceName }
+                        .Union(_propertyMappingBuilders.SelectMany(x => x.MapArgumentsRequired().Select(x => x.ToArgument(string.Empty))).Distinct())
+                        .Append(TargetInstanceName);
+
+                    indentWriter.WriteLine($"After{extensionMethodName}({string.Join(", ", partialArguments)});");
+                    indentWriter.WriteLine();
+                }
+
+                indentWriter.WriteLine($"return {TargetInstanceName};");
             }
-
-            indentWriter.WriteLine($"return {TargetInstanceName};");
-            indentWriter.Indent--;
-            indentWriter.WriteLine("}");
-
+            
             if (_information.ConfigurationValues.Customizations.GenerateAfterMapPartial)
             {
                 var partialParameters = new[] { $"{_information.SourceType?.ToDisplayString()} {PartialSourceInstanceName}" }
@@ -114,31 +110,26 @@ namespace GeneratedMapper.Builders
 
                 indentWriter.WriteLine();
                 indentWriter.WriteLine($"public static {enumerableType} {extensionMethodName}({string.Join(", ", mapEnumerableParameters)})");
-                indentWriter.WriteLine("{");
-                indentWriter.Indent++;
-
-                if (_information.SourceType != null && !_information.SourceType.IsValueType)
+                using (indentWriter.Braces())
                 {
-                    WriteNullCheck(indentWriter, SourceInstanceName, $"IEnumerable<{_information.SourceType.ToDisplayString()}>", $"IEnumerable<{_information.DestinationType?.ToDisplayString()}>");
-                }
+                    if (_information.SourceType != null && !_information.SourceType.IsValueType)
+                    {
+                        WriteNullCheck(indentWriter, SourceInstanceName, $"IEnumerable<{_information.SourceType.ToDisplayString()}>", $"IEnumerable<{_information.DestinationType?.ToDisplayString()}>");
+                    }
 
-                if (_information.IsAsync)
-                {
-                    indentWriter.WriteLine($"foreach (var element in {SourceInstanceName})");
-                    indentWriter.WriteLine("{");
-                    indentWriter.Indent++;
-
-                    indentWriter.WriteLine($"yield return await element.{extensionMethodName}({string.Join(", ", mapToArguments)});");
-
-                    indentWriter.Indent--;
-                    indentWriter.WriteLine("}");
+                    if (_information.IsAsync)
+                    {
+                        indentWriter.WriteLine($"foreach (var element in {SourceInstanceName})");
+                        using (indentWriter.Braces())
+                        {
+                            indentWriter.WriteLine($"yield return await element.{extensionMethodName}({string.Join(", ", mapToArguments)});");
+                        }
+                    }
+                    else
+                    {
+                        indentWriter.WriteLine($"return {SourceInstanceName}.Select(x => x.{extensionMethodName}({string.Join(", ", mapToArguments)}));");
+                    }
                 }
-                else
-                {
-                    indentWriter.WriteLine($"return {SourceInstanceName}.Select(x => x.{extensionMethodName}({string.Join(", ", mapToArguments)}));");
-                }
-                indentWriter.Indent--;
-                indentWriter.WriteLine("}");
             }
         }
 
@@ -154,57 +145,50 @@ namespace GeneratedMapper.Builders
 
                 indentWriter.WriteLine();
                 indentWriter.WriteLine($"public class {className} : IMapper<{_information.SourceType?.ToDisplayString()}, {_information.DestinationType?.ToDisplayString()}>");
-                indentWriter.WriteLine("{");
-                indentWriter.Indent++;
-
-                var constructorArguments = arguments.Select(x => x.ToMethodParameter(string.Empty)).Distinct();
-                var privateFields = arguments.Select(x => $"private readonly {x.TypeName} _{x.ParameterName};").Distinct();
-                var privateFieldAssignments = arguments.Select(x => $"_{x.ParameterName} = {x.ParameterName};").Distinct();
-                var mapParameters = arguments.Select(x => $"_{x.ParameterName}").Distinct();
-
-                if (constructorArguments.Any())
+                using (indentWriter.Braces())
                 {
-                    foreach (var privateField in privateFields)
+                    var constructorArguments = arguments.Select(x => x.ToMethodParameter(string.Empty)).Distinct();
+                    var privateFields = arguments.Select(x => $"private readonly {x.TypeName} _{x.ParameterName};").Distinct();
+                    var privateFieldAssignments = arguments.Select(x => $"_{x.ParameterName} = {x.ParameterName};").Distinct();
+                    var mapParameters = arguments.Select(x => $"_{x.ParameterName}").Distinct();
+
+                    if (constructorArguments.Any())
                     {
-                        indentWriter.WriteLine(privateField);
+                        foreach (var privateField in privateFields)
+                        {
+                            indentWriter.WriteLine(privateField);
+                        }
+
+                        indentWriter.WriteLine();
+
+                        indentWriter.WriteLine($"public {className}({string.Join(", ", constructorArguments)})");
+                        using (indentWriter.Braces())
+                        {
+                            foreach (var privateFieldAssignment in privateFieldAssignments)
+                            {
+                                indentWriter.WriteLine(privateFieldAssignment);
+                            }
+                        }
+                        indentWriter.WriteLine();
                     }
 
-                    indentWriter.WriteLine();
+                    var async = _information.IsAsync ? $"async " : $"";
+                    var callToMapMethod = _information.IsAsync
+                        ? $"await {fromExpression}.MapTo{_information.DestinationType?.Name}Async({string.Join(", ", mapParameters)})"
+                        : $"Task.FromResult({fromExpression}.MapTo{_information.DestinationType?.Name}({string.Join(", ", mapParameters)}))";
 
-                    indentWriter.WriteLine($"public {className}({string.Join(", ", constructorArguments)})");
-                    indentWriter.WriteLine("{");
-                    indentWriter.Indent++;
-
-                    foreach (var privateFieldAssignment in privateFieldAssignments)
-                    {
-                        indentWriter.WriteLine(privateFieldAssignment);
-                    }
-
-                    indentWriter.Indent--;
-                    indentWriter.WriteLine("}");
-                    indentWriter.WriteLine();
+                    indentWriter.WriteLine($"public {async}Task<{_information.DestinationType?.ToDisplayString()}> MapAsync({_information.SourceType?.ToDisplayString()} from) => {callToMapMethod};");
                 }
-
-                var async = _information.IsAsync ? $"async " : $"";
-                var callToMapMethod = _information.IsAsync
-                    ? $"await {fromExpression}.MapTo{_information.DestinationType?.Name}Async({string.Join(", ", mapParameters)})"
-                    : $"Task.FromResult({fromExpression}.MapTo{_information.DestinationType?.Name}({string.Join(", ", mapParameters)}))";
-
-                indentWriter.WriteLine($"public {async}Task<{_information.DestinationType?.ToDisplayString()}> MapAsync({_information.SourceType?.ToDisplayString()} from) => {callToMapMethod};");
-
-                indentWriter.Indent--;
-                indentWriter.WriteLine("}");
             }
         }
 
         private static void WriteNullCheck(IndentedTextWriter indentWriter, string instanceName, string sourceType, string? destinationType)
         {
             indentWriter.WriteLine($"if ({instanceName} is null)");
-            indentWriter.WriteLine("{");
-            indentWriter.Indent++;
-            indentWriter.WriteLine($@"throw new ArgumentNullException(nameof(self), ""{sourceType} -> {destinationType}: Source is null."");");
-            indentWriter.Indent--;
-            indentWriter.WriteLine("}");
+            using (indentWriter.Braces())
+            {
+                indentWriter.WriteLine($@"throw new ArgumentNullException(nameof(self), ""{sourceType} -> {destinationType}: Source is null."");");
+            }
             indentWriter.WriteLine();
         }
     }
