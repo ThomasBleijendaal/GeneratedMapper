@@ -2,9 +2,18 @@
 {
     public static partial class SourceMapToExtensions
     {
-        static partial void AfterMapToSimpleDestination(Example.Sources.Source source, Example.Destinations.SimpleDestination target)
+        static void AfterMap(Example.Sources.Source source, Example.Destinations.SimpleDestination target)
         {
             target.CompanyName = $"Super custom: {source.Company.Name}";
         }
+
+    }
+    public static class Extensions
+    {
+        public static void PublicAfterMapOutsidePartialClass(Example.Sources.Source source, Example.Destinations.SimpleDestination target)
+        {
+            target.CompanyName += " Mapped Outside AfterMap Call";
+        }
+
     }
 }

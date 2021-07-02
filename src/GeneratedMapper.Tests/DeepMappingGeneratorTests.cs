@@ -13,7 +13,7 @@ namespace GeneratedMapper.Tests
 using System.Globalization;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
 namespace R {
     public class Resolver { 
         private readonly CultureInfo _cultureInfo;

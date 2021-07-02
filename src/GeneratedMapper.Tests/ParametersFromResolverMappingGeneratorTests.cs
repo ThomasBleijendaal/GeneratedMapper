@@ -11,7 +11,7 @@ namespace GeneratedMapper.Tests
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
 namespace R {
     public class Resolver { public Resolver(string arg1, string arg2) { } public string Resolve(string input) { return input; } }
 }
@@ -60,7 +60,7 @@ namespace A
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
 namespace R {
     public class Resolver { public Resolver(string arg1, string arg2) { } public string Resolve(string input) { return input; } }
 }
@@ -112,7 +112,7 @@ namespace A
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
 namespace R {
     public class Resolver1 { public Resolver1(string arg1, string arg2) { } public string Resolve(string input) { return input; } }
     public class Resolver2 { public Resolver2(string arg1, string? arg2 = ""default string"") { } public string Resolve(string input) { return input; } }

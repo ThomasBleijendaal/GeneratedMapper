@@ -69,28 +69,23 @@ namespace GeneratedMapper.Builders
                 }
 
                 indentWriter.WriteLine();
-
-                if (_information.ConfigurationValues.Customizations.GenerateAfterMapPartial)
+                
+                foreach (var afterMap in _information.AfterMaps)
                 {
-                    var partialArguments = new[] { SourceInstanceName }
-                        .Union(_propertyMappingBuilders.SelectMany(x => x.MapArgumentsRequired().Select(x => x.ToArgument(string.Empty))).Distinct())
-                        .Append(TargetInstanceName);
+                    if (afterMap.PartOfType.ContainingNamespace.Equals(_information.SourceType.ContainingNamespace) &&
+                        afterMap.PartOfType.Name == $"{_information.SourceType?.Name}MapToExtensions")
+                    {
+                        indentWriter.WriteLine($"{afterMap.MethodName}({SourceInstanceName}, {TargetInstanceName});");
+                    }
+                    else
+                    {
+                        indentWriter.WriteLine($"{afterMap.PartOfType.ToDisplayString()}.{afterMap.MethodName}({SourceInstanceName}, {TargetInstanceName});");
+                    }
 
-                    indentWriter.WriteLine($"After{extensionMethodName}({string.Join(", ", partialArguments)});");
                     indentWriter.WriteLine();
                 }
 
                 indentWriter.WriteLine($"return {TargetInstanceName};");
-            }
-            
-            if (_information.ConfigurationValues.Customizations.GenerateAfterMapPartial)
-            {
-                var partialParameters = new[] { $"{_information.SourceType?.ToDisplayString()} {PartialSourceInstanceName}" }
-                    .Union(_propertyMappingBuilders.SelectMany(x => x.MapArgumentsRequired().Select(x => x.ToMethodParameter(string.Empty))).Distinct())
-                    .Append($"{_information.DestinationType?.ToDisplayString()} {PartialTargetInstanceName}");
-
-                indentWriter.WriteLine();
-                indentWriter.WriteLine($"static partial void After{extensionMethodName}({string.Join(", ", partialParameters)});");
             }
         }
 

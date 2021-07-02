@@ -11,7 +11,7 @@ namespace GeneratedMapper.Tests
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A : AA { public override string Name { get; set; } }
@@ -60,7 +60,7 @@ namespace A
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A : AA { public override string Name { get; set; } }

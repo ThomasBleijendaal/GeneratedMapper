@@ -98,7 +98,6 @@ or configure what exceptions should be thrown when the mapper encounters null.
 - `NamespacesToInclude`: Configures extra namespaces to include in mappers when they prove to be too hard to be recognized by the mapper.
 - `GenerateEnumerableMethods`: Configures if for every X.MapToY() also a IEnumerable<X>.MapToYs() must be generated.
 - `GenerateExpressions`: Configures if for every mapper, the mapping should also be available as `Expression<Func<X, Y>>` for use in APIs which require expressions (like EF or Mongo).
-- `GenerateAfterMapPartial`: Configures a partial method to further configure the mapping.
 - `GenerateInjectableMappers`: Generates a `IMapper<From, To>` for each extension method, which can be added to the DI container using `services.AddMappers()`.
 
 ## More information

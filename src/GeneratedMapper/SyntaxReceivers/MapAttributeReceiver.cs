@@ -11,6 +11,7 @@ namespace GeneratedMapper.SyntaxReceivers
         public List<TypeDeclarationSyntax> Candidates { get; } = new List<TypeDeclarationSyntax>();
 
         public List<TypeDeclarationSyntax> ClassesWithExtensionMethods { get; } = new List<TypeDeclarationSyntax>();
+        public List<TypeDeclarationSyntax> ClassesWithAfterMapMethods { get; } = new List<TypeDeclarationSyntax>();
 
         public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
         {
@@ -23,14 +24,23 @@ namespace GeneratedMapper.SyntaxReceivers
                     Candidates.Add(typeDeclarationSyntax);
                 }
 
-                var hasExtensionMethod = typeDeclarationSyntax.Members
-                    .Where(x => x is MethodDeclarationSyntax)
-                    .Select(x => x as MethodDeclarationSyntax)
-                    .Any(x => x!.ParameterList.Parameters.FirstOrDefault()?.ChildTokens().Any(x => x.IsKind(SyntaxKind.ThisKeyword)) ?? false);
+                var methods = typeDeclarationSyntax.Members.OfType<MethodDeclarationSyntax>().ToArray();
 
+                var hasExtensionMethod = methods.Any(x =>
+                    x!.ParameterList.Parameters.FirstOrDefault()?.ChildTokens()
+                        .Any(x => x.IsKind(SyntaxKind.ThisKeyword)) ?? false);
                 if (hasExtensionMethod)
                 {
                     ClassesWithExtensionMethods.Add(typeDeclarationSyntax);
+                }
+
+                var hasAfterMapMethod = methods.Any(x =>
+                    x.ParameterList.Parameters.Count == 2 &&
+                    x.Modifiers.Any(m => m.Kind() == SyntaxKind.StaticKeyword) &&
+                    (x.ReturnType as PredefinedTypeSyntax)?.Keyword.Text == "void");
+                if (hasAfterMapMethod)
+                {
+                    ClassesWithAfterMapMethods.Add(typeDeclarationSyntax);
                 }
             }
         }

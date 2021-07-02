@@ -11,7 +11,7 @@ namespace GeneratedMapper.Tests
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
 namespace A {
     public class A { public AA Sub { get; set; } public class AA { public string Name { get; set; } } }
 }
@@ -52,7 +52,7 @@ namespace A
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
 namespace A {
     public class A { public AA Sub1 { get; set; } public class AA { public AAA Sub2 { get; set; } public class AAA { public AAAA Sub3 { get; set; } public class AAAA { public string Name { get; set; } } } } }
 }
@@ -93,7 +93,7 @@ namespace A
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
 namespace A {
     public class A { public AA Sub { get; set; } public class AA { public string Name { get; set; } } }
 }
@@ -134,7 +134,7 @@ namespace A
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
 namespace A {
     public class A { public AA Sub1 { get; set; } public class AA { public AAA Sub2 { get; set; } public class AAA { public AAAA Sub3 { get; set; } public class AAAA { public string Name { get; set; } } } } }
 }
@@ -175,7 +175,7 @@ namespace A
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
 namespace A {
     public class A { public AA Sub { get; set; } public class AA { public int Count { get; set; } } }
 }
@@ -216,7 +216,7 @@ namespace A
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
 namespace A {
     public class A { public AA Sub1 { get; set; } public class AA { public AAA Sub2 { get; set; } public class AAA { public AAAA Sub3 { get; set; } public class AAAA { public int Count { get; set; } } } } }
 }
@@ -257,7 +257,7 @@ namespace A
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
 namespace A {
     public class A { public AA Sub { get; set; } public class AA { public int Count { get; set; } } }
 }

@@ -11,7 +11,7 @@ namespace GeneratedMapper.Tests
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false, NamespacesToInclude = new[] { ""Hard.To.Recognize.Namespace"" })]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, NamespacesToInclude = new[] { ""Hard.To.Recognize.Namespace"" })]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { public string Name { get; set; } }
@@ -53,7 +53,7 @@ namespace A
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false, ThrowWhenNotNullablePropertyIsNull = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, ThrowWhenNotNullablePropertyIsNull = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { public string Name { get; set; } }
@@ -95,7 +95,7 @@ namespace A
 using System.Collections.Generic;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false, ThrowWhenNotNullableElementIsNull = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, ThrowWhenNotNullableElementIsNull = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { public List<string> Prop { get; set; } }
@@ -139,7 +139,7 @@ namespace A
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false, GenerateEnumerableMethods = true)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateEnumerableMethods = true)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { public string Name { get; set; } }
@@ -192,7 +192,7 @@ namespace A
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false, GenerateEnumerableMethods = true)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateEnumerableMethods = true)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { [MapWith(""Name"", ""Substring"")] public string Name { get; set; } }
@@ -247,10 +247,15 @@ namespace A
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false, GenerateAfterMapPartial = true)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { [MapWith(""Name"", ""Substring"")] public string Name { get; set; } }
+
+    public static partial class AMapToExtensions
+    {
+        static void AfterMapToB(A source, B.B destination) {}
+    }
 }
 
 namespace B {
@@ -277,12 +282,10 @@ namespace A
                 Name = (self.Name ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name is null."")).Substring(startIndex),
             };
             
-            AfterMapToB(self, startIndex, target);
+            AfterMapToB(self, target);
             
             return target;
         }
-        
-        static partial void AfterMapToB(A.A source, int startIndex, B.B target);
     }
 }
 ");

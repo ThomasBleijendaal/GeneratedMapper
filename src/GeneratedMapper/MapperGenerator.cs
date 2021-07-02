@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using GeneratedMapper.Attributes;
@@ -21,6 +22,12 @@ namespace GeneratedMapper
         public void Initialize(GeneratorInitializationContext context)
         {
             context.RegisterForSyntaxNotifications(() => new MapAttributeReceiver());
+#if DEBUG
+            //if (!Debugger.IsAttached)
+            //{
+            //    Debugger.Launch();
+            //}
+#endif
         }
 
         public void Execute(GeneratorExecutionContext context)
@@ -59,6 +66,7 @@ namespace GeneratedMapper
         private static List<MappingInformation> FindMappings(GeneratorExecutionContext context)
         {
             var extensionMethods = FindExtensionMethods(context);
+            var afterMapMethods = FindAfterMaps(context);
             var customizations = FindMapperCustomizations(context);
 
             var parser = new MappingAttributeParser(context, new PropertyParser(context, new ParameterParser(context), extensionMethods));
@@ -83,7 +91,7 @@ namespace GeneratedMapper
                                     attribute.AttributeClass != null &&
                                     (attribute.AttributeClass.Equals(mapToAttribute, SymbolEqualityComparer.Default) ||
                                     attribute.AttributeClass.Equals(mapFromAttribute, SymbolEqualityComparer.Default)))
-                                .Select(attribute => parser.ParseAttribute(configurationValues, candidateTypeSymbol, attribute)));
+                                .Select(attribute => parser.ParseAttribute(configurationValues, candidateTypeSymbol, attribute, afterMapMethods)));
                     }
                 }
             }
@@ -100,6 +108,27 @@ namespace GeneratedMapper
             if (context.SyntaxReceiver is MapAttributeReceiver attributeReceiver)
             {
                 foreach (var extensionMethodClass in attributeReceiver.ClassesWithExtensionMethods)
+                {
+                    var model = context.Compilation.GetSemanticModel(extensionMethodClass.SyntaxTree);
+
+                    if (model.GetDeclaredSymbol(extensionMethodClass) is ITypeSymbol typeWithExtensionMethods)
+                    {
+                        foundExtensionMethods.AddRange(parser.ParseType(typeWithExtensionMethods));
+                    }
+                }
+            }
+
+            return foundExtensionMethods;
+        }
+        private static List<AfterMapInformation> FindAfterMaps(GeneratorExecutionContext context)
+        {
+            var parser = new AfterMapParser();
+
+            var foundExtensionMethods = new List<AfterMapInformation>();
+
+            if (context.SyntaxReceiver is MapAttributeReceiver attributeReceiver)
+            {
+                foreach (var extensionMethodClass in attributeReceiver.ClassesWithAfterMapMethods)
                 {
                     var model = context.Compilation.GetSemanticModel(extensionMethodClass.SyntaxTree);
 
@@ -162,13 +191,6 @@ namespace GeneratedMapper
                                 if (argument.Value.Value is bool generateExpressions)
                                 {
                                     customizations.GenerateExpressions = generateExpressions;
-                                }
-                                break;
-
-                            case nameof(MapperGeneratorConfigurationAttribute.GenerateAfterMapPartial):
-                                if (argument.Value.Value is bool generateAfterMapPartial)
-                                {
-                                    customizations.GenerateAfterMapPartial = generateAfterMapPartial;
                                 }
                                 break;
 

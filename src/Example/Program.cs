@@ -10,9 +10,7 @@ using Example.Sources;
     ThrowWhenNotNullableElementIsNull = true,
     ThrowWhenNotNullablePropertyIsNull = true,
     GenerateEnumerableMethods = true,
-    GenerateExpressions = true,
-    // see SourceMapToExtensions how to use partial method
-    GenerateAfterMapPartial = true)]
+    GenerateExpressions = true)]
 namespace Example
 {
     public class Program
