@@ -248,7 +248,8 @@ namespace A
 using GeneratedMapper.Attributes;
 
 [assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
-namespace A {
+namespace A
+{
     [MapTo(typeof(B.B))]
     public class A { [MapWith(""Name"", ""Substring"")] public string Name { get; set; } }
 
@@ -260,7 +261,6 @@ namespace A {
 
 namespace B {
     public class B { public string Name { get; set; } }
-}
 }",
 @"using System;
 
