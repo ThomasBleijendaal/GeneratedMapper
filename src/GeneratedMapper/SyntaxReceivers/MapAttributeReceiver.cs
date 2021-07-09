@@ -35,7 +35,7 @@ namespace GeneratedMapper.SyntaxReceivers
                 }
 
                 var hasAfterMapMethod = methods.Any(x =>
-                    x.ParameterList.Parameters.Count == 2 &&
+                    x.ParameterList.Parameters.Count >= 2 &&
                     x.Modifiers.Any(m => m.Kind() == SyntaxKind.StaticKeyword) &&
                     (x.ReturnType as PredefinedTypeSyntax)?.Keyword.Text == "void");
                 if (hasAfterMapMethod)

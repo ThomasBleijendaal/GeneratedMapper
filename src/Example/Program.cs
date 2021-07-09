@@ -65,7 +65,7 @@ namespace Example
             var options = new JsonSerializerOptions { WriteIndented = true };
 
             Console.WriteLine(JsonSerializer.Serialize(source.MapToSimpleDestination(), options));
-            Console.WriteLine(JsonSerializer.Serialize(source.MapToComplexDestination(7, new[] { 1.2, 1.3 }, CultureInfo.CurrentCulture), options));
+            Console.WriteLine(JsonSerializer.Serialize(source.MapToComplexDestination(7, new[] { 1.2, 1.3 }, CultureInfo.CurrentCulture, "-Postfix"), options));
 
             var record = new TestRecord("Test");
 

@@ -125,12 +125,11 @@ namespace GeneratedMapper.Parsers
                     mappingInformation.ReportIssue(DiagnosticsHelper.LeftOverProperty(attributeData, targetType.ToDisplayString(), remainingTargetProperty.Key, attributedType.ToDisplayString()));
                 }
 
-                foreach (var afterMap in afterMapInformations)
+                foreach (var afterMap in afterMapInformations.Where(am =>
+                    am.ParameterTypes.Any(_ => _.Equals(mappingInformation.SourceType)) &&
+                    am.ParameterTypes.Any(_ => _.Equals(mappingInformation.DestinationType))))
                 {
-                    if (afterMap.SourceType.Equals(mappingInformation.SourceType) && afterMap.DestinationType.Equals(mappingInformation.DestinationType))
-                    {
-                        mappingInformation.AfterMaps.Add(afterMap);
-                    }
+                    mappingInformation.AfterMaps.Add(afterMap);
                 }
             }
             catch (ParseException ex)

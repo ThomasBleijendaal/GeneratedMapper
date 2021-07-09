@@ -14,10 +14,15 @@ namespace GeneratedMapper.Builders
     internal sealed class MappingBuilder : BuilderBase
     {
         private readonly List<PropertyMappingBuilder> _propertyMappingBuilders;
-
+        private readonly ParameterInformation[] _mapArgumentParmeters;
+        private readonly ParameterInformation[] _afterMapParameters;
+        
         public MappingBuilder(MappingInformation information) : base(information)
         {
             _propertyMappingBuilders = information.Mappings.Select(mapping => new PropertyMappingBuilder(mapping, SourceInstanceName)).ToList();
+
+            _mapArgumentParmeters = _propertyMappingBuilders.SelectMany(x => x.MapArgumentsRequired()).ToArray();
+            _afterMapParameters = _information.AfterMaps.SelectMany(x => x.Parameters.Where(p => ParameterTypeMatch(p) == TypeMatch.None)).ToArray();
         }
 
         public SourceText GenerateSourceText()
@@ -39,14 +44,14 @@ namespace GeneratedMapper.Builders
                 }
                 WriteInjectableMapperClass(indentWriter);
             }
-
+             
             return SourceText.From(writer.ToString(), Encoding.UTF8);
         }
 
         private void WriteMapToExtensionMethod(IndentedTextWriter indentWriter)
         {
             var mapParameters = new[] { $"this {_information.SourceType?.ToDisplayString()} {SourceInstanceName}" }
-                .Union(_propertyMappingBuilders.SelectMany(x => x.MapArgumentsRequired().Select(x => x.ToMethodParameter(string.Empty))).Distinct());
+                .Union(_mapArgumentParmeters.Concat(_afterMapParameters).Select(x => x.ToMethodParameter(string.Empty)).Distinct());
 
             var extensionMethodName = $"MapTo{_information.DestinationType?.Name}{(_information.IsAsync ? "Async" : "")}";
             var returnType = _information.IsAsync ? $"async Task<{_information.DestinationType?.ToDisplayString()}>" : _information.DestinationType?.ToDisplayString();
@@ -72,14 +77,22 @@ namespace GeneratedMapper.Builders
                 
                 foreach (var afterMap in _information.AfterMaps)
                 {
+                    var parameters = string.Join(", ",
+                        afterMap.Parameters.Select(x => ParameterTypeMatch(x) switch
+                        {
+                            TypeMatch.Source => SourceInstanceName,
+                            TypeMatch.Destination => TargetInstanceName,
+                            _ => x.ParameterName
+                        }));
+
                     if (afterMap.PartOfType.ContainingNamespace.Equals(_information.SourceType.ContainingNamespace) &&
                         afterMap.PartOfType.Name == $"{_information.SourceType?.Name}MapToExtensions")
                     {
-                        indentWriter.WriteLine($"{afterMap.MethodName}({SourceInstanceName}, {TargetInstanceName});");
+                        indentWriter.WriteLine($"{afterMap.MethodName}({parameters});");
                     }
                     else
                     {
-                        indentWriter.WriteLine($"{afterMap.PartOfType.ToDisplayString()}.{afterMap.MethodName}({SourceInstanceName}, {TargetInstanceName});");
+                        indentWriter.WriteLine($"{afterMap.PartOfType.ToDisplayString()}.{afterMap.MethodName}({parameters});");
                     }
 
                     indentWriter.WriteLine();
@@ -94,9 +107,9 @@ namespace GeneratedMapper.Builders
             if (_information.ConfigurationValues.Customizations.GenerateEnumerableMethods)
             {
                 var mapEnumerableParameters = new[] { $"this IEnumerable<{_information.SourceType?.ToDisplayString()}> {SourceInstanceName}" }
-                   .Union(_propertyMappingBuilders.SelectMany(x => x.MapArgumentsRequired().Select(x => x.ToMethodParameter(string.Empty))).Distinct());
+                   .Union(_mapArgumentParmeters.Concat(_afterMapParameters).Select(x => x.ToMethodParameter(string.Empty)).Distinct());
 
-                var mapToArguments = _propertyMappingBuilders.SelectMany(x => x.MapArgumentsRequired().Select(x => x.ToArgument(string.Empty))).Distinct();
+                var mapToArguments = _mapArgumentParmeters.Concat(_afterMapParameters).Select(x => x.ToArgument(string.Empty)).Distinct();
                 var extensionMethodName = $"MapTo{_information.DestinationType?.Name}{(_information.IsAsync ? "Async" : "")}";
 
                 var enumerableType = _information.IsAsync
@@ -132,7 +145,7 @@ namespace GeneratedMapper.Builders
         {
             if (_information.ConfigurationValues.Customizations.GenerateInjectableMappers)
             {
-                var arguments = _propertyMappingBuilders.SelectMany(x => x.MapArgumentsRequired());
+                var arguments = _mapArgumentParmeters.Concat(_afterMapParameters);
 
                 var fromExpression = $@"(from ?? throw new ArgumentNullException(nameof(from), ""{_information.SourceType?.ToDisplayString()} -> {_information.DestinationType?.ToDisplayString()}: Source is null.""))";
 
@@ -185,6 +198,18 @@ namespace GeneratedMapper.Builders
                 indentWriter.WriteLine($@"throw new ArgumentNullException(nameof(self), ""{sourceType} -> {destinationType}: Source is null."");");
             }
             indentWriter.WriteLine();
+        }
+
+        private TypeMatch ParameterTypeMatch(ParameterInformation parameter) =>
+            parameter.TypeName == _information.SourceType?.ToDisplayString() ? TypeMatch.Source :
+            parameter.TypeName == _information.DestinationType?.ToDisplayString() ? TypeMatch.Destination :
+            TypeMatch.None;
+
+        enum TypeMatch
+        {
+            None,
+            Source,
+            Destination
         }
     }
 }

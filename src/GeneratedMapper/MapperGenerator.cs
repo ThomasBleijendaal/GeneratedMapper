@@ -70,7 +70,7 @@ namespace GeneratedMapper
             var customizations = FindMapperCustomizations(context);
 
             var parser = new MappingAttributeParser(context, new PropertyParser(context, new ParameterParser(context), extensionMethods));
-
+            
             var foundMappings = new List<MappingInformation>();
 
             if (context.SyntaxReceiver is MapAttributeReceiver attributeReceiver)
@@ -122,7 +122,7 @@ namespace GeneratedMapper
         }
         private static List<AfterMapInformation> FindAfterMaps(GeneratorExecutionContext context)
         {
-            var parser = new AfterMapParser();
+            var parser = new AfterMapParser(new ParameterParser(context));
 
             var foundExtensionMethods = new List<AfterMapInformation>();
 

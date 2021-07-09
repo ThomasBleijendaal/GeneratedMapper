@@ -1,4 +1,7 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Collections.Generic;
+using System.Linq;
+using GeneratedMapper.Parsers;
+using Microsoft.CodeAnalysis;
 
 namespace GeneratedMapper.Information
 {
@@ -6,19 +9,15 @@ namespace GeneratedMapper.Information
     {
         public IMethodSymbol MethodSymbol { get; }
 
-        public AfterMapInformation(IMethodSymbol methodSymbol)
+        public AfterMapInformation(IMethodSymbol methodSymbol, ParameterParser parameterParser)
         {
             MethodSymbol = methodSymbol;
-            PartOfType = methodSymbol.ContainingType;
-            MethodName = methodSymbol.Name;
-            SourceType = methodSymbol.Parameters[0].Type;
-            DestinationType = methodSymbol.Parameters[1].Type;
+            Parameters = parameterParser.ParseMethodParameters(methodSymbol.Parameters);
         }
 
-        public ITypeSymbol PartOfType { get; }
-        public string MethodName { get; }
-        public ITypeSymbol? SourceType { get; }
-        public ITypeSymbol? DestinationType { get; }
-        
+        public ITypeSymbol PartOfType => MethodSymbol.ContainingType;
+        public string MethodName => MethodSymbol.Name;
+        public IEnumerable<ITypeSymbol?> ParameterTypes => MethodSymbol.Parameters.Select(_ => _.Type);
+        public List<ParameterInformation> Parameters { get; }
     }
 }
