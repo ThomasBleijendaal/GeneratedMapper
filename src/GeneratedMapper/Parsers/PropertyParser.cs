@@ -196,7 +196,7 @@ namespace GeneratedMapper.Parsers
 
                 propertyMapping.UsingResolver(resolverName,
                     resolverType.ToDisplayString(),
-                    _parameterParser.ParseConstructorParameters(resolverType));
+                    _parameterParser.ParseConstructorParameters(resolverType, ParameterSource.Resolver));
             }
             else if (mapWithAttribute?.ConstructorArgument<string>(1) is string propertyMethodToCall)
             {
@@ -208,7 +208,7 @@ namespace GeneratedMapper.Parsers
                         .OrderBy(x => x.Parameters.Length)
                         .FirstOrDefault() is IMethodSymbol sourcePropertyMethod)
                 {
-                    propertyMapping.UsingMethod(propertyMethodToCall, default, _parameterParser.ParseMethodParameters(sourcePropertyMethod.Parameters));
+                    propertyMapping.UsingMethod(propertyMethodToCall, default, _parameterParser.ParseMethodParameters(sourcePropertyMethod.Parameters, ParameterSource.Method));
                 }
                 else if (_extensionMethods.FirstOrDefault(extensionMethod => extensionMethod.MethodName == propertyMethodToCall &&
                     sourceType.Equals(extensionMethod.AcceptsType, SymbolEqualityComparer.Default) &&

@@ -123,6 +123,67 @@ namespace A.Expressions
         }
 
         [Test]
+        public void MapSinglePropertyWithResolverWithParameterFromSourceToDestination_WithExpressionMapToMethod()
+        {
+            GeneratorTestHelper.TestGeneratedCode(@"using System;
+using GeneratedMapper.Attributes;
+
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false, GenerateExpressions = true)]
+namespace A {
+    [MapTo(typeof(B.B))]
+    public class A { [MapWith(typeof(R.Resolver))] public int Name { get; set; } }
+}
+
+namespace R {
+    public class Resolver { public Resolver(int parameter) { } public string Resolve(int name) { return name.ToString(); } }
+}
+
+namespace B {
+    public class B { public string Name { get; set; } }
+}
+}",
+@"using System;
+
+namespace A
+{
+    public static partial class AMapToExtensions
+    {
+        public static B.B MapToB(this A.A self, int resolverParameter)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self), ""A.A -> B.B: Source is null."");
+            }
+            
+            var resolver = new R.Resolver(resolverParameter);
+            
+            var target = new B.B
+            {
+                Name = resolver.Resolve(self.Name),
+            };
+            
+            return target;
+        }
+    }
+}
+",
+@"using System;
+using System.Linq.Expressions;
+
+namespace A.Expressions
+{
+    public static partial class A
+    {
+        public static Expression<Func<A.A, B.B>> ToB() => (A.A self) =>
+            new B.B
+            {
+            };
+    }
+}
+");
+        }
+
+        [Test]
         public void MapSingleRecursivePropertyFromSourceToDestination_WithExpressionMapToMethod()
         {
             GeneratorTestHelper.TestGeneratedCode(@"using System;
@@ -366,6 +427,94 @@ namespace A
             {
                 Name = (self.Name ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name is null."")),
                 Sub = (self.Sub ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Sub is null."")).MapToB(),
+            };
+            
+            return target;
+        }
+    }
+}
+",
+@"using System;
+using System.Linq.Expressions;
+
+#nullable enable
+
+namespace A.Expressions
+{
+    public static partial class A
+    {
+        public static Expression<Func<A.A, B.B>> ToB() => (A.A self) =>
+            new B.B
+            {
+                Name = self.Name,
+                Sub = new B.B
+                {
+                    Name = self.Sub.Name,
+                    Sub = new B.B
+                    {
+                        Name = self.Sub.Sub.Name,
+                        Sub = new B.B
+                        {
+                            Name = self.Sub.Sub.Sub.Name,
+                            Sub = new B.B
+                            {
+                                Name = self.Sub.Sub.Sub.Sub.Name,
+                                Sub = new B.B
+                                {
+                                    Name = self.Sub.Sub.Sub.Sub.Sub.Name,
+                                },
+                            },
+                        },
+                    },
+                },
+            };
+    }
+}
+");
+        }
+
+        [Test]
+        public void MapRecursivePropertyAndResolverWithParameterFromSourceToDestination_WithBiggerRecursionExpressionMapToMethod()
+        {
+            GeneratorTestHelper.TestGeneratedCode(@"using System;
+using GeneratedMapper.Attributes;
+
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false, GenerateExpressions = true)]
+namespace A {
+    [MapTo(typeof(B.B), MaxRecursion = 5)]
+    public class A { public string Name { get; set; } [MapWith(typeof(R.Resolver))] public int ResolvedName { get; set; } public A Sub { get; set; } }
+}
+
+namespace R {
+    public class Resolver { public Resolver(int parameter) { } public string Resolve(int name) { return name.ToString(); } }
+}
+
+namespace B {
+    public class B { public string Name { get; set; } public string ResolvedName { get; set; } public B Sub { get; set; } }
+}
+}",
+@"using System;
+
+#nullable enable
+
+namespace A
+{
+    public static partial class AMapToExtensions
+    {
+        public static B.B MapToB(this A.A self, int resolverParameter)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self), ""A.A -> B.B: Source is null."");
+            }
+            
+            var resolver = new R.Resolver(resolverParameter);
+            
+            var target = new B.B
+            {
+                Name = (self.Name ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name is null."")),
+                ResolvedName = resolver.Resolve(self.ResolvedName),
+                Sub = (self.Sub ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Sub is null."")).MapToB(resolverParameter),
             };
             
             return target;
