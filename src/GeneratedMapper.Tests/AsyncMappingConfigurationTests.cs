@@ -12,10 +12,15 @@ namespace GeneratedMapper.Tests
 using System.Threading.Tasks;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = true, GenerateAfterMapPartial = true)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = true)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { [MapAsyncWith(""Name"", typeof(R.AsyncResolver))] public string Name { get; set; } }
+
+    public static partial class AMapToExtensions
+    {
+        static void AfterMapToBAsync(A source, B.B destination) {}
+    }
 }
 
 namespace R {
@@ -51,12 +56,10 @@ namespace A
                 Name = await asyncResolver.ResolveAsync((self.Name ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name is null.""))),
             };
             
-            AfterMapToBAsync(self, asyncResolverStartIndex, target);
+            AfterMapToBAsync(self, target);
             
             return target;
         }
-        
-        static partial void AfterMapToBAsync(A.A source, int asyncResolverStartIndex, B.B target);
         
         public static async IAsyncEnumerable<B.B> MapToBAsync(this IEnumerable<A.A> self, int asyncResolverStartIndex)
         {
@@ -82,7 +85,7 @@ namespace A
 using System.Threading.Tasks;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false, GenerateExpressions = true)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateExpressions = true)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { [MapAsyncWith(""Name"", typeof(R.AsyncResolver))] public string Name { get; set; } }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using GeneratedMapper.Attributes;
 using GeneratedMapper.Configurations;
@@ -31,7 +30,8 @@ namespace GeneratedMapper.Parsers
             _propertyParser = propertyParser ?? throw new ArgumentNullException(nameof(propertyParser));
         }
 
-        public MappingInformation ParseAttribute(ConfigurationValues configurationValues, ITypeSymbol attributedType, AttributeData attributeData)
+        public MappingInformation ParseAttribute(ConfigurationValues configurationValues, ITypeSymbol attributedType,
+            AttributeData attributeData, List<AfterMapInformation> afterMapInformations)
         {
             var mappingInformation = new MappingInformation(attributeData, configurationValues);
 
@@ -123,6 +123,13 @@ namespace GeneratedMapper.Parsers
                 foreach (var remainingTargetProperty in targetTypeProperties.Where(x => !destinationPropertyExclusions.Contains(x.Key) && !processedTargetProperties.Contains(x.Key)))
                 {
                     mappingInformation.ReportIssue(DiagnosticsHelper.LeftOverProperty(attributeData, targetType.ToDisplayString(), remainingTargetProperty.Key, attributedType.ToDisplayString()));
+                }
+
+                foreach (var afterMap in afterMapInformations.Where(am =>
+                    am.ParameterTypes.Any(x => x.Equals(mappingInformation.SourceType)) &&
+                    am.ParameterTypes.Any(x => x.Equals(mappingInformation.DestinationType))))
+                {
+                    mappingInformation.AfterMaps.Add(afterMap);
                 }
             }
             catch (ParseException ex)

@@ -10,9 +10,7 @@ using Example.Sources;
     ThrowWhenNotNullableElementIsNull = true,
     ThrowWhenNotNullablePropertyIsNull = true,
     GenerateEnumerableMethods = true,
-    GenerateExpressions = true,
-    // see SourceMapToExtensions how to use partial method
-    GenerateAfterMapPartial = true)]
+    GenerateExpressions = true)]
 namespace Example
 {
     public class Program
@@ -67,7 +65,7 @@ namespace Example
             var options = new JsonSerializerOptions { WriteIndented = true };
 
             Console.WriteLine(JsonSerializer.Serialize(source.MapToSimpleDestination(), options));
-            Console.WriteLine(JsonSerializer.Serialize(source.MapToComplexDestination(7, new[] { 1.2, 1.3 }, CultureInfo.CurrentCulture), options));
+            Console.WriteLine(JsonSerializer.Serialize(source.MapToComplexDestination(7, new[] { 1.2, 1.3 }, CultureInfo.CurrentCulture, "-Postfix"), options));
 
             var record = new TestRecord("Test");
 

@@ -11,7 +11,7 @@ namespace GeneratedMapper.Tests
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false, GenerateInjectableMappers = true)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateInjectableMappers = true)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { public string Name { get; set; } }
@@ -74,7 +74,7 @@ namespace Microsoft.Extensions.DependencyInjection
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false, GenerateInjectableMappers = true)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateInjectableMappers = true)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { [MapAsyncWith(""Name"", ""ToStringAsync"")] public string Name { get; set; } }
@@ -139,7 +139,7 @@ namespace Microsoft.Extensions.DependencyInjection
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateAfterMapPartial = false, GenerateInjectableMappers = true)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateInjectableMappers = true)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { [MapWith(""Name"", typeof(R.Resolver))] public string Name { get; set; } }

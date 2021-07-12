@@ -59,6 +59,7 @@ namespace GeneratedMapper.Information
         }
 
         public IEnumerable<PropertyMappingInformation> Mappings => _propertyMappings;
+        public List<AfterMapInformation> AfterMaps { get; } = new();
 
         public MappingInformation AddProperty(PropertyMappingInformation propertyMapping)
         {
