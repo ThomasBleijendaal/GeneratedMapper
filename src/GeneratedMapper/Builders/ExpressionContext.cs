@@ -19,6 +19,4 @@
         public ExpressionContext<TInfo> NestCall<TInfo>(TInfo information, string propertyName)
             => new ExpressionContext<TInfo>(information, $"{SourceInstanceName}.{propertyName}", MaxRecursion - 1);
     }
-
-
 }

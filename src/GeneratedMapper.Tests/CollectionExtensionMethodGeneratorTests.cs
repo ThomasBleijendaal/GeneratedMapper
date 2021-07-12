@@ -26,7 +26,6 @@ namespace A {
 
 namespace B {
     public class B { public string[] Prop { get; set; } }
-}
 }",
 @"using System;
 using System.Linq;
@@ -78,7 +77,6 @@ namespace A {
 
 namespace B {
     public class B { public int[] Prop { get; set; } }
-}
 }",
 @"using System;
 using System.Linq;

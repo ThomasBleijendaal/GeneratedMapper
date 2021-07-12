@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using GeneratedMapper.Enums;
 using GeneratedMapper.Information;
 using Microsoft.CodeAnalysis;
 
@@ -16,7 +17,7 @@ namespace GeneratedMapper.Parsers
             _stringType = context.Compilation.GetTypeByMetadataName("System.String") ?? throw new InvalidOperationException("Cannot find System.String");
         }
 
-        public IEnumerable<ParameterInformation> ParseConstructorParameters(INamedTypeSymbol type)
+        public IEnumerable<ParameterInformation> ParseConstructorParameters(INamedTypeSymbol type, ParameterSource parameterSource)
         {
             var resolverConstructor = type.Constructors
                 .Where(x => x.DeclaredAccessibility == Accessibility.Public)
@@ -28,10 +29,10 @@ namespace GeneratedMapper.Parsers
                 return Enumerable.Empty<ParameterInformation>();
             }
 
-            return ParseMethodParameters(resolverConstructor.Parameters).ToImmutableArray();
+            return ParseMethodParameters(resolverConstructor.Parameters, parameterSource).ToImmutableArray();
         }
 
-        public List<ParameterInformation> ParseMethodParameters(IEnumerable<IParameterSymbol> parameters)
+        public List<ParameterInformation> ParseMethodParameters(IEnumerable<IParameterSymbol> parameters, ParameterSource parameterSource)
         {
             var list = new List<ParameterInformation>();
 
@@ -61,7 +62,8 @@ namespace GeneratedMapper.Parsers
                     parameter.Type.ToDisplayString(),
                     @namespace,
                     parameter.NullableAnnotation == NullableAnnotation.Annotated,
-                    defaultValueString));
+                    defaultValueString,
+                    parameterSource));
             }
 
             return list;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using GeneratedMapper.Enums;
 using GeneratedMapper.Information;
 using Microsoft.CodeAnalysis;
 
@@ -53,7 +54,7 @@ namespace GeneratedMapper.Parsers
                     extensionMethods.Add(new ExtensionMethodInformation(type, method.Name)
                         .Accepts(acceptType)
                         .Returns(returnType, isAsyncMethod)
-                        .HasParameters(_argumentParser.ParseMethodParameters(method.Parameters.Skip(1))));
+                        .HasParameters(_argumentParser.ParseMethodParameters(method.Parameters.Skip(1), ParameterSource.ExtensionMethod)));
                 }
             }
 
