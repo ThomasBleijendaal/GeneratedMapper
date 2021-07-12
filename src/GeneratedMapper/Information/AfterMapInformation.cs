@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using GeneratedMapper.Enums;
 using GeneratedMapper.Parsers;
 using Microsoft.CodeAnalysis;
 
@@ -12,7 +13,7 @@ namespace GeneratedMapper.Information
         public AfterMapInformation(IMethodSymbol methodSymbol, ParameterParser parameterParser)
         {
             MethodSymbol = methodSymbol;
-            Parameters = parameterParser.ParseMethodParameters(methodSymbol.Parameters);
+            Parameters = parameterParser.ParseMethodParameters(methodSymbol.Parameters, ParameterSource.AfterMap);
         }
 
         public ITypeSymbol PartOfType => MethodSymbol.ContainingType;

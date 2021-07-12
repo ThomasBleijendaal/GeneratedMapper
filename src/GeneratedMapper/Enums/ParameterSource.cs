@@ -4,6 +4,7 @@
     {
         Resolver,
         ExtensionMethod,
-        Method
+        Method,
+        AfterMap
     }
 }

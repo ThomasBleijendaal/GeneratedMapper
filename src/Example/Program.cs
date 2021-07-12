@@ -78,14 +78,14 @@ namespace Example
 
             // when GenerateExpressions == true, an expression is also generated for easy mapping objects in EF for example
             // Resolvers are not supported and skipped, and the expression can contain instructions which cannot be parsed by EF / CosmosDB if it's too complicated.
-            var destinationExpression = Sources.Expressions.Source.ToComplexDestination(7, new[] { 1.2, 1.3 }, CultureInfo.CurrentCulture);
+            var destinationExpression = Sources.Expressions.Source.ToComplexDestination(7);
             var destinationLambda = destinationExpression.Compile();
 
             var destinationViaExpression = destinationLambda.Invoke(source);
 
             Console.WriteLine(JsonSerializer.Serialize(destinationViaExpression, options));
 
-            var companyExpression = Sources.Expressions.Company.ToCompanyDestination(1, new[] { 1.2, 1.3 }, CultureInfo.CurrentCulture);
+            var companyExpression = Sources.Expressions.Company.ToCompanyDestination(1);
             var companyLambda = companyExpression.Compile();
 
             var companyViaExpression = companyLambda.Invoke(source.Company);
