@@ -140,7 +140,6 @@ namespace R {
 
 namespace B {
     public class B { public string Name { get; set; } }
-}
 }",
 @"using System;
 
@@ -491,7 +490,6 @@ namespace R {
 
 namespace B {
     public class B { public string Name { get; set; } public string ResolvedName { get; set; } public B Sub { get; set; } }
-}
 }",
 @"using System;
 
