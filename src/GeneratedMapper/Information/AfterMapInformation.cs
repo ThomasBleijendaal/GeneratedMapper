@@ -17,7 +17,7 @@ namespace GeneratedMapper.Information
 
         public ITypeSymbol PartOfType => MethodSymbol.ContainingType;
         public string MethodName => MethodSymbol.Name;
-        public IEnumerable<ITypeSymbol?> ParameterTypes => MethodSymbol.Parameters.Select(_ => _.Type);
+        public IEnumerable<ITypeSymbol?> ParameterTypes => MethodSymbol.Parameters.Select(x => x.Type);
         public List<ParameterInformation> Parameters { get; }
     }
 }

@@ -13,8 +13,8 @@ namespace GeneratedMapper.Tests.Helpers
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(source);
             var references = AppDomain.CurrentDomain.GetAssemblies()
-                .Where(_ => !_.IsDynamic && !string.IsNullOrWhiteSpace(_.Location))
-                .Select(_ => MetadataReference.CreateFromFile(_.Location))
+                .Where(x => !x.IsDynamic && !string.IsNullOrWhiteSpace(x.Location))
+                .Select(x => MetadataReference.CreateFromFile(x.Location))
                 .Concat(new[] { MetadataReference.CreateFromFile(typeof(MapperGenerator).Assembly.Location) });
             var compilation = CSharpCompilation.Create("generator", new SyntaxTree[] { syntaxTree },
                 references, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));

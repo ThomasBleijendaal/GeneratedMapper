@@ -126,8 +126,8 @@ namespace GeneratedMapper.Parsers
                 }
 
                 foreach (var afterMap in afterMapInformations.Where(am =>
-                    am.ParameterTypes.Any(_ => _.Equals(mappingInformation.SourceType)) &&
-                    am.ParameterTypes.Any(_ => _.Equals(mappingInformation.DestinationType))))
+                    am.ParameterTypes.Any(x => x.Equals(mappingInformation.SourceType)) &&
+                    am.ParameterTypes.Any(x => x.Equals(mappingInformation.DestinationType))))
                 {
                     mappingInformation.AfterMaps.Add(afterMap);
                 }

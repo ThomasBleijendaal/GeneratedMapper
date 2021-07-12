@@ -14,15 +14,15 @@ namespace GeneratedMapper.Builders
     internal sealed class MappingBuilder : BuilderBase
     {
         private readonly List<PropertyMappingBuilder> _propertyMappingBuilders;
-        private readonly ParameterInformation[] _mapArgumentParmeters;
-        private readonly ParameterInformation[] _afterMapParameters;
-        
+        private readonly IEnumerable<ParameterInformation> _mapParameterInformations;
+
         public MappingBuilder(MappingInformation information) : base(information)
         {
             _propertyMappingBuilders = information.Mappings.Select(mapping => new PropertyMappingBuilder(mapping, SourceInstanceName)).ToList();
 
-            _mapArgumentParmeters = _propertyMappingBuilders.SelectMany(x => x.MapArgumentsRequired()).ToArray();
-            _afterMapParameters = _information.AfterMaps.SelectMany(x => x.Parameters.Where(p => ParameterTypeMatch(p) == TypeMatch.None)).ToArray();
+            var mapArgumentParameters = _propertyMappingBuilders.SelectMany(x => x.MapArgumentsRequired());
+            var afterMapParameters = _information.AfterMaps.SelectMany(x => x.Parameters.Where(p => ParameterTypeMatch(p) == TypeMatch.None));
+            _mapParameterInformations = mapArgumentParameters.Concat(afterMapParameters).ToArray();
         }
 
         public SourceText GenerateSourceText()
@@ -51,7 +51,7 @@ namespace GeneratedMapper.Builders
         private void WriteMapToExtensionMethod(IndentedTextWriter indentWriter)
         {
             var mapParameters = new[] { $"this {_information.SourceType?.ToDisplayString()} {SourceInstanceName}" }
-                .Union(_mapArgumentParmeters.Concat(_afterMapParameters).Select(x => x.ToMethodParameter(string.Empty)).Distinct());
+                .Union(_mapParameterInformations.Select(x => x.ToMethodParameter(string.Empty)).Distinct());
 
             var extensionMethodName = $"MapTo{_information.DestinationType?.Name}{(_information.IsAsync ? "Async" : "")}";
             var returnType = _information.IsAsync ? $"async Task<{_information.DestinationType?.ToDisplayString()}>" : _information.DestinationType?.ToDisplayString();
@@ -107,9 +107,9 @@ namespace GeneratedMapper.Builders
             if (_information.ConfigurationValues.Customizations.GenerateEnumerableMethods)
             {
                 var mapEnumerableParameters = new[] { $"this IEnumerable<{_information.SourceType?.ToDisplayString()}> {SourceInstanceName}" }
-                   .Union(_mapArgumentParmeters.Concat(_afterMapParameters).Select(x => x.ToMethodParameter(string.Empty)).Distinct());
+                   .Union(_mapParameterInformations.Select(x => x.ToMethodParameter(string.Empty)).Distinct());
 
-                var mapToArguments = _mapArgumentParmeters.Concat(_afterMapParameters).Select(x => x.ToArgument(string.Empty)).Distinct();
+                var mapToArguments = _mapParameterInformations.Select(x => x.ToArgument(string.Empty)).Distinct();
                 var extensionMethodName = $"MapTo{_information.DestinationType?.Name}{(_information.IsAsync ? "Async" : "")}";
 
                 var enumerableType = _information.IsAsync
@@ -145,8 +145,6 @@ namespace GeneratedMapper.Builders
         {
             if (_information.ConfigurationValues.Customizations.GenerateInjectableMappers)
             {
-                var arguments = _mapArgumentParmeters.Concat(_afterMapParameters);
-
                 var fromExpression = $@"(from ?? throw new ArgumentNullException(nameof(from), ""{_information.SourceType?.ToDisplayString()} -> {_information.DestinationType?.ToDisplayString()}: Source is null.""))";
 
                 var className = $"{_information.SourceType?.Name}MapTo{_information.DestinationType?.Name}";
@@ -155,10 +153,10 @@ namespace GeneratedMapper.Builders
                 indentWriter.WriteLine($"public class {className} : IMapper<{_information.SourceType?.ToDisplayString()}, {_information.DestinationType?.ToDisplayString()}>");
                 using (indentWriter.Braces())
                 {
-                    var constructorArguments = arguments.Select(x => x.ToMethodParameter(string.Empty)).Distinct();
-                    var privateFields = arguments.Select(x => $"private readonly {x.TypeName} _{x.ParameterName};").Distinct();
-                    var privateFieldAssignments = arguments.Select(x => $"_{x.ParameterName} = {x.ParameterName};").Distinct();
-                    var mapParameters = arguments.Select(x => $"_{x.ParameterName}").Distinct();
+                    var constructorArguments = _mapParameterInformations.Select(x => x.ToMethodParameter(string.Empty)).Distinct();
+                    var privateFields = _mapParameterInformations.Select(x => $"private readonly {x.TypeName} _{x.ParameterName};").Distinct();
+                    var privateFieldAssignments = _mapParameterInformations.Select(x => $"_{x.ParameterName} = {x.ParameterName};").Distinct();
+                    var mapParameters = _mapParameterInformations.Select(x => $"_{x.ParameterName}").Distinct();
 
                     if (constructorArguments.Any())
                     {
