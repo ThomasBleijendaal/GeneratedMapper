@@ -31,37 +31,36 @@ namespace GeneratedMapper.Parsers
         }
 
         public MappingInformation ParseAttribute(ConfigurationValues configurationValues, ITypeSymbol attributedType,
-            AttributeData attributeData, List<AfterMapInformation> afterMapInformations)
+            MappingType mappingType, int? maxRecursion, int index, INamedTypeSymbol sourceType,
+            INamedTypeSymbol destinationType,
+            SyntaxReference syntaxReference, List<AfterMapInformation> afterMapInformations)
         {
-            var mappingInformation = new MappingInformation(attributeData, configurationValues);
-
+            var mappingInformation = new MappingInformation(syntaxReference, maxRecursion, index, configurationValues);
+            var targetType = mappingType == MappingType.MapTo ? destinationType : sourceType;
             try
             {
-                mappingInformation.MapType(attributeData.AttributeClass!.Name.Contains("MapFrom") ? MappingType.MapFrom : MappingType.MapTo);
+                mappingInformation.MapType(mappingType);
 
-                if (attributeData.ConstructorArgument<INamedTypeSymbol>(0) is not INamedTypeSymbol targetType ||
-                    (mappingInformation.MappingType == MappingType.MapFrom ? targetType : attributedType) is not INamedTypeSymbol sourceType ||
-                    (mappingInformation.MappingType == MappingType.MapFrom ? attributedType : targetType) is not INamedTypeSymbol destinationType ||
-                    targetType is null)
+                if (sourceType == null || destinationType == null)
                 {
-                    throw new ParseException(DiagnosticsHelper.UnrecognizedTypes(attributeData));
+                    throw new ParseException(DiagnosticsHelper.UnrecognizedTypes(syntaxReference));
                 }
 
                 if (!destinationType.Constructors.Any(x => x.DeclaredAccessibility == Accessibility.Public && x.Parameters.Length == 0))
                 {
-                    throw new ParseException(DiagnosticsHelper.NoParameterlessConstructor(attributeData));
+                    throw new ParseException(DiagnosticsHelper.NoParameterlessConstructor(syntaxReference));
                 }
 
                 mappingInformation.MapFrom(sourceType).MapTo(destinationType);
 
                 var destinationPropertyExclusions = TargetPropertiesToIgnore(attributedType, mappingInformation.AttributeIndex);
 
-                var attributedTypeProperties = mappingInformation.MappingType == MappingType.MapTo ? GetMappableGetPropertiesOfType(attributedType) : GetMappableSetPropertiesOfType(attributedType);
-                var targetTypeProperties = mappingInformation.MappingType == MappingType.MapFrom ? GetMappableGetPropertiesOfType(targetType) : GetMappableSetPropertiesOfType(targetType);
-
+                var attributedTypeProperties = mappingType == MappingType.MapTo ? GetMappableGetPropertiesOfType(attributedType) : GetMappableSetPropertiesOfType(attributedType);
+                var targetTypeProperties = mappingType == MappingType.MapFrom ? GetMappableGetPropertiesOfType(targetType) : GetMappableSetPropertiesOfType(targetType);
+                
                 foreach (var targetTypeProperty in destinationPropertyExclusions.Where(name => !targetTypeProperties.ContainsKey(name)))
                 {
-                    mappingInformation.ReportIssue(DiagnosticsHelper.MissingIgnoreInTarget(attributeData, targetType.ToDisplayString(), targetTypeProperty));
+                    mappingInformation.ReportIssue(DiagnosticsHelper.MissingIgnoreInTarget(syntaxReference, destinationType.ToDisplayString(), targetTypeProperty));
                 }
 
                 var processedTargetProperties = new List<string>();
@@ -82,7 +81,7 @@ namespace GeneratedMapper.Parsers
                         {
                             var property = _propertyParser.ParseNestedProperty(
                                 mappingInformation, 
-                                mapWithAttribute ?? throw new ParseException(DiagnosticsHelper.UnmappableProperty(attributeData, sourceType.Name, targetPropertyToFind, destinationType.Name)),
+                                mapWithAttribute ?? throw new ParseException(DiagnosticsHelper.UnmappableProperty(syntaxReference, sourceType.Name, targetPropertyToFind, destinationType.Name)),
                                 targetPropertyToFind,
                                 attributedTypePropertySet.First());
 
@@ -92,7 +91,7 @@ namespace GeneratedMapper.Parsers
                         {
                             if (!targetTypeProperties.ContainsKey(targetPropertyToFind))
                             {
-                                mappingInformation.ReportIssue(DiagnosticsHelper.UnmappableProperty(attributeData, attributedType.ToDisplayString(), targetPropertyToFind, targetType.ToDisplayString()));
+                                mappingInformation.ReportIssue(DiagnosticsHelper.UnmappableProperty(syntaxReference, attributedType.ToDisplayString(), targetPropertyToFind, targetType.ToDisplayString()));
                                 continue;
                             }
                             var targetTypePropertySet = targetTypeProperties[targetPropertyToFind];
@@ -101,7 +100,7 @@ namespace GeneratedMapper.Parsers
 
                             if (mappingInformation.Mappings.Any(x => x.DestinationPropertyName == property.DestinationPropertyName))
                             {
-                                mappingInformation.ReportIssue(DiagnosticsHelper.ConflictingMappingInformation(attributeData, property.SourcePropertyName!));
+                                mappingInformation.ReportIssue(DiagnosticsHelper.ConflictingMappingInformation(syntaxReference, property.SourcePropertyName!));
                             }
                             else
                             {
@@ -122,7 +121,7 @@ namespace GeneratedMapper.Parsers
 
                 foreach (var remainingTargetProperty in targetTypeProperties.Where(x => !destinationPropertyExclusions.Contains(x.Key) && !processedTargetProperties.Contains(x.Key)))
                 {
-                    mappingInformation.ReportIssue(DiagnosticsHelper.LeftOverProperty(attributeData, targetType.ToDisplayString(), remainingTargetProperty.Key, attributedType.ToDisplayString()));
+                    mappingInformation.ReportIssue(DiagnosticsHelper.LeftOverProperty(syntaxReference, targetType.ToDisplayString(), remainingTargetProperty.Key, attributedType.ToDisplayString()));
                 }
 
                 foreach (var afterMap in afterMapInformations.Where(am =>

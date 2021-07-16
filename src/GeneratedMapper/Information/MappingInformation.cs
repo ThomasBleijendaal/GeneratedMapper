@@ -13,15 +13,17 @@ namespace GeneratedMapper.Information
         private readonly List<Diagnostic> _diagnostics = new();
         private readonly List<PropertyMappingInformation> _propertyMappings = new();
 
-        public AttributeData AttributeData { get; private set; }
+        public SyntaxReference SyntaxReference { get; }
+        public int? MaxRecursion { get; }
         public ConfigurationValues ConfigurationValues { get; private set; }
         public int AttributeIndex { get; private set; }
 
-        public MappingInformation(AttributeData attributeData, ConfigurationValues configurationValues)
+        public MappingInformation(SyntaxReference syntaxReference, int? maxRecursion, int index, ConfigurationValues configurationValues)
         {
-            AttributeData = attributeData;
+            SyntaxReference = syntaxReference;
+            MaxRecursion = maxRecursion;
             ConfigurationValues = configurationValues;
-            AttributeIndex = attributeData.GetIndex();
+            AttributeIndex = index;
         }
 
         public MappingInformation ReportIssue(Diagnostic issue)
@@ -76,10 +78,10 @@ namespace GeneratedMapper.Information
         {
             if (!Mappings.Any())
             {
-                _diagnostics.Add(DiagnosticsHelper.EmptyMapper(AttributeData, SourceType?.ToDisplayString() ?? "-unknown-", DestinationType?.ToDisplayString() ?? "-unknown-"));
+                _diagnostics.Add(DiagnosticsHelper.EmptyMapper(SyntaxReference, SourceType?.ToDisplayString() ?? "-unknown-", DestinationType?.ToDisplayString() ?? "-unknown-"));
             }
 
-            _diagnostics.AddRange(Mappings.SelectMany(x => !x.TryValidateMapping(AttributeData, out var issues) ? issues : Enumerable.Empty<Diagnostic>()));
+            _diagnostics.AddRange(Mappings.SelectMany(x => !x.TryValidateMapping(SyntaxReference, out var issues) ? issues : Enumerable.Empty<Diagnostic>()));
 
             diagnostics = _diagnostics;
 

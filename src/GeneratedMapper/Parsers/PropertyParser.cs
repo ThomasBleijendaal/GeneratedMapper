@@ -158,7 +158,7 @@ namespace GeneratedMapper.Parsers
             else
             {
                 // this is never hit
-                throw new ParseException(DiagnosticsHelper.UnmappableEnumerableProperty(propertyMapping.BelongsToMapping.AttributeData,
+                throw new ParseException(DiagnosticsHelper.UnmappableEnumerableProperty(propertyMapping.BelongsToMapping.SyntaxReference,
                     propertyMapping.BelongsToMapping.SourceType?.ToDisplayString()!,
                     propertyMapping.SourcePropertyName!,
                     propertyMapping.BelongsToMapping.DestinationType?.ToDisplayString()!,
