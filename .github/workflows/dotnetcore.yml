@@ -1,9 +1,9 @@
-name: .NET Core
+name: .NET
 
 on: 
     push:
-        branches:
-        - main
+        tags:
+        - '*.*.*'
 
 jobs:
   build:
@@ -12,11 +12,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - name: Setup .NET Core
+    - name: Get tag
+      id: tag
+      uses: dawidd6/action-get-tag@v1
+    - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '5.0.x'
     - name: Build Mapper
-      run: dotnet build --configuration Release ./src/GeneratedMapper/GeneratedMapper.csproj
+      run: dotnet build -p:PackageVersion=${{steps.tag.outputs.tag}} --configuration Release ./src/GeneratedMapper/GeneratedMapper.csproj
     - name: Publish Mapper
       run: dotnet nuget push ./src/GeneratedMapper/bin/Release/*.nupkg -k ${{ secrets.NUGET_APIKEY }} -s https://api.nuget.org/v3/index.json --skip-duplicate
