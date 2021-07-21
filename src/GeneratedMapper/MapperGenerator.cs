@@ -42,9 +42,12 @@ namespace GeneratedMapper
                 // resolve all mappings that need other mappings information (like nested mappings)
                 ResolvePendingNestedMappings(foundMappings);
 
-                ValidateMappings(context, foundMappings);
+                var distinctMappings = foundMappings
+                    .GroupBy(x => x, MappingInformation.SourceTypeDestinationTypeComparer)
+                    .Select(x => x.OrderByDescending(m => m.AttributeIndex).First()).ToArray();
+                ValidateMappings(context, distinctMappings);
 
-                foreach (var information in foundMappings)
+                foreach (var information in distinctMappings)
                 {
                     foreach (var (name, text) in GenerateMappings(information))
                     {
@@ -52,7 +55,7 @@ namespace GeneratedMapper
                     }
                 }
 
-                var injectables = foundMappings.Where(x => x.ConfigurationValues.Customizations.GenerateInjectableMappers);
+                var injectables = distinctMappings.Where(x => x.ConfigurationValues.Customizations.GenerateInjectableMappers);
                 if (injectables.Any())
                 {
                     var (name, text) = GenerateInjectableMappersServiceCollectionConfiguration(injectables);
@@ -60,14 +63,17 @@ namespace GeneratedMapper
                     context.AddSource(name, text);
                 }
 
-                var lines = string.Join(Environment.NewLine, foundMappings.Where(x => x.SourceType != null && !x.AfterMaps.Any()).Select(x =>
-                {
-                    return
-                        $@"                case {x.SourceType.ToDisplayString()} val:
-                    return {x.SourceType.ContainingNamespace.ToDisplayString()}.{x.SourceType.Name}MapToExtensions.MapTo{x.DestinationType.Name}(val) is TDestination destination ? destination : default;";
-                }));
+                var lines = string.Join(Environment.NewLine, foundMappings.Where(x => x.AttributeIndex == MappingInformation.MapToIndex).GroupBy(x => x.SourceType).Select(x => 
+$@"                case {x.Key.ToDisplayString()} val:
+                    return typeof(TDestination).FullName switch
+                    {{
+{string.Join(Environment.NewLine, x.Select(m =>
+$@"                        ""{m.DestinationType.ToDisplayString()}"" =>
+                            {x.Key.ContainingNamespace.ToDisplayString()}.{x.Key.Name}MapToExtensions.MapTo{m.DestinationType.Name}(val) is TDestination {m.DestinationType.Name.ToLower()} ? {m.DestinationType.Name.ToLower()} : default,"))}
+                        _ => throw new NotSupportedException(""Mapping is not configured"")
+                    }};"));
                 var text2 =
-                    $@"using System;
+$@"using System;
 
 namespace GeneratedMapper.Extensions
 {{
@@ -116,11 +122,10 @@ namespace GeneratedMapper.Extensions
                     var model = context.Compilation.GetSemanticModel(candidateTypeNode.SyntaxTree);
                     if (model.GetDeclaredSymbol(candidateTypeNode) is ITypeSymbol candidateTypeSymbol)
                     {
-                        var match = attributeReceiver.ExtensionCandidates.FirstOrDefault(x => x.Item1 == candidateTypeNode);
-                        if (match != null)
+                        foreach (var match in attributeReceiver.ExtensionCandidates.Where(x => x.Source == candidateTypeNode))
                         {
-                            var target = context.Compilation.GetSemanticModel(match.Item2.SyntaxTree).GetDeclaredSymbol(match.Item2);
-                            foundMappings.Add(parser.ParseAttribute(configurationValues, candidateTypeSymbol, MappingType.MapTo, 3, 0, candidateTypeSymbol as INamedTypeSymbol, target as INamedTypeSymbol, null, afterMapMethods));
+                            var target = context.Compilation.GetSemanticModel(match.Destination.SyntaxTree).GetDeclaredSymbol(match.Destination);
+                            foundMappings.Add(parser.ParseAttribute(configurationValues, candidateTypeSymbol, MappingType.ExtensionMapTo, null, MappingInformation.MapToIndex, candidateTypeSymbol as INamedTypeSymbol, target as INamedTypeSymbol, null, afterMapMethods));
                         }
 
                         foundMappings.AddRange(

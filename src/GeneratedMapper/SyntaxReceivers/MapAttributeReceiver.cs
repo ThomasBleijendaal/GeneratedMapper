@@ -9,13 +9,13 @@ namespace GeneratedMapper.SyntaxReceivers
 {
     internal sealed class MapAttributeReceiver : ISyntaxReceiver
     {
-        public List<TypeDeclarationSyntax> Candidates { get; } = new List<TypeDeclarationSyntax>();
-        private List<TypeDeclarationSyntax> _cachedSyntaxes = new List<TypeDeclarationSyntax>();
-        public List<Tuple<TypeDeclarationSyntax, TypeDeclarationSyntax>> ExtensionCandidates { get; } = new List<Tuple<TypeDeclarationSyntax, TypeDeclarationSyntax>>();
-        private List<Tuple<TypeSyntax, TypeSyntax>> _extensionCandidates = new List<Tuple<TypeSyntax, TypeSyntax>>();
+        public List<TypeDeclarationSyntax> Candidates { get; } = new();
+        private readonly List<TypeDeclarationSyntax> _cachedSyntaxes = new();
+        public List<ExtensionCandidate> ExtensionCandidates { get; } = new();
+        private readonly List<ExtensionMapCandidate> _extensionCandidates = new();
 
-        public List<TypeDeclarationSyntax> ClassesWithExtensionMethods { get; } = new List<TypeDeclarationSyntax>();
-        public List<TypeDeclarationSyntax> ClassesWithAfterMapMethods { get; } = new List<TypeDeclarationSyntax>();
+        public List<TypeDeclarationSyntax> ClassesWithExtensionMethods { get; } = new();
+        public List<TypeDeclarationSyntax> ClassesWithAfterMapMethods { get; } = new();
 
         public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
         {
@@ -53,8 +53,10 @@ namespace GeneratedMapper.SyntaxReceivers
             {
                 if (memberAccessExpressionSyntax.Name.Identifier.Text == "MapTo" && memberAccessExpressionSyntax.Name is GenericNameSyntax nameSyntax && nameSyntax.TypeArgumentList.Arguments.Count == 2)
                 {
-                    _extensionCandidates.Add(new Tuple<TypeSyntax, TypeSyntax>(nameSyntax.TypeArgumentList.Arguments[0], nameSyntax.TypeArgumentList.Arguments[1]));
+                    _extensionCandidates.Add(new ExtensionMapCandidate(nameSyntax));
                 }
+                //Todo: Add check here to see if method call is generic and calls MapTo in sub callings
+                // Then add to extension candidate with Generic arguments correctly assigned
             }
         }
 
@@ -62,12 +64,12 @@ namespace GeneratedMapper.SyntaxReceivers
         {
             foreach (var extensionCandidate in _extensionCandidates)
             {
-                var match = _cachedSyntaxes.FirstOrDefault(x => x.Identifier.Text == (extensionCandidate.Item1 as IdentifierNameSyntax)?.Identifier.Text);
+                var match = _cachedSyntaxes.FirstOrDefault(x => x.Identifier.Text == (extensionCandidate.Source as IdentifierNameSyntax)?.Identifier.Text);
                 if (!Candidates.Contains(match))
                 {
                     Candidates.Add(match);
-                    ExtensionCandidates.Add(new Tuple<TypeDeclarationSyntax, TypeDeclarationSyntax>(match, _cachedSyntaxes.FirstOrDefault(x => x.Identifier.Text == (extensionCandidate.Item2 as IdentifierNameSyntax)?.Identifier.Text)));
                 }
+                ExtensionCandidates.Add(new ExtensionCandidate(match, _cachedSyntaxes.FirstOrDefault(x => x.Identifier.Text == (extensionCandidate.Destination as IdentifierNameSyntax)?.Identifier.Text), extensionCandidate.Syntax));
             }
             _cachedSyntaxes.Clear();
         }

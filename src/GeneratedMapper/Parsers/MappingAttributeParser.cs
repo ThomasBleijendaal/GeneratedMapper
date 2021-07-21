@@ -36,7 +36,7 @@ namespace GeneratedMapper.Parsers
             SyntaxReference syntaxReference, List<AfterMapInformation> afterMapInformations)
         {
             var mappingInformation = new MappingInformation(syntaxReference, maxRecursion, index, configurationValues);
-            var targetType = mappingType == MappingType.MapTo ? destinationType : sourceType;
+            var targetType = mappingType.HasFlag(MappingType.To) ? destinationType : sourceType;
             try
             {
                 mappingInformation.MapType(mappingType);
@@ -55,8 +55,8 @@ namespace GeneratedMapper.Parsers
 
                 var destinationPropertyExclusions = TargetPropertiesToIgnore(attributedType, mappingInformation.AttributeIndex);
 
-                var attributedTypeProperties = mappingType == MappingType.MapTo ? GetMappableGetPropertiesOfType(attributedType) : GetMappableSetPropertiesOfType(attributedType);
-                var targetTypeProperties = mappingType == MappingType.MapFrom ? GetMappableGetPropertiesOfType(targetType) : GetMappableSetPropertiesOfType(targetType);
+                var attributedTypeProperties = mappingType.HasFlag(MappingType.To) ? GetMappableGetPropertiesOfType(attributedType) : GetMappableSetPropertiesOfType(attributedType);
+                var targetTypeProperties = !mappingType.HasFlag(MappingType.To) ? GetMappableGetPropertiesOfType(targetType) : GetMappableSetPropertiesOfType(targetType);
                 
                 foreach (var targetTypeProperty in destinationPropertyExclusions.Where(name => !targetTypeProperties.ContainsKey(name)))
                 {
@@ -121,7 +121,7 @@ namespace GeneratedMapper.Parsers
 
                 foreach (var remainingTargetProperty in targetTypeProperties.Where(x => !destinationPropertyExclusions.Contains(x.Key) && !processedTargetProperties.Contains(x.Key)))
                 {
-                    mappingInformation.ReportIssue(DiagnosticsHelper.LeftOverProperty(syntaxReference, targetType.ToDisplayString(), remainingTargetProperty.Key, attributedType.ToDisplayString()));
+                    mappingInformation.ReportIssue(DiagnosticsHelper.LeftOverProperty(syntaxReference, targetType.ToDisplayString(), remainingTargetProperty.Key, attributedType.ToDisplayString(), mappingType));
                 }
 
                 foreach (var afterMap in afterMapInformations.Where(am =>

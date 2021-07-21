@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using System;
+using GeneratedMapper.Enums;
 
 namespace GeneratedMapper.Helpers
 {
@@ -26,6 +27,14 @@ namespace GeneratedMapper.Helpers
             Id = "GM0003",
             Title = "Property cannot be mapped",
             Message = "The type '{0}' contains the property '{1}' which cannot be found in type '{2}'. Either correct the mapping with [MapWith] or [Ignore] the property, or fix the Index of the attribute.",
+            Severity = DiagnosticSeverity.Error
+        };
+
+        private static DiagStruct _unmappablePropertyFromExtensionCall = new()
+        {
+            Id = "GM0003",
+            Title = "Property cannot be mapped",
+            Message = "The type '{0}' contains the property '{1}' which cannot be found in type '{2}'. Either correct the mapping with [MapTo(typeof())] on type and then [MapWith] or [Ignore] the property.",
             Severity = DiagnosticSeverity.Error
         };
 
@@ -139,10 +148,11 @@ namespace GeneratedMapper.Helpers
             => GetDiagnostic(_unrecognizedTypes, syntaxReference);
         public static Diagnostic UnmappableProperty(SyntaxReference syntaxReference, string attributedClass, string property, string targetClass)
             => GetDiagnostic(_unmappableProperty, syntaxReference, attributedClass, property, targetClass);
+
         public static Diagnostic IncorrectNullability(SyntaxReference syntaxReference, string sourceProperty, string destinationProperty)
             => GetDiagnostic(_incorrectNullablity, syntaxReference, sourceProperty, destinationProperty);
-        public static Diagnostic LeftOverProperty(SyntaxReference syntaxReference, string targetClass, string targetProperty, string attributedClass)
-            => GetDiagnostic(_leftOverProperty, syntaxReference, targetClass, targetProperty, attributedClass);
+        public static Diagnostic LeftOverProperty(SyntaxReference syntaxReference, string targetClass, string targetProperty, string attributedClass, MappingType mappingType)
+            => GetDiagnostic(mappingType.HasFlag(MappingType.Map) ? _leftOverProperty : _unmappablePropertyFromExtensionCall, syntaxReference, targetClass, targetProperty, attributedClass);
         public static Diagnostic CannotFindType(SyntaxReference syntaxReference, string type)
             => GetDiagnostic(_cannotFindType, syntaxReference, type);
         public static Diagnostic CannotFindMethod(SyntaxReference syntaxReference, string sourceTypeName, string sourceProperty, string methodName)

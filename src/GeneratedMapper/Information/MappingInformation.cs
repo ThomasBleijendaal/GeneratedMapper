@@ -13,6 +13,8 @@ namespace GeneratedMapper.Information
         private readonly List<Diagnostic> _diagnostics = new();
         private readonly List<PropertyMappingInformation> _propertyMappings = new();
 
+        public const int MapToIndex = int.MinValue;
+
         public SyntaxReference SyntaxReference { get; }
         public int? MaxRecursion { get; }
         public ConfigurationValues ConfigurationValues { get; private set; }
@@ -25,6 +27,44 @@ namespace GeneratedMapper.Information
             ConfigurationValues = configurationValues;
             AttributeIndex = index;
         }
+
+        private sealed class SourceTypeDestinationTypeEqualityComparer : IEqualityComparer<MappingInformation>
+        {
+            public bool Equals(MappingInformation x, MappingInformation y)
+            {
+                if (ReferenceEquals(x, y))
+                {
+                    return true;
+                }
+
+                if (ReferenceEquals(x, null))
+                {
+                    return false;
+                }
+
+                if (ReferenceEquals(y, null))
+                {
+                    return false;
+                }
+
+                if (x.GetType() != y.GetType())
+                {
+                    return false;
+                }
+
+                return Equals(x.SourceType, y.SourceType) && Equals(x.DestinationType, y.DestinationType);
+            }
+
+            public int GetHashCode(MappingInformation obj)
+            {
+                unchecked
+                {
+                    return ((obj.SourceType != null ? obj.SourceType.GetHashCode() : 0) * 397) ^ (obj.DestinationType != null ? obj.DestinationType.GetHashCode() : 0);
+                }
+            }
+        }
+
+        public static IEqualityComparer<MappingInformation> SourceTypeDestinationTypeComparer { get; } = new SourceTypeDestinationTypeEqualityComparer();
 
         public MappingInformation ReportIssue(Diagnostic issue)
         {
