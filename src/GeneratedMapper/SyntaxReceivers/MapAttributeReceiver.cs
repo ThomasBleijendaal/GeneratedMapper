@@ -13,6 +13,8 @@ namespace GeneratedMapper.SyntaxReceivers
         private readonly List<TypeDeclarationSyntax> _cachedSyntaxes = new();
         public List<ExtensionCandidate> ExtensionCandidates { get; } = new();
         private readonly List<ExtensionMapCandidate> _extensionCandidates = new();
+        public List<ExtensionCandidate> ProjectionCanidates { get; } = new();
+        private readonly List<ExtensionMapCandidate> _projectionCandidates = new();
 
         public List<TypeDeclarationSyntax> ClassesWithExtensionMethods { get; } = new();
         public List<TypeDeclarationSyntax> ClassesWithAfterMapMethods { get; } = new();
@@ -51,9 +53,17 @@ namespace GeneratedMapper.SyntaxReceivers
 
             if (syntaxNode is MemberAccessExpressionSyntax memberAccessExpressionSyntax)
             {
-                if (memberAccessExpressionSyntax.Name.Identifier.Text == "MapTo" && memberAccessExpressionSyntax.Name is GenericNameSyntax nameSyntax && nameSyntax.TypeArgumentList.Arguments.Count == 2)
+                if (memberAccessExpressionSyntax.Name is GenericNameSyntax nameSyntax && nameSyntax.TypeArgumentList.Arguments.Count == 2)
                 {
-                    _extensionCandidates.Add(new ExtensionMapCandidate(nameSyntax));
+                    switch (memberAccessExpressionSyntax.Name.Identifier.Text)
+                    {
+                        case "MapTo":
+                            _extensionCandidates.Add(new ExtensionMapCandidate(nameSyntax));
+                            break;
+                        case "ProjectTo":
+                            _projectionCandidates.Add(new ExtensionMapCandidate(nameSyntax));
+                            break;
+                    }
                 }
                 //Todo: Add check here to see if method call is generic and calls MapTo in sub callings
                 // Then add to extension candidate with Generic arguments correctly assigned
@@ -71,6 +81,17 @@ namespace GeneratedMapper.SyntaxReceivers
                 }
                 ExtensionCandidates.Add(new ExtensionCandidate(match, _cachedSyntaxes.FirstOrDefault(x => x.Identifier.Text == (extensionCandidate.Destination as IdentifierNameSyntax)?.Identifier.Text), extensionCandidate.Syntax));
             }
+
+            foreach (var projectionCandidate in _projectionCandidates)
+            {
+                var match = _cachedSyntaxes.FirstOrDefault(x => x.Identifier.Text == (projectionCandidate.Source as IdentifierNameSyntax)?.Identifier.Text);
+                if (!Candidates.Contains(match))
+                {
+                    Candidates.Add(match);
+                }
+                ProjectionCanidates.Add(new ExtensionCandidate(match, _cachedSyntaxes.FirstOrDefault(x => x.Identifier.Text == (projectionCandidate.Destination as IdentifierNameSyntax)?.Identifier.Text), projectionCandidate.Syntax));
+            }
+
             _cachedSyntaxes.Clear();
         }
     }

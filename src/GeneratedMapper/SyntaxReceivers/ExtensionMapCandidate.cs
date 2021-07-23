@@ -2,7 +2,7 @@
 
 namespace GeneratedMapper.SyntaxReceivers
 {
-    public class ExtensionMapCandidate
+    internal sealed class ExtensionMapCandidate
     {
         private readonly GenericNameSyntax _genericNameSyntax;
 

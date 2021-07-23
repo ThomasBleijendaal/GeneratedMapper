@@ -44,53 +44,27 @@ namespace GeneratedMapper
 
                 var distinctMappings = foundMappings
                     .GroupBy(x => x, MappingInformation.SourceTypeDestinationTypeComparer)
-                    .Select(x => x.OrderByDescending(m => m.AttributeIndex).First()).ToArray();
-                ValidateMappings(context, distinctMappings);
+                    .Select(x => new { MapInfo = x.OrderBy(m => m.AttributeIndex).First(), MapType = x.Aggregate(x.Key.MappingType, (mt, y) => mt | y.MappingType)}).ToArray();
+                ValidateMappings(context, distinctMappings.Select(x => x.MapInfo));
 
                 foreach (var information in distinctMappings)
                 {
-                    foreach (var (name, text) in GenerateMappings(information))
+                    foreach (var (name, text) in GenerateMappings(information.MapInfo, information.MapType))
                     {
                         context.AddSource(name, text);
                     }
                 }
 
-                var injectables = distinctMappings.Where(x => x.ConfigurationValues.Customizations.GenerateInjectableMappers);
+                var injectables = distinctMappings.Where(x => x.MapInfo.ConfigurationValues.Customizations.GenerateInjectableMappers);
                 if (injectables.Any())
                 {
-                    var (name, text) = GenerateInjectableMappersServiceCollectionConfiguration(injectables);
+                    var (name, text) = GenerateInjectableMappersServiceCollectionConfiguration(injectables.Select(x => x.MapInfo));
 
                     context.AddSource(name, text);
                 }
 
-                var lines = string.Join(Environment.NewLine, foundMappings.Where(x => x.AttributeIndex == MappingInformation.MapToIndex).GroupBy(x => x.SourceType).Select(x => 
-$@"                case {x.Key.ToDisplayString()} val:
-                    return typeof(TDestination).FullName switch
-                    {{
-{string.Join(Environment.NewLine, x.Select(m =>
-$@"                        ""{m.DestinationType.ToDisplayString()}"" =>
-                            {x.Key.ContainingNamespace.ToDisplayString()}.{x.Key.Name}MapToExtensions.MapTo{m.DestinationType.Name}(val) is TDestination {m.DestinationType.Name.ToLower()} ? {m.DestinationType.Name.ToLower()} : default,"))}
-                        _ => throw new NotSupportedException(""Mapping is not configured"")
-                    }};"));
-                var text2 =
-$@"using System;
-
-namespace GeneratedMapper.Extensions
-{{
-    public static class MapExtensions
-    {{
-        public static TDestination MapTo<TSource, TDestination>(this TSource source)
-        {{
-            switch (source)
-            {{
-{lines}
-                default:
-                    throw new NotSupportedException(""Mapping is not configured"");
-            }}
-        }}
-    }}
-}}";
-                context.AddSource("MapExtensions.g.cs", text2);
+                context.AddSource("MapExtensions.g.cs", new MapToExtensionsBuilder(foundMappings).GenerateSourceText());
+                context.AddSource("ProjectExtensions.g.cs", new ProjectToExtensionsBuilder(foundMappings).GenerateSourceText());
             }
             catch (Exception ex)
             {
@@ -126,6 +100,11 @@ namespace GeneratedMapper.Extensions
                         {
                             var target = context.Compilation.GetSemanticModel(match.Destination.SyntaxTree).GetDeclaredSymbol(match.Destination);
                             foundMappings.Add(parser.ParseAttribute(configurationValues, candidateTypeSymbol, MappingType.ExtensionMapTo, null, MappingInformation.MapToIndex, candidateTypeSymbol as INamedTypeSymbol, target as INamedTypeSymbol, null, afterMapMethods));
+                        }
+                        foreach (var match in attributeReceiver.ProjectionCanidates.Where(x => x.Source == candidateTypeNode))
+                        {
+                            var target = context.Compilation.GetSemanticModel(match.Destination.SyntaxTree).GetDeclaredSymbol(match.Destination);
+                            foundMappings.Add(parser.ParseAttribute(configurationValues, candidateTypeSymbol, MappingType.ExtensionProjectTo, null, MappingInformation.ProjectToIndex, candidateTypeSymbol as INamedTypeSymbol, target as INamedTypeSymbol, null, afterMapMethods));
                         }
 
                         foundMappings.AddRange(
@@ -296,14 +275,17 @@ namespace GeneratedMapper.Extensions
             }
         }
 
-        private static IEnumerable<(string name, SourceText text)> GenerateMappings(MappingInformation information)
+        private static IEnumerable<(string name, SourceText text)> GenerateMappings(MappingInformation information, MappingType mappingType)
         {
             if (information.SourceType != null && information.DestinationType != null)
             {
-                var text = new MappingBuilder(information).GenerateSourceText();
-                yield return ($"{information.SourceType.Name}_To_{information.DestinationType.Name}_Map.g.cs", text);
+                if (mappingType.HasFlag(MappingType.Map) || mappingType.HasFlag(MappingType.Extension))
+                {
+                    var text = new MappingBuilder(information).GenerateSourceText();
+                    yield return ($"{information.SourceType.Name}_To_{information.DestinationType.Name}_Map.g.cs", text);
+                }
 
-                if (information.ConfigurationValues.Customizations.GenerateExpressions)
+                if (information.ConfigurationValues.Customizations.GenerateExpressions || mappingType.HasFlag(MappingType.Project))
                 {
                     var expressionText = new ExpressionBuilder(information).GenerateSourceText();
                     yield return ($"{information.SourceType.Name}_To_{information.DestinationType.Name}_Expression.g.cs", expressionText);

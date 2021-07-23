@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using FluentAssertions;
 using GeneratedMapper.Attributes;
 using GeneratedMapper.Extensions;
@@ -33,6 +34,11 @@ namespace GeneratedMapper.Tests.CompilerTests.ExtensionMethod
             destination.Id.Should().Be(5);
             var destination2 = new From() { Id = 10 }.MapTo<From, To2>();
             destination2.Id.Should().Be(10);
+
+            var query = new From[]{new(){ Id = 5}}.AsQueryable().ProjectTo<From, To>().ToList();
+            query[0].Id.Should().Be(5);
+
+            var query2 = new To[] { new() { Id = 5 } }.AsQueryable().ProjectTo<To, From>().ToList();
         }
     }
 }

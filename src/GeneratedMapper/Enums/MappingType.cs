@@ -5,10 +5,11 @@
         From = 0,
         To = 1,
         Map = 2,
-        Project = 4,
+        Extension = 4,
+        Project = 8,
         MapFrom = Map | From,
         MapTo = Map | To,
-        ExtensionMapTo = To,
-        ExtensionProjectTo = Project | MapTo
+        ExtensionMapTo = Extension | To,
+        ExtensionProjectTo = Project | To
     }
 }

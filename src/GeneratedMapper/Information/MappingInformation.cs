@@ -13,7 +13,8 @@ namespace GeneratedMapper.Information
         private readonly List<Diagnostic> _diagnostics = new();
         private readonly List<PropertyMappingInformation> _propertyMappings = new();
 
-        public const int MapToIndex = int.MinValue;
+        public const int MapToIndex = ProjectToIndex - 1;
+        public const int ProjectToIndex = int.MaxValue;
 
         public SyntaxReference SyntaxReference { get; }
         public int? MaxRecursion { get; }
