@@ -47,11 +47,11 @@ namespace GeneratedMapper.Information
             DestinationFieldName = field.Name;
         }
 
-        protected override IEnumerable<Diagnostic> Validate(SyntaxReference syntaxReference, AttributeData? mapWithAttributeData)
+        protected override IEnumerable<Diagnostic> Validate(SyntaxNode syntaxNode, AttributeData? mapWithAttributeData)
         {
             if (string.IsNullOrWhiteSpace(SourceTypeName) || string.IsNullOrWhiteSpace(DestinationTypeName))
             {
-                yield return DiagnosticsHelper.UnrecognizedTypes(syntaxReference);
+                yield return DiagnosticsHelper.UnrecognizedTypes(syntaxNode);
             }
         }
     }

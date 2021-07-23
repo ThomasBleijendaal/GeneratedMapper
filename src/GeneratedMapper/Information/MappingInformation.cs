@@ -16,14 +16,14 @@ namespace GeneratedMapper.Information
         public const int MapToIndex = ProjectToIndex - 1;
         public const int ProjectToIndex = int.MaxValue;
 
-        public SyntaxReference SyntaxReference { get; }
+        public SyntaxNode SyntaxNode { get; }
         public int? MaxRecursion { get; }
         public ConfigurationValues ConfigurationValues { get; private set; }
         public int AttributeIndex { get; private set; }
 
-        public MappingInformation(SyntaxReference syntaxReference, int? maxRecursion, int index, ConfigurationValues configurationValues)
+        public MappingInformation(SyntaxNode syntaxNode, int? maxRecursion, int index, ConfigurationValues configurationValues)
         {
-            SyntaxReference = syntaxReference;
+            SyntaxNode = syntaxNode;
             MaxRecursion = maxRecursion;
             ConfigurationValues = configurationValues;
             AttributeIndex = index;
@@ -119,10 +119,10 @@ namespace GeneratedMapper.Information
         {
             if (!Mappings.Any())
             {
-                _diagnostics.Add(DiagnosticsHelper.EmptyMapper(SyntaxReference, SourceType?.ToDisplayString() ?? "-unknown-", DestinationType?.ToDisplayString() ?? "-unknown-"));
+                _diagnostics.Add(DiagnosticsHelper.EmptyMapper(SyntaxNode, SourceType?.ToDisplayString() ?? "-unknown-", DestinationType?.ToDisplayString() ?? "-unknown-"));
             }
 
-            _diagnostics.AddRange(Mappings.SelectMany(x => !x.TryValidateMapping(SyntaxReference, out var issues) ? issues : Enumerable.Empty<Diagnostic>()));
+            _diagnostics.AddRange(Mappings.SelectMany(x => !x.TryValidateMapping(SyntaxNode, out var issues) ? issues : Enumerable.Empty<Diagnostic>()));
 
             diagnostics = _diagnostics;
 

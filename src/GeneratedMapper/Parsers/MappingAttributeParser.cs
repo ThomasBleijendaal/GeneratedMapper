@@ -33,9 +33,9 @@ namespace GeneratedMapper.Parsers
         public MappingInformation ParseAttribute(ConfigurationValues configurationValues, ITypeSymbol attributedType,
             MappingType mappingType, int? maxRecursion, int index, INamedTypeSymbol sourceType,
             INamedTypeSymbol destinationType,
-            SyntaxReference syntaxReference, List<AfterMapInformation> afterMapInformations)
+            SyntaxNode syntaxNode, List<AfterMapInformation> afterMapInformations)
         {
-            var mappingInformation = new MappingInformation(syntaxReference, maxRecursion, index, configurationValues);
+            var mappingInformation = new MappingInformation(syntaxNode, maxRecursion, index, configurationValues);
             var targetType = mappingType.HasFlag(MappingType.To) ? destinationType : sourceType;
             try
             {
@@ -43,12 +43,12 @@ namespace GeneratedMapper.Parsers
 
                 if (sourceType == null || destinationType == null)
                 {
-                    throw new ParseException(DiagnosticsHelper.UnrecognizedTypes(syntaxReference));
+                    throw new ParseException(DiagnosticsHelper.UnrecognizedTypes(syntaxNode));
                 }
 
                 if (!destinationType.Constructors.Any(x => x.DeclaredAccessibility == Accessibility.Public && x.Parameters.Length == 0))
                 {
-                    throw new ParseException(DiagnosticsHelper.NoParameterlessConstructor(syntaxReference));
+                    throw new ParseException(DiagnosticsHelper.NoParameterlessConstructor(syntaxNode));
                 }
 
                 mappingInformation.MapFrom(sourceType).MapTo(destinationType);
@@ -60,7 +60,7 @@ namespace GeneratedMapper.Parsers
                 
                 foreach (var targetTypeProperty in destinationPropertyExclusions.Where(name => !targetTypeProperties.ContainsKey(name)))
                 {
-                    mappingInformation.ReportIssue(DiagnosticsHelper.MissingIgnoreInTarget(syntaxReference, destinationType.ToDisplayString(), targetTypeProperty));
+                    mappingInformation.ReportIssue(DiagnosticsHelper.MissingIgnoreInTarget(syntaxNode, destinationType.ToDisplayString(), targetTypeProperty));
                 }
 
                 var processedTargetProperties = new List<string>();
@@ -81,7 +81,7 @@ namespace GeneratedMapper.Parsers
                         {
                             var property = _propertyParser.ParseNestedProperty(
                                 mappingInformation, 
-                                mapWithAttribute ?? throw new ParseException(DiagnosticsHelper.UnmappableProperty(syntaxReference, sourceType.Name, targetPropertyToFind, destinationType.Name)),
+                                mapWithAttribute ?? throw new ParseException(DiagnosticsHelper.UnmappableProperty(syntaxNode, sourceType.Name, targetPropertyToFind, destinationType.Name)),
                                 targetPropertyToFind,
                                 attributedTypePropertySet.First());
 
@@ -91,7 +91,7 @@ namespace GeneratedMapper.Parsers
                         {
                             if (!targetTypeProperties.ContainsKey(targetPropertyToFind))
                             {
-                                mappingInformation.ReportIssue(DiagnosticsHelper.UnmappableProperty(syntaxReference, attributedType.ToDisplayString(), targetPropertyToFind, targetType.ToDisplayString()));
+                                mappingInformation.ReportIssue(DiagnosticsHelper.UnmappableProperty(syntaxNode, attributedType.ToDisplayString(), targetPropertyToFind, targetType.ToDisplayString()));
                                 continue;
                             }
                             var targetTypePropertySet = targetTypeProperties[targetPropertyToFind];
@@ -100,7 +100,7 @@ namespace GeneratedMapper.Parsers
 
                             if (mappingInformation.Mappings.Any(x => x.DestinationPropertyName == property.DestinationPropertyName))
                             {
-                                mappingInformation.ReportIssue(DiagnosticsHelper.ConflictingMappingInformation(syntaxReference, property.SourcePropertyName!));
+                                mappingInformation.ReportIssue(DiagnosticsHelper.ConflictingMappingInformation(syntaxNode, property.SourcePropertyName!));
                             }
                             else
                             {
@@ -121,7 +121,7 @@ namespace GeneratedMapper.Parsers
 
                 foreach (var remainingTargetProperty in targetTypeProperties.Where(x => !destinationPropertyExclusions.Contains(x.Key) && !processedTargetProperties.Contains(x.Key)))
                 {
-                    mappingInformation.ReportIssue(DiagnosticsHelper.LeftOverProperty(syntaxReference, targetType.ToDisplayString(), remainingTargetProperty.Key, attributedType.ToDisplayString(), mappingType));
+                    mappingInformation.ReportIssue(DiagnosticsHelper.LeftOverProperty(syntaxNode, targetType.ToDisplayString(), remainingTargetProperty.Key, attributedType.ToDisplayString(), mappingType));
                 }
 
                 foreach (var afterMap in afterMapInformations.Where(am =>

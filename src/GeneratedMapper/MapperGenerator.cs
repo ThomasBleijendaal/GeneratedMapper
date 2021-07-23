@@ -99,12 +99,12 @@ namespace GeneratedMapper
                         foreach (var match in attributeReceiver.ExtensionCandidates.Where(x => x.Source == candidateTypeNode))
                         {
                             var target = context.Compilation.GetSemanticModel(match.Destination.SyntaxTree).GetDeclaredSymbol(match.Destination);
-                            foundMappings.Add(parser.ParseAttribute(configurationValues, candidateTypeSymbol, MappingType.ExtensionMapTo, null, MappingInformation.MapToIndex, candidateTypeSymbol as INamedTypeSymbol, target as INamedTypeSymbol, null, afterMapMethods));
+                           foundMappings.Add(parser.ParseAttribute(configurationValues, candidateTypeSymbol, MappingType.ExtensionMapTo, null, MappingInformation.MapToIndex, candidateTypeSymbol as INamedTypeSymbol, target as INamedTypeSymbol, match.Syntax, afterMapMethods));
                         }
                         foreach (var match in attributeReceiver.ProjectionCanidates.Where(x => x.Source == candidateTypeNode))
                         {
                             var target = context.Compilation.GetSemanticModel(match.Destination.SyntaxTree).GetDeclaredSymbol(match.Destination);
-                            foundMappings.Add(parser.ParseAttribute(configurationValues, candidateTypeSymbol, MappingType.ExtensionProjectTo, null, MappingInformation.ProjectToIndex, candidateTypeSymbol as INamedTypeSymbol, target as INamedTypeSymbol, null, afterMapMethods));
+                            foundMappings.Add(parser.ParseAttribute(configurationValues, candidateTypeSymbol, MappingType.ExtensionProjectTo, null, MappingInformation.ProjectToIndex, candidateTypeSymbol as INamedTypeSymbol, target as INamedTypeSymbol, match.Syntax, afterMapMethods));
                         }
 
                         foundMappings.AddRange(
@@ -119,7 +119,7 @@ namespace GeneratedMapper
                                     var attributeType = attribute.ConstructorArgument<INamedTypeSymbol>(0);
                                     return parser.ParseAttribute(configurationValues, candidateTypeSymbol,
                                         mapFrom ? MappingType.MapFrom : MappingType.MapTo, attribute.GetMaxRecursion(),
-                                        attribute.GetIndex(), mapFrom ? attributeType : candidateTypeSymbol as INamedTypeSymbol, mapFrom ? candidateTypeSymbol as INamedTypeSymbol : attributeType, attribute.ApplicationSyntaxReference, afterMapMethods);
+                                        attribute.GetIndex(), mapFrom ? attributeType : candidateTypeSymbol as INamedTypeSymbol, mapFrom ? candidateTypeSymbol as INamedTypeSymbol : attributeType, attribute.ApplicationSyntaxReference.GetSyntax(), afterMapMethods);
                                 }));
                     }
                 }
@@ -256,7 +256,7 @@ namespace GeneratedMapper
                 }
                 else
                 {
-                    mapping.BelongsToMapping.ReportIssue(DiagnosticsHelper.MultipleMappingInformation(mapping.BelongsToMapping.SyntaxReference, mapping.MapperFromType?.ToDisplayString(), mapping.MapperToType?.ToDisplayString()));
+                    mapping.BelongsToMapping.ReportIssue(DiagnosticsHelper.MultipleMappingInformation(mapping.BelongsToMapping.SyntaxNode, mapping.MapperFromType?.ToDisplayString(), mapping.MapperToType?.ToDisplayString()));
                 }
             }
         }

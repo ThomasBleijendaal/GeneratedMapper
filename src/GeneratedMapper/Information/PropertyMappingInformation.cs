@@ -59,21 +59,21 @@ namespace GeneratedMapper.Information
             CollectionElements.Add(element);
         }
 
-        protected override IEnumerable<Diagnostic> Validate(SyntaxReference syntaxReference, AttributeData? mapWithAttributeData)
+        protected override IEnumerable<Diagnostic> Validate(SyntaxNode syntaxNode, AttributeData? mapWithAttributeData)
         {
             if (string.IsNullOrWhiteSpace(SourcePropertyName) || string.IsNullOrWhiteSpace(DestinationPropertyName))
             {
-                yield return DiagnosticsHelper.UnrecognizedTypes(syntaxReference);
+                yield return DiagnosticsHelper.UnrecognizedTypes(syntaxNode);
             }
 
             if (SourceIsNullable && !DestinationIsNullable && PropertyType == default && mapWithAttributeData?.GetIgnoreNullIncompatibility() != true)
             {
-                yield return DiagnosticsHelper.IncorrectNullability(syntaxReference, SourcePropertyName!, DestinationPropertyName!);
+                yield return DiagnosticsHelper.IncorrectNullability(syntaxNode, SourcePropertyName!, DestinationPropertyName!);
             }
 
             if (SourceIsNullable && IsAsync && mapWithAttributeData?.GetIgnoreNullIncompatibility() != true)
             {
-                yield return DiagnosticsHelper.CannotAwaitNull(syntaxReference, BelongsToMapping.SourceType?.Name!, SourcePropertyName!);
+                yield return DiagnosticsHelper.CannotAwaitNull(syntaxNode, BelongsToMapping.SourceType?.Name!, SourcePropertyName!);
             }
 
             if ((!string.IsNullOrWhiteSpace(ResolverTypeToUse) && !string.IsNullOrWhiteSpace(SourcePropertyMethodToCall)) ||
@@ -81,7 +81,7 @@ namespace GeneratedMapper.Information
                 (!string.IsNullOrWhiteSpace(SourcePropertyMethodToCall) && RequiresMappingInformationOfMapper) ||
                 (SourceIsValueType != DestinationIsValueType && string.IsNullOrWhiteSpace(ResolverTypeToUse) && string.IsNullOrWhiteSpace(SourcePropertyMethodToCall) && !RequiresMappingInformationOfMapper))
             {
-                yield return DiagnosticsHelper.ConflictingMappingInformation(syntaxReference, SourcePropertyName!);
+                yield return DiagnosticsHelper.ConflictingMappingInformation(syntaxNode, SourcePropertyName!);
             }
         }
     }
