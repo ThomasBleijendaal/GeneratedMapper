@@ -28,6 +28,7 @@ namespace GeneratedMapper.Builders
                 information.ConfigurationValues.IndentStyle == IndentStyle.Tab ? "\t" : new string(' ', (int)information.ConfigurationValues.IndentSize));
 
             indentWriter.WriteLine("using System;");
+            indentWriter.WriteLine("using GeneratedMapper.Abstractions;");
             indentWriter.WriteLine();
             indentWriter.WriteLine("namespace Microsoft.Extensions.DependencyInjection");
             using (indentWriter.Braces())
