@@ -12,7 +12,7 @@ namespace GeneratedMapper.Extensions
 
         public static bool GetMapCompleteCollection(this AttributeData attributeData) => GetAttributeNamedArgument<bool>(attributeData, nameof(MapWithAttribute.MapCompleteCollection));
 
-        public static bool GetIgnoreNullIncompatibility(this AttributeData attributeData) => GetAttributeNamedArgument<bool>(attributeData, nameof(MapWithAttribute.IgnoreNullIncompatibility));
+        public static bool? GetIgnoreNullIncompatibility(this AttributeData attributeData) => GetAttributeNamedArgument<bool?>(attributeData, nameof(MapWithAttribute.IgnoreNullIncompatibility));
 
         private static TValue? GetAttributeNamedArgument<TValue>(AttributeData attributeData, string name)
         {
