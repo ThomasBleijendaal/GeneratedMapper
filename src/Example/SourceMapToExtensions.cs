@@ -11,7 +11,7 @@ namespace Example.Sources
 
         static void ComplexAfterMap(Example.Sources.Source source, Example.Destinations.ComplexDestination target, string postFix, CultureInfo? dateResolverCultureInfo)
         {
-            target.Company.Name = $"Culture {dateResolverCultureInfo.Name}: {source.Company.Name}{postFix}";
+            target.Company.Name = $"Culture {dateResolverCultureInfo?.Name}: {source.Company.Name}{postFix}";
         }
     }
     public static class Extensions

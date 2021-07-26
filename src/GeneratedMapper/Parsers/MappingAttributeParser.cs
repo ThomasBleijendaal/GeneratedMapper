@@ -125,8 +125,8 @@ namespace GeneratedMapper.Parsers
                 }
 
                 foreach (var afterMap in afterMapInformations.Where(am =>
-                    am.ParameterTypes.Any(x => x.Equals(mappingInformation.SourceType)) &&
-                    am.ParameterTypes.Any(x => x.Equals(mappingInformation.DestinationType))))
+                    am.ParameterTypes.OfType<ITypeSymbol>().Any(x => x.Equals(mappingInformation.SourceType, SymbolEqualityComparer.Default)) &&
+                    am.ParameterTypes.OfType<ITypeSymbol>().Any(x => x.Equals(mappingInformation.DestinationType, SymbolEqualityComparer.Default))))
                 {
                     mappingInformation.AfterMaps.Add(afterMap);
                 }

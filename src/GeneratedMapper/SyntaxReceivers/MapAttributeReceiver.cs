@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace GeneratedMapper.SyntaxReceivers
 {
@@ -40,10 +41,11 @@ namespace GeneratedMapper.SyntaxReceivers
                     ClassesWithExtensionMethods.Add(typeDeclarationSyntax);
                 }
 
-                var hasAfterMapMethod = methods.Any(x =>
-                    x.ParameterList.Parameters.Count >= 2 &&
-                    x.Modifiers.Any(m => m.Kind() == SyntaxKind.StaticKeyword) &&
-                    (x.ReturnType as PredefinedTypeSyntax)?.Keyword.Text == "void");
+                var hasAfterMapMethod = methods.Any(
+                    x => x.ParameterList.Parameters.Count >= 2 &&
+                        x.Modifiers.Any(m => m.IsKind(SyntaxKind.StaticKeyword)) &&
+                        x.ReturnType.ChildTokens().Any(x => x.IsKind(SyntaxKind.VoidKeyword) || x.ValueText.Equals(nameof(Task))));
+
                 if (hasAfterMapMethod)
                 {
                     ClassesWithAfterMapMethods.Add(typeDeclarationSyntax);

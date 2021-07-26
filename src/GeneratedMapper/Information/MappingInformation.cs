@@ -108,7 +108,7 @@ namespace GeneratedMapper.Information
 
         public bool IsFullyResolved => AllMappings.All(x => !x.RequiresMappingInformationOfMapper || x.MappingInformationOfMapperToUse != null);
 
-        public bool IsAsync => AllMappings.Any(x => x.IsAsync);
+        public bool IsAsync => AllMappings.Any(x => x.IsAsync) || AfterMaps.Any(x => x.IsAsync);
 
         public bool TryValidate(out IEnumerable<Diagnostic> diagnostics)
         {

@@ -12,13 +12,13 @@ namespace GeneratedMapper.Extensions
         private class IndentDisposable : IDisposable
         {
             private readonly IndentedTextWriter _indentWriter;
-            private readonly string _after;
+            private readonly string? _after;
 
-            public IndentDisposable(IndentedTextWriter indentWriter, string before = null, string after = null)
+            public IndentDisposable(IndentedTextWriter indentWriter, string? before = null, string? after = null)
             {
                 _indentWriter = indentWriter;
                 _after = after;
-                if(before != null)
+                if (before != null)
                 {
                     _indentWriter.WriteLine(before);
                 }
@@ -28,7 +28,7 @@ namespace GeneratedMapper.Extensions
             public void Dispose()
             {
                 _indentWriter.Indent--;
-                if(_after != null)
+                if (_after != null)
                 {
                     _indentWriter.WriteLine(_after);
                 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -35,6 +34,8 @@ namespace GeneratedMapper
 
         public void Execute(GeneratorExecutionContext context)
         {
+            var fileIndex = 0;
+
             try
             {
                 var foundMappings = FindMappings(context);
@@ -51,7 +52,7 @@ namespace GeneratedMapper
                 {
                     foreach (var (name, text) in GenerateMappings(information.MapInfo, information.MapType))
                     {
-                        context.AddSource(name, text);
+                        context.AddSource($"{name}.{++fileIndex}.g.cs", text);
                     }
                 }
 
@@ -60,7 +61,7 @@ namespace GeneratedMapper
                 {
                     var (name, text) = GenerateInjectableMappersServiceCollectionConfiguration(injectables.Select(x => x.MapInfo));
 
-                    context.AddSource(name, text);
+                    context.AddSource($"{name}.{++fileIndex}.g.cs", text);
                 }
 
                 context.AddSource("MapExtensions.g.cs", new MapToExtensionsBuilder(foundMappings).GenerateSourceText());
@@ -149,9 +150,10 @@ namespace GeneratedMapper
 
             return foundExtensionMethods;
         }
+
         private static List<AfterMapInformation> FindAfterMaps(GeneratorExecutionContext context)
         {
-            var parser = new AfterMapParser(new ParameterParser(context));
+            var parser = new AfterMapParser(context, new ParameterParser(context));
 
             var foundExtensionMethods = new List<AfterMapInformation>();
 
@@ -282,13 +284,13 @@ namespace GeneratedMapper
                 if (mappingType.HasFlag(MappingType.Map) || mappingType.HasFlag(MappingType.Extension))
                 {
                     var text = new MappingBuilder(information).GenerateSourceText();
-                    yield return ($"{information.SourceType.Name}_To_{information.DestinationType.Name}_Map.g.cs", text);
+                    yield return ($"{information.SourceType.Name}_To_{information.DestinationType.Name}_Map", text);
                 }
 
                 if (information.ConfigurationValues.Customizations.GenerateExpressions && mappingType.HasFlag(MappingType.Map) || mappingType.HasFlag(MappingType.Project))
                 {
                     var expressionText = new ExpressionBuilder(information).GenerateSourceText();
-                    yield return ($"{information.SourceType.Name}_To_{information.DestinationType.Name}_Expression.g.cs", expressionText);
+                    yield return ($"{information.SourceType.Name}_To_{information.DestinationType.Name}_Expression", expressionText);
                 }
             }
         }
@@ -296,7 +298,7 @@ namespace GeneratedMapper
         private static (string name, SourceText text) GenerateInjectableMappersServiceCollectionConfiguration(IEnumerable<MappingInformation> informations)
         {
             var text = new InjectableMapperServiceCollectionRegistrationBuilder(informations).GenerateSourceText();
-            return ("GeneratedMapperServiceCollectionRegistrations.g.cs", text);
+            return ("GeneratedMapperServiceCollectionRegistrations", text);
         }
     }
 }
