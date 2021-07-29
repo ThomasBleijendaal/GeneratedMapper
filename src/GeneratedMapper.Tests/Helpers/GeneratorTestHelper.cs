@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Linq;
+using FluentAssertions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using NUnit.Framework;
@@ -9,6 +10,43 @@ namespace GeneratedMapper.Tests.Helpers
 {
     public static class GeneratorTestHelper
     {
+
+        public const string MapExtensionsDefaultText = @"using System;
+
+namespace GeneratedMapper.Extensions
+{
+    public static class MapExtensions
+    {
+        public static TDestination MapTo<TSource, TDestination>(this TSource source)
+        {
+            switch (source)
+            {
+                default:
+                    throw new NotSupportedException(""Mapping is not configured"");
+            }
+        }
+    }
+}
+";
+
+        public const string ProjectToExtensionsDefaultText = @"using System;
+using System.Linq;
+
+namespace GeneratedMapper.Extensions
+{
+    public static class MapExtension
+    {
+        public static IQueryable<TDestination> ProjectTo<TSource, TDestination>(this IQueryable<TSource> source)
+        {
+            switch (source)
+            {
+                default:
+                    throw new NotSupportedException(""Projection is not configured"");
+            }
+        }
+    }
+}
+";
         private static (ImmutableArray<Diagnostic>, string[]) GetGeneratedOutput(string source)
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(source);
@@ -43,6 +81,20 @@ namespace GeneratedMapper.Tests.Helpers
             {
                 Assert.AreEqual(expectedOutputSourceTexts[i], output.ElementAtOrDefault(i) ?? "", $"Error in file index: {i}");
             }
+
+            if (output.Length == expectedOutputSourceTexts.Length + 2)
+            {
+                Assert.AreEqual(MapExtensionsDefaultText, output.ElementAtOrDefault(expectedOutputSourceTexts.Length) ?? "", $"Error in file index: {expectedOutputSourceTexts.Length}");
+                Assert.AreEqual(ProjectToExtensionsDefaultText, output.ElementAtOrDefault(expectedOutputSourceTexts.Length + 1) ?? "", $"Error in file index: {expectedOutputSourceTexts.Length + 1}");
+            }
+            else if (output.Length == expectedOutputSourceTexts.Length + 1)
+            {
+                Assert.AreEqual(ProjectToExtensionsDefaultText, output.ElementAtOrDefault(expectedOutputSourceTexts.Length) ?? "", $"Error in file index: {expectedOutputSourceTexts.Length}");
+            }
+            else if (output.Length != expectedOutputSourceTexts.Length)
+            {
+                Assert.AreEqual(output.Length, expectedOutputSourceTexts.Length, "File count miss-match");
+            }
         }
 
         public static void TestReportedDiagnostics(string sourceText, params string[] expectedDiagnosticErrors)
@@ -57,6 +109,16 @@ namespace GeneratedMapper.Tests.Helpers
             {
                 Assert.Contains(diagnostic, errorCodes);
             }
+        }
+
+        public static void TestReportedDiagnosticLocation(string sourceText, string errorCode, string locationText)
+        {
+            var (diagnostics, output) = GetGeneratedOutput(sourceText);
+            
+            diagnostics.Should().Contain(d =>
+                d.Id == errorCode &&
+                d.Location.SourceTree.ToString()
+                    .Substring(d.Location.SourceSpan.Start, d.Location.SourceSpan.Length) == locationText);
         }
     }
 }

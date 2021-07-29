@@ -30,14 +30,6 @@ namespace GeneratedMapper.Helpers
             Severity = DiagnosticSeverity.Error
         };
 
-        private static DiagStruct _unmappablePropertyFromExtensionCall = new()
-        {
-            Id = "GM0003",
-            Title = "Property cannot be mapped",
-            Message = "The type '{0}' contains the property '{1}' which cannot be found in type '{2}'. Either correct the mapping with [MapTo(typeof())] on type and then [MapWith] or [Ignore] the property.",
-            Severity = DiagnosticSeverity.Error
-        };
-
         private static DiagStruct _incorrectNullablity = new()
         {
             Id = "GM0004",
@@ -139,6 +131,14 @@ namespace GeneratedMapper.Helpers
             Id = "GM0016",
             Title = "Cannot await null",
             Message = "The property '{1}' of type '{0}' is marked as nullable, which cannot be used in async mapping. Use a resolver or extension method and set IgnoreNullIncompatibility to true.",
+            Severity = DiagnosticSeverity.Error
+        };
+
+        private static DiagStruct _unmappablePropertyFromExtensionCall = new()
+        {
+            Id = "GM0017",
+            Title = "Property cannot be mapped without Attributes",
+            Message = "The type '{0}' contains the property '{1}' which cannot be found in type '{2}'. Either correct the mapping with [MapTo(typeof())] on type and then [MapWith] or [Ignore] the property.",
             Severity = DiagnosticSeverity.Error
         };
 

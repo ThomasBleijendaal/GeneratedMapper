@@ -285,7 +285,7 @@ namespace GeneratedMapper
                     yield return ($"{information.SourceType.Name}_To_{information.DestinationType.Name}_Map.g.cs", text);
                 }
 
-                if (information.ConfigurationValues.Customizations.GenerateExpressions || mappingType.HasFlag(MappingType.Project))
+                if (information.ConfigurationValues.Customizations.GenerateExpressions && mappingType.HasFlag(MappingType.Map) || mappingType.HasFlag(MappingType.Project))
                 {
                     var expressionText = new ExpressionBuilder(information).GenerateSourceText();
                     yield return ($"{information.SourceType.Name}_To_{information.DestinationType.Name}_Expression.g.cs", expressionText);

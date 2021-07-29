@@ -1,44 +1,52 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using FluentAssertions;
-using GeneratedMapper.Attributes;
 using GeneratedMapper.Extensions;
 using NUnit.Framework;
 
 namespace GeneratedMapper.Tests.CompilerTests.ExtensionMethod
 {
-    //[MapTo(typeof(To))]
-    public class From
-    {
-        public int Id { get; set; }
-    }
-
-    //[MapFrom(typeof(From))]
-    public class To
-    {
-        public int Id { get; set; }
-        //public string Fail { get; set; }
-    }
-    public class To2
-    {
-        public int Id { get; set; }
-        //public string Fail { get; set; }
-    }
-
     public class Tests
     {
         [Test]
-        public void MapTo_Create_Mapper_Test()
+        public void MapTo_With_No_Map_Attributes_Uses_DefaultConfig()
         {
-            var destination = new From(){Id = 5}.MapTo<From, To>();
+            var destination = new From {Id = 5}.MapTo<From, To>();
             destination.Id.Should().Be(5);
-            var destination2 = new From() { Id = 10 }.MapTo<From, To2>();
+        }
+
+        [Test]
+        public void MapTo_With_MapToAttribute_Uses_MapToAttributeConfig()
+        {
+            var destination = new From {Id = 5}.MapTo<From, MapToTo>();
+            destination.Id.Should().Be(5);
+        }
+
+        [Test]
+        public void MapTo_With_MapFromAttribute_Uses_MapFromAttributeConfig()
+        {
+            var destination2 = new From { Id = 10 }.MapTo<From, MapFromTo>();
             destination2.Id.Should().Be(10);
+        }
 
-            var query = new From[]{new(){ Id = 5}}.AsQueryable().ProjectTo<From, To>().ToList();
+        [Test]
+        public void ProjectTo_With_No_Map_Attributes_DefaultConfig()
+        {
+            var query = new From[] { new() { Id = 5 } }.AsQueryable().ProjectTo<From, ProjectTo>().ToList();
             query[0].Id.Should().Be(5);
+        }
 
-            var query2 = new To[] { new() { Id = 5 } }.AsQueryable().ProjectTo<To, From>().ToList();
+        [Test]
+        public void ProjectTo_With_MapToAttribute_MapToAttributeConfig()
+        {
+            var query = new From[] { new() { Id = 5 } }.AsQueryable().ProjectTo<From, ProjectMapToTo>().ToList();
+            query[0].Id.Should().Be(5);
+        }
+
+        [Test]
+        public void ProjectTo_With_MapFromAttribute_MapFromAttributeConfig()
+        {
+            var query = new From[] { new() { Id = 5 } }.AsQueryable().ProjectTo<From, ProjectMapFromTo>().ToList();
+            query[0].Id.Should().Be(5);
         }
     }
 }
