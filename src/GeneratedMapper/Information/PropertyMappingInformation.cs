@@ -74,7 +74,7 @@ namespace GeneratedMapper.Information
 
                 if (!ignoreExplicitly && (!usesResolver || (usesResolver && dotNotIgnoreExplicitly)))
                 {
-                    yield return DiagnosticsHelper.IncorrectNullability(mapAttributeData, SourcePropertyName!, DestinationPropertyName!);
+                    yield return DiagnosticsHelper.IncorrectNullability(syntaxNode, SourcePropertyName!, DestinationPropertyName!);
                 }
             }
 
