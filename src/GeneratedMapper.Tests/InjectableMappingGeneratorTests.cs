@@ -52,6 +52,7 @@ namespace A
 }
 ",
 @"using System;
+using GeneratedMapper.Abstractions;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -117,6 +118,7 @@ namespace A
 }
 ",
 @"using System;
+using GeneratedMapper.Abstractions;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -193,6 +195,7 @@ namespace A
 }
 ",
 @"using System;
+using GeneratedMapper.Abstractions;
 
 namespace Microsoft.Extensions.DependencyInjection
 {

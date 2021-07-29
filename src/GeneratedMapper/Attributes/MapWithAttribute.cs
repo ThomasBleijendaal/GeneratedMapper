@@ -34,7 +34,6 @@ namespace GeneratedMapper.Attributes
         public MapWithAttribute(Type resolverType)
         {
             ResolverType = resolverType;
-            IgnoreNullIncompatibility = true;
         }
 
         /// <summary>
@@ -46,7 +45,6 @@ namespace GeneratedMapper.Attributes
         {
             TargetName = targetName;
             ResolverType = resolverType;
-            IgnoreNullIncompatibility = true;
         }
 
         public string? TargetName { get; }

@@ -68,7 +68,7 @@ namespace R {
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 
-        [MapWith(""Target"", typeof(R.Resolver))]
+        [MapWith(""Target"", typeof(R.Resolver), IgnoreNullIncompatibility = false)]
         public string? Name { get; set; } 
     }
 }

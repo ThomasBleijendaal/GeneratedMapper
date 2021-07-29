@@ -66,9 +66,16 @@ namespace GeneratedMapper.Information
                 yield return DiagnosticsHelper.UnrecognizedTypes(syntaxNode);
             }
 
-            if (SourceIsNullable && !DestinationIsNullable && PropertyType == default && mapWithAttributeData?.GetIgnoreNullIncompatibility() != true)
+            if (SourceIsNullable && !DestinationIsNullable && PropertyType == default)
             {
-                yield return DiagnosticsHelper.IncorrectNullability(syntaxNode, SourcePropertyName!, DestinationPropertyName!);
+                var usesResolver = ResolverTypeToUse != null;
+                var dotNotIgnoreExplicitly = mapWithAttributeData?.GetIgnoreNullIncompatibility() == false;
+                var ignoreExplicitly = mapWithAttributeData?.GetIgnoreNullIncompatibility() == true;
+
+                if (!ignoreExplicitly && (!usesResolver || (usesResolver && dotNotIgnoreExplicitly)))
+                {
+                    yield return DiagnosticsHelper.IncorrectNullability(mapAttributeData, SourcePropertyName!, DestinationPropertyName!);
+                }
             }
 
             if (SourceIsNullable && IsAsync && mapWithAttributeData?.GetIgnoreNullIncompatibility() != true)
