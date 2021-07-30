@@ -1,8 +1,8 @@
-﻿using System.CodeDom.Compiler;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using GeneratedMapper.Builders.Base;
 using GeneratedMapper.Enums;
 using GeneratedMapper.Extensions;
 using GeneratedMapper.Information;
@@ -10,17 +10,14 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace GeneratedMapper.Builders
 {
-    internal sealed class MapToExtensionsBuilder
+    internal sealed class MapToExtensionsBuilder : ExtensionsBuilderBase
     {
-        private readonly IEnumerable<MappingInformation> _informations;
-
-        public MapToExtensionsBuilder(IEnumerable<MappingInformation> informations) => _informations = informations;
+        public MapToExtensionsBuilder(IEnumerable<MappingInformation> informations) : base(informations) { }
 
         public SourceText GenerateSourceText()
         {
             using var writer = new StringWriter();
-            using var indentWriter = new IndentedTextWriter(writer,
-                _informations.First().ConfigurationValues.IndentStyle == IndentStyle.Tab ? "\t" : new string(' ', (int)_informations.First().ConfigurationValues.IndentSize));
+            using var indentWriter = GetIndentedWriter(writer);
 
             indentWriter.WriteLine("using System;");
             indentWriter.WriteLine("");
@@ -56,14 +53,14 @@ namespace GeneratedMapper.Builders
                                                 indentWriter.WriteLine($"{sourceType}MapToExtensions.MapTo{mappingInformation.DestinationType.Name}({sourceField}) is TDestination {destinationField} ? {destinationField} : default,");
                                             }
                                         }
-                                        indentWriter.WriteLine("_ => throw new NotSupportedException(\"Mapping is not configured\")");
+                                        indentWriter.WriteLine("_ => throw new NotSupportedException($\"{typeof(TSource).FullName} -> {typeof(TDestination).FullName}: Map is not configured.\")");
                                     }
                                 }
                             }
                             indentWriter.WriteLine("default:");
                             using (indentWriter.Indent())
                             {
-                                indentWriter.WriteLine("throw new NotSupportedException(\"Mapping is not configured\");");
+                                indentWriter.WriteLine("throw new NotSupportedException($\"{typeof(TSource).FullName} -> {typeof(TDestination).FullName}: Map is not configured.\");");
                             }
                         }
                     }

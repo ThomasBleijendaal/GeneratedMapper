@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using FluentAssertions;
@@ -22,7 +23,7 @@ namespace GeneratedMapper.Extensions
             switch (source)
             {
                 default:
-                    throw new NotSupportedException(""Mapping is not configured"");
+                    throw new NotSupportedException($""{typeof(TSource).FullName} -> {typeof(TDestination).FullName}: Map is not configured."");
             }
         }
     }
@@ -34,19 +35,23 @@ using System.Linq;
 
 namespace GeneratedMapper.Extensions
 {
-    public static class MapExtension
+    public static class ProjectExtensions
     {
         public static IQueryable<TDestination> ProjectTo<TSource, TDestination>(this IQueryable<TSource> source)
         {
             switch (source)
             {
                 default:
-                    throw new NotSupportedException(""Projection is not configured"");
+                    throw new NotSupportedException($""{typeof(TSource).FullName} -> {typeof(TDestination).FullName}: Project is not configured."");
             }
         }
     }
 }
 ";
+
+        private static readonly string[] DefaultFiles = {MapExtensionsDefaultText, ProjectToExtensionsDefaultText};
+        private static IEnumerable<string> AppendedDefaults(int count) => DefaultFiles.Reverse().Take(count).Reverse();
+
         private static (ImmutableArray<Diagnostic>, string[]) GetGeneratedOutput(string source)
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(source);
@@ -77,23 +82,14 @@ namespace GeneratedMapper.Extensions
 
             Assert.AreEqual(0, diagnostics.Length, string.Join(", ", diagnostics.Select(x => x.GetMessage())));
 
+            var delta = output.Length - expectedOutputSourceTexts.Length;
+            expectedOutputSourceTexts = expectedOutputSourceTexts.Concat(AppendedDefaults(delta)).ToArray();
+
+            Assert.AreEqual(output.Length, expectedOutputSourceTexts.Length, $"Expected output files count miss-match with {delta} default files added to expected output");
+
             for (var i = 0; i < expectedOutputSourceTexts.Length; i++)
             {
                 Assert.AreEqual(expectedOutputSourceTexts[i], output.ElementAtOrDefault(i) ?? "", $"Error in file index: {i}");
-            }
-
-            if (output.Length == expectedOutputSourceTexts.Length + 2)
-            {
-                Assert.AreEqual(MapExtensionsDefaultText, output.ElementAtOrDefault(expectedOutputSourceTexts.Length) ?? "", $"Error in file index: {expectedOutputSourceTexts.Length}");
-                Assert.AreEqual(ProjectToExtensionsDefaultText, output.ElementAtOrDefault(expectedOutputSourceTexts.Length + 1) ?? "", $"Error in file index: {expectedOutputSourceTexts.Length + 1}");
-            }
-            else if (output.Length == expectedOutputSourceTexts.Length + 1)
-            {
-                Assert.AreEqual(ProjectToExtensionsDefaultText, output.ElementAtOrDefault(expectedOutputSourceTexts.Length) ?? "", $"Error in file index: {expectedOutputSourceTexts.Length}");
-            }
-            else if (output.Length != expectedOutputSourceTexts.Length)
-            {
-                Assert.AreEqual(output.Length, expectedOutputSourceTexts.Length, "File count miss-match");
             }
         }
 

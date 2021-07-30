@@ -61,10 +61,10 @@ namespace GeneratedMapper.Extensions
                     {
                         ""Test.B"" =>
                             Test.AMapToExtensions.MapToB(a) is TDestination b ? b : default,
-                        _ => throw new NotSupportedException(""Mapping is not configured"")
+                        _ => throw new NotSupportedException($""{typeof(TSource).FullName} -> {typeof(TDestination).FullName}: Map is not configured."")
                     };
                 default:
-                    throw new NotSupportedException(""Mapping is not configured"");
+                    throw new NotSupportedException($""{typeof(TSource).FullName} -> {typeof(TDestination).FullName}: Map is not configured."");
             }
         }
     }

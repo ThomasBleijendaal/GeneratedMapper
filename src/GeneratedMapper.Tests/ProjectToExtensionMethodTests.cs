@@ -45,7 +45,7 @@ using System.Linq;
 
 namespace GeneratedMapper.Extensions
 {
-    public static class MapExtension
+    public static class ProjectExtensions
     {
         public static IQueryable<TDestination> ProjectTo<TSource, TDestination>(this IQueryable<TSource> source)
         {
@@ -56,10 +56,10 @@ namespace GeneratedMapper.Extensions
                     {
                         ""Test.B"" =>
                             a.Select(Test.Expressions.A.ToB()) is IQueryable<TDestination> b ? b : default,
-                        _ => throw new NotSupportedException(""Projection is not configured"")
+                        _ => throw new NotSupportedException($""{typeof(TSource).FullName} -> {typeof(TDestination).FullName}: Project is not configured."")
                     };
                 default:
-                    throw new NotSupportedException(""Projection is not configured"");
+                    throw new NotSupportedException($""{typeof(TSource).FullName} -> {typeof(TDestination).FullName}: Project is not configured."");
             }
         }
     }
