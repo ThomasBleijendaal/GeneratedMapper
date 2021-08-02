@@ -38,12 +38,7 @@ namespace GeneratedMapper.Information
                     return true;
                 }
 
-                if (ReferenceEquals(x, null))
-                {
-                    return false;
-                }
-
-                if (ReferenceEquals(y, null))
+                if (x == null || y == null)
                 {
                     return false;
                 }
