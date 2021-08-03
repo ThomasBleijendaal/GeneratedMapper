@@ -7,6 +7,7 @@ using GeneratedMapper.Builders.Base;
 using GeneratedMapper.Enums;
 using GeneratedMapper.Extensions;
 using GeneratedMapper.Information;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
 namespace GeneratedMapper.Builders
@@ -44,7 +45,7 @@ namespace GeneratedMapper.Builders
                 }
                 WriteInjectableMapperClass(indentWriter);
             }
-             
+
             return SourceText.From(writer.ToString(), Encoding.UTF8);
         }
 
@@ -74,7 +75,7 @@ namespace GeneratedMapper.Builders
                 }
 
                 indentWriter.WriteLine();
-                
+
                 foreach (var afterMap in _information.AfterMaps)
                 {
                     var parameters = string.Join(", ",
@@ -85,14 +86,16 @@ namespace GeneratedMapper.Builders
                             _ => x.ParameterName
                         }));
 
-                    if (afterMap.PartOfType.ContainingNamespace.Equals(_information.SourceType.ContainingNamespace) &&
+                    var awaitPrefix = afterMap.IsAsync ? "await " : "";
+
+                    if (afterMap.PartOfType.ContainingNamespace.Equals(_information.SourceType?.ContainingNamespace, SymbolEqualityComparer.Default) &&
                         afterMap.PartOfType.Name == $"{_information.SourceType?.Name}MapToExtensions")
                     {
-                        indentWriter.WriteLine($"{afterMap.MethodName}({parameters});");
+                        indentWriter.WriteLine($"{awaitPrefix}{afterMap.MethodName}({parameters});");
                     }
                     else
                     {
-                        indentWriter.WriteLine($"{afterMap.PartOfType.ToDisplayString()}.{afterMap.MethodName}({parameters});");
+                        indentWriter.WriteLine($"{awaitPrefix}{afterMap.PartOfType.ToDisplayString()}.{afterMap.MethodName}({parameters});");
                     }
 
                     indentWriter.WriteLine();

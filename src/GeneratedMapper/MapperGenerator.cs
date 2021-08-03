@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using GeneratedMapper.Attributes;
 using GeneratedMapper.Builders;
@@ -35,6 +33,8 @@ namespace GeneratedMapper
 
         public void Execute(GeneratorExecutionContext context)
         {
+            var fileIndex = 0;
+
             try
             {
                 var foundMappings = FindMappings(context);
@@ -44,14 +44,15 @@ namespace GeneratedMapper
 
                 var distinctMappings = foundMappings
                     .GroupBy(x => x, MappingInformation.SourceTypeDestinationTypeComparer)
-                    .Select(x => new { MapInfo = x.OrderBy(m => m.AttributeIndex).First(), MapType = x.Aggregate(x.Key.MappingType, (mt, y) => mt | y.MappingType)}).ToArray();
+                    .Select(x => new { MapInfo = x.OrderBy(m => m.AttributeIndex).First(), MapType = x.Aggregate(x.Key.MappingType, (mt, y) => mt | y.MappingType) })
+                    .ToArray();
                 ValidateMappings(context, distinctMappings.Select(x => x.MapInfo));
 
                 foreach (var information in distinctMappings)
                 {
                     foreach (var (name, text) in GenerateMappings(information.MapInfo, information.MapType))
                     {
-                        context.AddSource(name, text);
+                        context.AddSource($"{name}.{++fileIndex}.g.cs", text);
                     }
                 }
 
@@ -60,7 +61,7 @@ namespace GeneratedMapper
                 {
                     var (name, text) = GenerateInjectableMappersServiceCollectionConfiguration(injectables.Select(x => x.MapInfo));
 
-                    context.AddSource(name, text);
+                    context.AddSource($"{name}.{++fileIndex}.g.cs", text);
                 }
 
                 context.AddSource("MapExtensions.g.cs", new MapToExtensionsBuilder(foundMappings).GenerateSourceText());
@@ -79,7 +80,7 @@ namespace GeneratedMapper
             var customizations = FindMapperCustomizations(context);
 
             var parser = new MappingAttributeParser(context, new PropertyParser(context, new ParameterParser(context), extensionMethods));
-            
+
             var foundMappings = new List<MappingInformation>();
 
             if (context.SyntaxReceiver is MapAttributeReceiver attributeReceiver)
@@ -94,33 +95,72 @@ namespace GeneratedMapper
                     var configurationValues = new ConfigurationValues(context, candidateTypeNode.SyntaxTree, customizations);
 
                     var model = context.Compilation.GetSemanticModel(candidateTypeNode.SyntaxTree);
-                    if (model.GetDeclaredSymbol(candidateTypeNode) is ITypeSymbol candidateTypeSymbol)
+                    if (model.GetDeclaredSymbol(candidateTypeNode) is INamedTypeSymbol candidateType)
                     {
                         foreach (var match in attributeReceiver.ExtensionCandidates.Where(x => x.Source == candidateTypeNode))
                         {
                             var target = context.Compilation.GetSemanticModel(match.Destination.SyntaxTree).GetDeclaredSymbol(match.Destination);
-                           foundMappings.Add(parser.ParseAttribute(configurationValues, candidateTypeSymbol, MappingType.ExtensionMapTo, null, MappingInformation.MapToIndex, candidateTypeSymbol as INamedTypeSymbol, target as INamedTypeSymbol, match.Syntax, afterMapMethods));
+                            if (target is INamedTypeSymbol targetType)
+                            {
+                                foundMappings.Add(
+                                    parser.ParseAttribute(
+                                        configurationValues,
+                                        candidateType,
+                                        MappingType.ExtensionMapTo,
+                                        null,
+                                        MappingInformation.MapToIndex,
+                                        candidateType,
+                                        targetType,
+                                        match.Syntax,
+                                        afterMapMethods));
+                            }
                         }
+
                         foreach (var match in attributeReceiver.ProjectionCanidates.Where(x => x.Source == candidateTypeNode))
                         {
                             var target = context.Compilation.GetSemanticModel(match.Destination.SyntaxTree).GetDeclaredSymbol(match.Destination);
-                            foundMappings.Add(parser.ParseAttribute(configurationValues, candidateTypeSymbol, MappingType.ExtensionProjectTo, null, MappingInformation.ProjectToIndex, candidateTypeSymbol as INamedTypeSymbol, target as INamedTypeSymbol, match.Syntax, afterMapMethods));
+                            if (target is INamedTypeSymbol targetType)
+                            {
+                                foundMappings.Add(
+                                    parser.ParseAttribute(
+                                        configurationValues,
+                                        candidateType,
+                                        MappingType.ExtensionProjectTo,
+                                        null,
+                                        MappingInformation.ProjectToIndex,
+                                        candidateType,
+                                        targetType,
+                                        match.Syntax,
+                                        afterMapMethods));
+                            }
                         }
 
                         foundMappings.AddRange(
-                            candidateTypeSymbol.GetAttributes()
+                            candidateType.GetAttributes()
                                 .Where(attribute =>
                                     attribute.AttributeClass != null &&
+                                    attribute.ApplicationSyntaxReference != null &&
                                     (attribute.AttributeClass.Equals(mapToAttribute, SymbolEqualityComparer.Default) ||
                                      attribute.AttributeClass.Equals(mapFromAttribute, SymbolEqualityComparer.Default)))
                                 .Select(attribute =>
                                 {
-                                    var mapFrom = attribute.AttributeClass.Name.Contains("MapFrom");
-                                    var attributeType = attribute.ConstructorArgument<INamedTypeSymbol>(0);
-                                    return parser.ParseAttribute(configurationValues, candidateTypeSymbol,
+                                    var mapFrom = attribute.AttributeClass?.Name.Contains("MapFrom") ?? false;
+
+                                    if (attribute.ConstructorArgument<INamedTypeSymbol>(0) is not INamedTypeSymbol attributeType)
+                                    {
+                                        return null;
+                                    }
+
+                                    return parser.ParseAttribute(configurationValues,
+                                        candidateType,
                                         mapFrom ? MappingType.MapFrom : MappingType.MapTo, attribute.GetMaxRecursion(),
-                                        attribute.GetIndex(), mapFrom ? attributeType : candidateTypeSymbol as INamedTypeSymbol, mapFrom ? candidateTypeSymbol as INamedTypeSymbol : attributeType, attribute.ApplicationSyntaxReference.GetSyntax(), afterMapMethods);
-                                }));
+                                        attribute.GetIndex(),
+                                        mapFrom ? attributeType : candidateType,
+                                        mapFrom ? candidateType : attributeType,
+                                        attribute.ApplicationSyntaxReference!.GetSyntax(),
+                                        afterMapMethods);
+                                })
+                                .OfType<MappingInformation>());
                     }
                 }
             }
@@ -149,9 +189,10 @@ namespace GeneratedMapper
 
             return foundExtensionMethods;
         }
+
         private static List<AfterMapInformation> FindAfterMaps(GeneratorExecutionContext context)
         {
-            var parser = new AfterMapParser(new ParameterParser(context));
+            var parser = new AfterMapParser(context, new ParameterParser(context));
 
             var foundExtensionMethods = new List<AfterMapInformation>();
 
@@ -282,13 +323,13 @@ namespace GeneratedMapper
                 if (mappingType.HasFlag(MappingType.Map) || mappingType.HasFlag(MappingType.Extension))
                 {
                     var text = new MappingBuilder(information).GenerateSourceText();
-                    yield return ($"{information.SourceType.Name}_To_{information.DestinationType.Name}_Map.g.cs", text);
+                    yield return ($"{information.SourceType.Name}_To_{information.DestinationType.Name}_Map", text);
                 }
 
                 if (information.ConfigurationValues.Customizations.GenerateExpressions && mappingType.HasFlag(MappingType.Map) || mappingType.HasFlag(MappingType.Project))
                 {
                     var expressionText = new ExpressionBuilder(information).GenerateSourceText();
-                    yield return ($"{information.SourceType.Name}_To_{information.DestinationType.Name}_Expression.g.cs", expressionText);
+                    yield return ($"{information.SourceType.Name}_To_{information.DestinationType.Name}_Expression", expressionText);
                 }
             }
         }
@@ -296,7 +337,7 @@ namespace GeneratedMapper
         private static (string name, SourceText text) GenerateInjectableMappersServiceCollectionConfiguration(IEnumerable<MappingInformation> informations)
         {
             var text = new InjectableMapperServiceCollectionRegistrationBuilder(informations).GenerateSourceText();
-            return ("GeneratedMapperServiceCollectionRegistrations.g.cs", text);
+            return ("GeneratedMapperServiceCollectionRegistrations", text);
         }
     }
 }

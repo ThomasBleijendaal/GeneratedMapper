@@ -255,7 +255,7 @@ namespace A
 
     public static partial class AMapToExtensions
     {
-        static void AfterMapToB(A source, B.B destination) {}
+        static void AfterMapToB(A source, B.B destination, string param) {}
     }
 }
 
@@ -270,7 +270,7 @@ namespace A
 {
     public static partial class AMapToExtensions
     {
-        public static B.B MapToB(this A.A self, int startIndex)
+        public static B.B MapToB(this A.A self, int startIndex, string param)
         {
             if (self is null)
             {
@@ -282,7 +282,7 @@ namespace A
                 Name = (self.Name ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name is null."")).Substring(startIndex),
             };
             
-            AfterMapToB(self, target);
+            AfterMapToB(self, target, param);
             
             return target;
         }

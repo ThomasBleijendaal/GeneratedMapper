@@ -30,10 +30,16 @@ namespace GeneratedMapper.Parsers
             _propertyParser = propertyParser ?? throw new ArgumentNullException(nameof(propertyParser));
         }
 
-        public MappingInformation ParseAttribute(ConfigurationValues configurationValues, ITypeSymbol attributedType,
-            MappingType mappingType, int? maxRecursion, int index, INamedTypeSymbol sourceType,
+        public MappingInformation ParseAttribute(
+            ConfigurationValues configurationValues, 
+            ITypeSymbol attributedType,
+            MappingType mappingType, 
+            int? maxRecursion, 
+            int index, 
+            INamedTypeSymbol sourceType,
             INamedTypeSymbol destinationType,
-            SyntaxNode syntaxNode, List<AfterMapInformation> afterMapInformations)
+            SyntaxNode syntaxNode, 
+            List<AfterMapInformation> afterMapInformations)
         {
             var mappingInformation = new MappingInformation(syntaxNode, maxRecursion, index, configurationValues);
             var targetType = mappingType.HasFlag(MappingType.To) ? destinationType : sourceType;
@@ -125,8 +131,8 @@ namespace GeneratedMapper.Parsers
                 }
 
                 foreach (var afterMap in afterMapInformations.Where(am =>
-                    am.ParameterTypes.Any(x => x.Equals(mappingInformation.SourceType)) &&
-                    am.ParameterTypes.Any(x => x.Equals(mappingInformation.DestinationType))))
+                    am.ParameterTypes.OfType<ITypeSymbol>().Any(x => x.Equals(mappingInformation.SourceType, SymbolEqualityComparer.Default)) &&
+                    am.ParameterTypes.OfType<ITypeSymbol>().Any(x => x.Equals(mappingInformation.DestinationType, SymbolEqualityComparer.Default))))
                 {
                     mappingInformation.AfterMaps.Add(afterMap);
                 }

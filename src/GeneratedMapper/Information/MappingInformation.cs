@@ -2,6 +2,7 @@
 using System.Linq;
 using GeneratedMapper.Configurations;
 using GeneratedMapper.Enums;
+using GeneratedMapper.EqualityComparers;
 using GeneratedMapper.Extensions;
 using GeneratedMapper.Helpers;
 using Microsoft.CodeAnalysis;
@@ -27,37 +28,6 @@ namespace GeneratedMapper.Information
             MaxRecursion = maxRecursion;
             ConfigurationValues = configurationValues;
             AttributeIndex = index;
-        }
-
-        private sealed class SourceTypeDestinationTypeEqualityComparer : IEqualityComparer<MappingInformation>
-        {
-            public bool Equals(MappingInformation x, MappingInformation y)
-            {
-                if (ReferenceEquals(x, y))
-                {
-                    return true;
-                }
-
-                if (x == null || y == null)
-                {
-                    return false;
-                }
-
-                if (x.GetType() != y.GetType())
-                {
-                    return false;
-                }
-
-                return Equals(x.SourceType, y.SourceType) && Equals(x.DestinationType, y.DestinationType);
-            }
-
-            public int GetHashCode(MappingInformation obj)
-            {
-                unchecked
-                {
-                    return ((obj.SourceType != null ? obj.SourceType.GetHashCode() : 0) * 397) ^ (obj.DestinationType != null ? obj.DestinationType.GetHashCode() : 0);
-                }
-            }
         }
 
         public static IEqualityComparer<MappingInformation> SourceTypeDestinationTypeComparer { get; } = new SourceTypeDestinationTypeEqualityComparer();
@@ -108,7 +78,7 @@ namespace GeneratedMapper.Information
 
         public bool IsFullyResolved => AllMappings.All(x => !x.RequiresMappingInformationOfMapper || x.MappingInformationOfMapperToUse != null);
 
-        public bool IsAsync => AllMappings.Any(x => x.IsAsync);
+        public bool IsAsync => AllMappings.Any(x => x.IsAsync) || AfterMaps.Any(x => x.IsAsync);
 
         public bool TryValidate(out IEnumerable<Diagnostic> diagnostics)
         {

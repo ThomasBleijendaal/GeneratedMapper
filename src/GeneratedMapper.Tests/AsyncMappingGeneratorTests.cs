@@ -191,5 +191,57 @@ namespace A
 }
 ");
         }
+
+        [Test]
+        public void MapWithAsyncAfterMap()
+        {
+            GeneratorTestHelper.TestGeneratedCode(@"using System;
+using System.Threading.Tasks;
+using GeneratedMapper.Attributes;
+
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
+namespace A {
+    [MapTo(typeof(B.B))]
+    public class A { public string Name { get; set; } }
+
+    public static partial class AMapToExtensions
+    {
+        static Task AfterMapToB1Async(A source, B.B destination) { return Task.CompletedTask; }
+        static async Task AfterMapToB2Async(A source, B.B destination, int delay) { await Task.Delay(delay); }
+    }
+}
+
+namespace B {
+    public class B { public string Name { get; set; } }
+}",
+@"using System;
+using System.Threading.Tasks;
+
+namespace A
+{
+    public static partial class AMapToExtensions
+    {
+        public static async Task<B.B> MapToBAsync(this A.A self, int delay)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self), ""A.A -> B.B: Source is null."");
+            }
+            
+            var target = new B.B
+            {
+                Name = (self.Name ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name is null."")),
+            };
+            
+            await AfterMapToB1Async(self, target);
+            
+            await AfterMapToB2Async(self, target, delay);
+            
+            return target;
+        }
+    }
+}
+");
+        }
     }
 }
