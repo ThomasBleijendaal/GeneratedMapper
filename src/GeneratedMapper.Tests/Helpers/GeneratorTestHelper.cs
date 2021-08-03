@@ -42,7 +42,7 @@ namespace GeneratedMapper.Extensions
             switch (source)
             {
                 default:
-                    throw new NotSupportedException($""{typeof(TSource).FullName} -> {typeof(TDestination).FullName}: Project is not configured."");
+                    throw new NotSupportedException($""{typeof(TSource).FullName} -> {typeof(TDestination).FullName}: Projection is not configured."");
             }
         }
     }
