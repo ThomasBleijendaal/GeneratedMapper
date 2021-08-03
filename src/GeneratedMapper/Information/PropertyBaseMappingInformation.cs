@@ -118,27 +118,27 @@ namespace GeneratedMapper.Information
             (!string.IsNullOrEmpty(SourcePropertyMethodToCall) && !((SourceIsValueType && !SourceIsNullable) || (DestinationIsValueType && !DestinationIsNullable))) ||
             CollectionElements.Any(x => x.RequiresNullableContext);
 
-        public bool TryValidateMapping(AttributeData attributeData, out IEnumerable<Diagnostic> diagnostics)
+        public bool TryValidateMapping(SyntaxNode syntaxNode, out IEnumerable<Diagnostic> diagnostics)
         {
             var messages = new List<Diagnostic>();
 
-            messages.AddRange(Validate(attributeData, MapWithAttribute));
+            messages.AddRange(Validate(syntaxNode, MapWithAttribute));
 
             if (RequiresMappingInformationOfMapper && MappingInformationOfMapperToUse == null)
             {
-                messages.Add(DiagnosticsHelper.MissingMappingInformation(attributeData, MapperFromType?.ToDisplayString(), MapperToType?.ToDisplayString()));
+                messages.Add(DiagnosticsHelper.MissingMappingInformation(syntaxNode, MapperFromType?.ToDisplayString(), MapperToType?.ToDisplayString()));
             }
 
             foreach (var element in CollectionElements)
             {
-                messages.AddRange(element.Validate(attributeData, MapWithAttribute));
+                messages.AddRange(element.Validate(syntaxNode, MapWithAttribute));
             }
 
             diagnostics = messages;
             return messages.Count == 0;
         }
 
-        protected virtual IEnumerable<Diagnostic> Validate(AttributeData mapAttributeData, AttributeData? mapWithAttributeData) => Enumerable.Empty<Diagnostic>();
+        protected virtual IEnumerable<Diagnostic> Validate(SyntaxNode syntaxNode, AttributeData? mapWithAttributeData) => Enumerable.Empty<Diagnostic>();
 
         private IEnumerable<ParameterInformation> AllParameters
         {

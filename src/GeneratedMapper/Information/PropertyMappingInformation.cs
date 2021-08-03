@@ -59,11 +59,11 @@ namespace GeneratedMapper.Information
             CollectionElements.Add(element);
         }
 
-        protected override IEnumerable<Diagnostic> Validate(AttributeData mapAttributeData, AttributeData? mapWithAttributeData)
+        protected override IEnumerable<Diagnostic> Validate(SyntaxNode syntaxNode, AttributeData? mapWithAttributeData)
         {
             if (string.IsNullOrWhiteSpace(SourcePropertyName) || string.IsNullOrWhiteSpace(DestinationPropertyName))
             {
-                yield return DiagnosticsHelper.UnrecognizedTypes(mapAttributeData);
+                yield return DiagnosticsHelper.UnrecognizedTypes(syntaxNode);
             }
 
             if (SourceIsNullable && !DestinationIsNullable && PropertyType == default)
@@ -74,14 +74,13 @@ namespace GeneratedMapper.Information
 
                 if (!ignoreExplicitly && (!usesResolver || (usesResolver && dotNotIgnoreExplicitly)))
                 {
-                    yield return DiagnosticsHelper.IncorrectNullability(mapAttributeData, SourcePropertyName!, DestinationPropertyName!);
+                    yield return DiagnosticsHelper.IncorrectNullability(syntaxNode, SourcePropertyName!, DestinationPropertyName!);
                 }
-
             }
 
             if (SourceIsNullable && IsAsync && mapWithAttributeData?.GetIgnoreNullIncompatibility() != true)
             {
-                yield return DiagnosticsHelper.CannotAwaitNull(mapAttributeData, BelongsToMapping.SourceType?.Name!, SourcePropertyName!);
+                yield return DiagnosticsHelper.CannotAwaitNull(syntaxNode, BelongsToMapping.SourceType?.Name!, SourcePropertyName!);
             }
 
             if ((!string.IsNullOrWhiteSpace(ResolverTypeToUse) && !string.IsNullOrWhiteSpace(SourcePropertyMethodToCall)) ||
@@ -89,7 +88,7 @@ namespace GeneratedMapper.Information
                 (!string.IsNullOrWhiteSpace(SourcePropertyMethodToCall) && RequiresMappingInformationOfMapper) ||
                 (SourceIsValueType != DestinationIsValueType && string.IsNullOrWhiteSpace(ResolverTypeToUse) && string.IsNullOrWhiteSpace(SourcePropertyMethodToCall) && !RequiresMappingInformationOfMapper))
             {
-                yield return DiagnosticsHelper.ConflictingMappingInformation(mapAttributeData, SourcePropertyName!);
+                yield return DiagnosticsHelper.ConflictingMappingInformation(syntaxNode, SourcePropertyName!);
             }
         }
     }

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using FluentAssertions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using NUnit.Framework;
@@ -9,6 +11,47 @@ namespace GeneratedMapper.Tests.Helpers
 {
     public static class GeneratorTestHelper
     {
+
+        public const string MapExtensionsDefaultText = @"using System;
+
+namespace GeneratedMapper.Extensions
+{
+    public static class MapExtensions
+    {
+        public static TDestination MapTo<TSource, TDestination>(this TSource source)
+        {
+            switch (source)
+            {
+                default:
+                    throw new NotSupportedException($""{typeof(TSource).FullName} -> {typeof(TDestination).FullName}: Map is not configured."");
+            }
+        }
+    }
+}
+";
+
+        public const string ProjectToExtensionsDefaultText = @"using System;
+using System.Linq;
+
+namespace GeneratedMapper.Extensions
+{
+    public static class ProjectExtensions
+    {
+        public static IQueryable<TDestination> ProjectTo<TSource, TDestination>(this IQueryable<TSource> source)
+        {
+            switch (source)
+            {
+                default:
+                    throw new NotSupportedException($""{typeof(TSource).FullName} -> {typeof(TDestination).FullName}: Project is not configured."");
+            }
+        }
+    }
+}
+";
+
+        private static readonly string[] DefaultFiles = {MapExtensionsDefaultText, ProjectToExtensionsDefaultText};
+        private static IEnumerable<string> AppendedDefaults(int count) => DefaultFiles.Reverse().Take(count).Reverse();
+
         private static (ImmutableArray<Diagnostic>, string[]) GetGeneratedOutput(string source)
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(source);
@@ -39,6 +82,11 @@ namespace GeneratedMapper.Tests.Helpers
 
             Assert.AreEqual(0, diagnostics.Length, string.Join(", ", diagnostics.Select(x => x.GetMessage())));
 
+            var delta = output.Length - expectedOutputSourceTexts.Length;
+            expectedOutputSourceTexts = expectedOutputSourceTexts.Concat(AppendedDefaults(delta)).ToArray();
+
+            Assert.AreEqual(output.Length, expectedOutputSourceTexts.Length, $"Expected output files count miss-match with {delta} default files added to expected output");
+
             for (var i = 0; i < expectedOutputSourceTexts.Length; i++)
             {
                 Assert.AreEqual(expectedOutputSourceTexts[i], output.ElementAtOrDefault(i) ?? "", $"Error in file index: {i}");
@@ -57,6 +105,16 @@ namespace GeneratedMapper.Tests.Helpers
             {
                 Assert.Contains(diagnostic, errorCodes);
             }
+        }
+
+        public static void TestReportedDiagnosticLocation(string sourceText, string errorCode, string locationText)
+        {
+            var (diagnostics, output) = GetGeneratedOutput(sourceText);
+            
+            diagnostics.Should().Contain(d =>
+                d.Id == errorCode &&
+                d.Location.SourceTree.ToString()
+                    .Substring(d.Location.SourceSpan.Start, d.Location.SourceSpan.Length) == locationText);
         }
     }
 }

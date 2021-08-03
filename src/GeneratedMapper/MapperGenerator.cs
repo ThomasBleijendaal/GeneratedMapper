@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using GeneratedMapper.Attributes;
 using GeneratedMapper.Builders;
 using GeneratedMapper.Configurations;
+using GeneratedMapper.Enums;
+using GeneratedMapper.Extensions;
 using GeneratedMapper.Helpers;
 using GeneratedMapper.Information;
 using GeneratedMapper.Parsers;
@@ -39,23 +42,29 @@ namespace GeneratedMapper
                 // resolve all mappings that need other mappings information (like nested mappings)
                 ResolvePendingNestedMappings(foundMappings);
 
-                ValidateMappings(context, foundMappings);
+                var distinctMappings = foundMappings
+                    .GroupBy(x => x, MappingInformation.SourceTypeDestinationTypeComparer)
+                    .Select(x => new { MapInfo = x.OrderBy(m => m.AttributeIndex).First(), MapType = x.Aggregate(x.Key.MappingType, (mt, y) => mt | y.MappingType)}).ToArray();
+                ValidateMappings(context, distinctMappings.Select(x => x.MapInfo));
 
-                foreach (var information in foundMappings)
+                foreach (var information in distinctMappings)
                 {
-                    foreach (var (name, text) in GenerateMappings(information))
+                    foreach (var (name, text) in GenerateMappings(information.MapInfo, information.MapType))
                     {
                         context.AddSource(name, text);
                     }
                 }
 
-                var injectables = foundMappings.Where(x => x.ConfigurationValues.Customizations.GenerateInjectableMappers);
+                var injectables = distinctMappings.Where(x => x.MapInfo.ConfigurationValues.Customizations.GenerateInjectableMappers);
                 if (injectables.Any())
                 {
-                    var (name, text) = GenerateInjectableMappersServiceCollectionConfiguration(injectables);
+                    var (name, text) = GenerateInjectableMappersServiceCollectionConfiguration(injectables.Select(x => x.MapInfo));
 
                     context.AddSource(name, text);
                 }
+
+                context.AddSource("MapExtensions.g.cs", new MapToExtensionsBuilder(foundMappings).GenerateSourceText());
+                context.AddSource("ProjectExtensions.g.cs", new ProjectToExtensionsBuilder(foundMappings).GenerateSourceText());
             }
             catch (Exception ex)
             {
@@ -75,6 +84,8 @@ namespace GeneratedMapper
 
             if (context.SyntaxReceiver is MapAttributeReceiver attributeReceiver)
             {
+                attributeReceiver.TrimCandidates();
+
                 var mapToAttribute = context.Compilation.GetTypeByMetadataName(typeof(MapToAttribute).FullName);
                 var mapFromAttribute = context.Compilation.GetTypeByMetadataName(typeof(MapFromAttribute).FullName);
 
@@ -85,13 +96,31 @@ namespace GeneratedMapper
                     var model = context.Compilation.GetSemanticModel(candidateTypeNode.SyntaxTree);
                     if (model.GetDeclaredSymbol(candidateTypeNode) is ITypeSymbol candidateTypeSymbol)
                     {
+                        foreach (var match in attributeReceiver.ExtensionCandidates.Where(x => x.Source == candidateTypeNode))
+                        {
+                            var target = context.Compilation.GetSemanticModel(match.Destination.SyntaxTree).GetDeclaredSymbol(match.Destination);
+                           foundMappings.Add(parser.ParseAttribute(configurationValues, candidateTypeSymbol, MappingType.ExtensionMapTo, null, MappingInformation.MapToIndex, candidateTypeSymbol as INamedTypeSymbol, target as INamedTypeSymbol, match.Syntax, afterMapMethods));
+                        }
+                        foreach (var match in attributeReceiver.ProjectionCanidates.Where(x => x.Source == candidateTypeNode))
+                        {
+                            var target = context.Compilation.GetSemanticModel(match.Destination.SyntaxTree).GetDeclaredSymbol(match.Destination);
+                            foundMappings.Add(parser.ParseAttribute(configurationValues, candidateTypeSymbol, MappingType.ExtensionProjectTo, null, MappingInformation.ProjectToIndex, candidateTypeSymbol as INamedTypeSymbol, target as INamedTypeSymbol, match.Syntax, afterMapMethods));
+                        }
+
                         foundMappings.AddRange(
                             candidateTypeSymbol.GetAttributes()
                                 .Where(attribute =>
                                     attribute.AttributeClass != null &&
                                     (attribute.AttributeClass.Equals(mapToAttribute, SymbolEqualityComparer.Default) ||
-                                    attribute.AttributeClass.Equals(mapFromAttribute, SymbolEqualityComparer.Default)))
-                                .Select(attribute => parser.ParseAttribute(configurationValues, candidateTypeSymbol, attribute, afterMapMethods)));
+                                     attribute.AttributeClass.Equals(mapFromAttribute, SymbolEqualityComparer.Default)))
+                                .Select(attribute =>
+                                {
+                                    var mapFrom = attribute.AttributeClass.Name.Contains("MapFrom");
+                                    var attributeType = attribute.ConstructorArgument<INamedTypeSymbol>(0);
+                                    return parser.ParseAttribute(configurationValues, candidateTypeSymbol,
+                                        mapFrom ? MappingType.MapFrom : MappingType.MapTo, attribute.GetMaxRecursion(),
+                                        attribute.GetIndex(), mapFrom ? attributeType : candidateTypeSymbol as INamedTypeSymbol, mapFrom ? candidateTypeSymbol as INamedTypeSymbol : attributeType, attribute.ApplicationSyntaxReference.GetSyntax(), afterMapMethods);
+                                }));
                     }
                 }
             }
@@ -227,7 +256,7 @@ namespace GeneratedMapper
                 }
                 else
                 {
-                    mapping.BelongsToMapping.ReportIssue(DiagnosticsHelper.MultipleMappingInformation(mapping.BelongsToMapping.AttributeData, mapping.MapperFromType?.ToDisplayString(), mapping.MapperToType?.ToDisplayString()));
+                    mapping.BelongsToMapping.ReportIssue(DiagnosticsHelper.MultipleMappingInformation(mapping.BelongsToMapping.SyntaxNode, mapping.MapperFromType?.ToDisplayString(), mapping.MapperToType?.ToDisplayString()));
                 }
             }
         }
@@ -246,14 +275,17 @@ namespace GeneratedMapper
             }
         }
 
-        private static IEnumerable<(string name, SourceText text)> GenerateMappings(MappingInformation information)
+        private static IEnumerable<(string name, SourceText text)> GenerateMappings(MappingInformation information, MappingType mappingType)
         {
             if (information.SourceType != null && information.DestinationType != null)
             {
-                var text = new MappingBuilder(information).GenerateSourceText();
-                yield return ($"{information.SourceType.Name}_To_{information.DestinationType.Name}_Map.g.cs", text);
+                if (mappingType.HasFlag(MappingType.Map) || mappingType.HasFlag(MappingType.Extension))
+                {
+                    var text = new MappingBuilder(information).GenerateSourceText();
+                    yield return ($"{information.SourceType.Name}_To_{information.DestinationType.Name}_Map.g.cs", text);
+                }
 
-                if (information.ConfigurationValues.Customizations.GenerateExpressions)
+                if (information.ConfigurationValues.Customizations.GenerateExpressions && mappingType.HasFlag(MappingType.Map) || mappingType.HasFlag(MappingType.Project))
                 {
                     var expressionText = new ExpressionBuilder(information).GenerateSourceText();
                     yield return ($"{information.SourceType.Name}_To_{information.DestinationType.Name}_Expression.g.cs", expressionText);

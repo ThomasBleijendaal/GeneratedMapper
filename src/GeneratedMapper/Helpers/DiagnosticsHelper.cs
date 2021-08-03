@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using System;
+using GeneratedMapper.Enums;
 
 namespace GeneratedMapper.Helpers
 {
@@ -133,38 +134,47 @@ namespace GeneratedMapper.Helpers
             Severity = DiagnosticSeverity.Error
         };
 
-        public static Diagnostic NoParameterlessConstructor(AttributeData attributeData)
-            => GetDiagnostic(_noParameterlessConstructor, attributeData);
-        public static Diagnostic UnrecognizedTypes(AttributeData attributeData)
-            => GetDiagnostic(_unrecognizedTypes, attributeData);
-        public static Diagnostic UnmappableProperty(AttributeData attributeData, string attributedClass, string property, string targetClass)
-            => GetDiagnostic(_unmappableProperty, attributeData, attributedClass, property, targetClass);
-        public static Diagnostic IncorrectNullability(AttributeData attributeData, string sourceProperty, string destinationProperty)
-            => GetDiagnostic(_incorrectNullablity, attributeData, sourceProperty, destinationProperty);
-        public static Diagnostic LeftOverProperty(AttributeData attributeData, string targetClass, string targetProperty, string attributedClass)
-            => GetDiagnostic(_leftOverProperty, attributeData, targetClass, targetProperty, attributedClass);
-        public static Diagnostic CannotFindType(AttributeData attributeData, string type)
-            => GetDiagnostic(_cannotFindType, attributeData, type);
-        public static Diagnostic CannotFindMethod(AttributeData attributeData, string sourceTypeName, string sourceProperty, string methodName)
-            => GetDiagnostic(_cannotFindMethod, attributeData, sourceTypeName, sourceProperty, methodName);
-        public static Diagnostic CannotFindTypeOfConstructorArgument(AttributeData attributeData, string argumentName, string resolverTypeName)
-            => GetDiagnostic(_cannotFindConstructorArgumentType, attributeData, argumentName, resolverTypeName);
-        public static Diagnostic UnmappableEnumerableProperty(AttributeData attributeData, string attributedClass, string property, string targetProperty, string targetClass)
-            => GetDiagnostic(_unmappableEnumerableProperty, attributeData, attributedClass, property, targetProperty, targetClass);
-        public static Diagnostic SubClassHasIncompatibleMapper(AttributeData attributeData, string sourceProperty, string destinationCollectionType)
-            => GetDiagnostic(_subClassHasIncompatibleMapper, attributeData, sourceProperty, destinationCollectionType);
-        public static Diagnostic MissingMappingInformation(AttributeData attributeData, string? mapFromType, string? mapToType)
-            => GetDiagnostic(_missingMappingInformation, attributeData, mapFromType, mapToType);
-        public static Diagnostic MultipleMappingInformation(AttributeData attributeData, string? mapFromType, string? mapToType)
-            => GetDiagnostic(_multiplewMappingInformation, attributeData, mapFromType, mapToType);
-        public static Diagnostic ConflictingMappingInformation(AttributeData attributeData, string sourceProperty)
-            => GetDiagnostic(_conflictingMappingInformation, attributeData, sourceProperty);
-        public static Diagnostic EmptyMapper(AttributeData attributeData, string sourceType, string destinationType)
-            => GetDiagnostic(_emptyMapper, attributeData, sourceType, destinationType);
-        public static Diagnostic MissingIgnoreInTarget(AttributeData attributeData, string targetType, string targetProperty)
-            => GetDiagnostic(_cannotFindPropertyToIgnore, attributeData, targetType, targetProperty);
-        public static Diagnostic CannotAwaitNull(AttributeData attributeData, string sourceType, string sourceProperty)
-            => GetDiagnostic(_cannotAwaitNull, attributeData, sourceType, sourceProperty);
+        private static DiagStruct _unmappablePropertyFromExtensionCall = new()
+        {
+            Id = "GM0017",
+            Title = "Property cannot be mapped without Attributes",
+            Message = "The type '{0}' contains the property '{1}' which cannot be found in type '{2}'. Either correct the mapping with [MapTo(typeof())] on type and then [MapWith] or [Ignore] the property.",
+            Severity = DiagnosticSeverity.Error
+        };
+
+        public static Diagnostic NoParameterlessConstructor(SyntaxNode syntaxNode)
+            => GetDiagnostic(_noParameterlessConstructor, syntaxNode);
+        public static Diagnostic UnrecognizedTypes(SyntaxNode syntaxNode)
+            => GetDiagnostic(_unrecognizedTypes, syntaxNode);
+        public static Diagnostic UnmappableProperty(SyntaxNode syntaxNode, string attributedClass, string property, string targetClass)
+            => GetDiagnostic(_unmappableProperty, syntaxNode, attributedClass, property, targetClass);
+
+        public static Diagnostic IncorrectNullability(SyntaxNode syntaxNode, string sourceProperty, string destinationProperty)
+            => GetDiagnostic(_incorrectNullablity, syntaxNode, sourceProperty, destinationProperty);
+        public static Diagnostic LeftOverProperty(SyntaxNode syntaxNode, string targetClass, string targetProperty, string attributedClass, MappingType mappingType)
+            => GetDiagnostic(mappingType.HasFlag(MappingType.Map) ? _leftOverProperty : _unmappablePropertyFromExtensionCall, syntaxNode, targetClass, targetProperty, attributedClass);
+        public static Diagnostic CannotFindType(SyntaxNode syntaxNode, string type)
+            => GetDiagnostic(_cannotFindType, syntaxNode, type);
+        public static Diagnostic CannotFindMethod(SyntaxNode syntaxNode, string sourceTypeName, string sourceProperty, string methodName)
+            => GetDiagnostic(_cannotFindMethod, syntaxNode, sourceTypeName, sourceProperty, methodName);
+        public static Diagnostic CannotFindTypeOfConstructorArgument(SyntaxNode syntaxNode, string argumentName, string resolverTypeName)
+            => GetDiagnostic(_cannotFindConstructorArgumentType, syntaxNode, argumentName, resolverTypeName);
+        public static Diagnostic UnmappableEnumerableProperty(SyntaxNode syntaxNode, string attributedClass, string property, string targetProperty, string targetClass)
+            => GetDiagnostic(_unmappableEnumerableProperty, syntaxNode, attributedClass, property, targetProperty, targetClass);
+        public static Diagnostic SubClassHasIncompatibleMapper(SyntaxNode syntaxNode, string sourceProperty, string destinationCollectionType)
+            => GetDiagnostic(_subClassHasIncompatibleMapper, syntaxNode, sourceProperty, destinationCollectionType);
+        public static Diagnostic MissingMappingInformation(SyntaxNode syntaxNode, string? mapFromType, string? mapToType)
+            => GetDiagnostic(_missingMappingInformation, syntaxNode, mapFromType, mapToType);
+        public static Diagnostic MultipleMappingInformation(SyntaxNode syntaxNode, string? mapFromType, string? mapToType)
+            => GetDiagnostic(_multiplewMappingInformation, syntaxNode, mapFromType, mapToType);
+        public static Diagnostic ConflictingMappingInformation(SyntaxNode syntaxNode, string sourceProperty)
+            => GetDiagnostic(_conflictingMappingInformation, syntaxNode, sourceProperty);
+        public static Diagnostic EmptyMapper(SyntaxNode syntaxNode, string sourceType, string destinationType)
+            => GetDiagnostic(_emptyMapper, syntaxNode, sourceType, destinationType);
+        public static Diagnostic MissingIgnoreInTarget(SyntaxNode syntaxNode, string targetType, string targetProperty)
+            => GetDiagnostic(_cannotFindPropertyToIgnore, syntaxNode, targetType, targetProperty);
+        public static Diagnostic CannotAwaitNull(SyntaxNode syntaxNode, string sourceType, string sourceProperty)
+            => GetDiagnostic(_cannotAwaitNull, syntaxNode, sourceType, sourceProperty);
 
 
         public static Diagnostic Debug(Exception ex) => Debug($"{ex.Message } -- {ex.StackTrace.Replace("\n", "--").Replace("\r", "")}");
@@ -179,7 +189,7 @@ namespace GeneratedMapper.Helpers
                     true),
                 default);
 
-        private static Diagnostic GetDiagnostic(DiagStruct message, AttributeData attributeData, params string?[] replacements)
+        private static Diagnostic GetDiagnostic(DiagStruct message, SyntaxNode syntaxNode, params string?[] replacements)
             => Diagnostic.Create(
                 new DiagnosticDescriptor(
                     message.Id,
@@ -188,7 +198,7 @@ namespace GeneratedMapper.Helpers
                     "Usage",
                     message.Severity,
                     true),
-                attributeData?.ApplicationSyntaxReference?.GetSyntax().GetLocation());
+                syntaxNode?.GetLocation());
 
         private struct DiagStruct
         {

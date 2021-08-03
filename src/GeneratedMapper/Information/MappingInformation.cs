@@ -13,16 +13,54 @@ namespace GeneratedMapper.Information
         private readonly List<Diagnostic> _diagnostics = new();
         private readonly List<PropertyMappingInformation> _propertyMappings = new();
 
-        public AttributeData AttributeData { get; private set; }
+        public const int MapToIndex = ProjectToIndex - 1;
+        public const int ProjectToIndex = int.MaxValue;
+
+        public SyntaxNode SyntaxNode { get; }
+        public int? MaxRecursion { get; }
         public ConfigurationValues ConfigurationValues { get; private set; }
         public int AttributeIndex { get; private set; }
 
-        public MappingInformation(AttributeData attributeData, ConfigurationValues configurationValues)
+        public MappingInformation(SyntaxNode syntaxNode, int? maxRecursion, int index, ConfigurationValues configurationValues)
         {
-            AttributeData = attributeData;
+            SyntaxNode = syntaxNode;
+            MaxRecursion = maxRecursion;
             ConfigurationValues = configurationValues;
-            AttributeIndex = attributeData.GetIndex();
+            AttributeIndex = index;
         }
+
+        private sealed class SourceTypeDestinationTypeEqualityComparer : IEqualityComparer<MappingInformation>
+        {
+            public bool Equals(MappingInformation x, MappingInformation y)
+            {
+                if (ReferenceEquals(x, y))
+                {
+                    return true;
+                }
+
+                if (x == null || y == null)
+                {
+                    return false;
+                }
+
+                if (x.GetType() != y.GetType())
+                {
+                    return false;
+                }
+
+                return Equals(x.SourceType, y.SourceType) && Equals(x.DestinationType, y.DestinationType);
+            }
+
+            public int GetHashCode(MappingInformation obj)
+            {
+                unchecked
+                {
+                    return ((obj.SourceType != null ? obj.SourceType.GetHashCode() : 0) * 397) ^ (obj.DestinationType != null ? obj.DestinationType.GetHashCode() : 0);
+                }
+            }
+        }
+
+        public static IEqualityComparer<MappingInformation> SourceTypeDestinationTypeComparer { get; } = new SourceTypeDestinationTypeEqualityComparer();
 
         public MappingInformation ReportIssue(Diagnostic issue)
         {
@@ -76,10 +114,10 @@ namespace GeneratedMapper.Information
         {
             if (!Mappings.Any())
             {
-                _diagnostics.Add(DiagnosticsHelper.EmptyMapper(AttributeData, SourceType?.ToDisplayString() ?? "-unknown-", DestinationType?.ToDisplayString() ?? "-unknown-"));
+                _diagnostics.Add(DiagnosticsHelper.EmptyMapper(SyntaxNode, SourceType?.ToDisplayString() ?? "-unknown-", DestinationType?.ToDisplayString() ?? "-unknown-"));
             }
 
-            _diagnostics.AddRange(Mappings.SelectMany(x => !x.TryValidateMapping(AttributeData, out var issues) ? issues : Enumerable.Empty<Diagnostic>()));
+            _diagnostics.AddRange(Mappings.SelectMany(x => !x.TryValidateMapping(SyntaxNode, out var issues) ? issues : Enumerable.Empty<Diagnostic>()));
 
             diagnostics = _diagnostics;
 

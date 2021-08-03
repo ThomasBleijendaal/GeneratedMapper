@@ -104,7 +104,7 @@ namespace GeneratedMapper.Builders
 
         private void WriteEnumerableMapToExtensionMethod(IndentedTextWriter indentWriter)
         {
-            if (_information.ConfigurationValues.Customizations.GenerateEnumerableMethods)
+            if (_information.ConfigurationValues.Customizations.GenerateEnumerableMethods && _information.MappingType.HasFlag(MappingType.Map))
             {
                 var mapEnumerableParameters = new[] { $"this IEnumerable<{_information.SourceType?.ToDisplayString()}> {SourceInstanceName}" }
                    .Union(_mapParameterInformations.Select(x => x.ToMethodParameter(string.Empty)).Distinct());

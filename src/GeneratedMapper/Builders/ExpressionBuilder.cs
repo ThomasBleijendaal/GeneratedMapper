@@ -16,7 +16,7 @@ namespace GeneratedMapper.Builders
 
         public ExpressionBuilder(MappingInformation information) : base(information)
         {
-            _maxRecursion = information.AttributeData.GetMaxRecursion() ?? 3;
+            _maxRecursion = information.MaxRecursion ?? 3;
         }
 
         public SourceText GenerateSourceText()
