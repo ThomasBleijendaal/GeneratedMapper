@@ -6,6 +6,7 @@ using GeneratedMapper.Builders.Base;
 using GeneratedMapper.Enums;
 using GeneratedMapper.Extensions;
 using GeneratedMapper.Information;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
 namespace GeneratedMapper.Builders
@@ -33,9 +34,11 @@ namespace GeneratedMapper.Builders
                         indentWriter.WriteLine("switch (source)");
                         using (indentWriter.Braces())
                         {
-                            foreach (var sourceMappingInformationGroup in _informations.Where(x => x.MappingType == MappingType.ExtensionMapTo).GroupBy(x => x.SourceType))
+                            foreach (var sourceMappingInformationGroup in _informations
+                                .Where(x => x.MappingType == MappingType.ExtensionMapTo && x.SourceType != null)
+                                .GroupBy(x => x.SourceType, SymbolEqualityComparer.Default))
                             {
-                                var sourceType = sourceMappingInformationGroup.Key.ToDisplayString();
+                                var sourceType = sourceMappingInformationGroup.Key!.ToDisplayString();
                                 var sourceField = sourceMappingInformationGroup.Key.Name.ToLower();
                                 indentWriter.WriteLine($"case {sourceType} {sourceField}:");
                                 using (indentWriter.Indent())
@@ -43,9 +46,9 @@ namespace GeneratedMapper.Builders
                                     indentWriter.WriteLine("return typeof(TDestination).FullName switch");
                                     using (indentWriter.ClassSetters())
                                     {
-                                        foreach (var mappingInformation in sourceMappingInformationGroup)
+                                        foreach (var mappingInformation in sourceMappingInformationGroup.Where(x => x.DestinationType != null))
                                         {
-                                            var destinationType = mappingInformation.DestinationType.ToDisplayString();
+                                            var destinationType = mappingInformation.DestinationType!.ToDisplayString();
                                             var destinationField = mappingInformation.DestinationType.Name.ToLower();
                                             indentWriter.WriteLine($"\"{destinationType}\" =>");
                                             using (indentWriter.Indent())
