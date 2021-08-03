@@ -33,7 +33,7 @@ namespace GeneratedMapper
 
         public void Execute(GeneratorExecutionContext context)
         {
-            var fileIndex = 0;
+            var sources = new List<(string name, SourceText text)>();
 
             try
             {
@@ -46,26 +46,30 @@ namespace GeneratedMapper
                     .GroupBy(x => x, MappingInformation.SourceTypeDestinationTypeComparer)
                     .Select(x => new { MapInfo = x.OrderBy(m => m.AttributeIndex).First(), MapType = x.Aggregate(x.Key.MappingType, (mt, y) => mt | y.MappingType) })
                     .ToArray();
+
                 ValidateMappings(context, distinctMappings.Select(x => x.MapInfo));
 
                 foreach (var information in distinctMappings)
                 {
-                    foreach (var (name, text) in GenerateMappings(information.MapInfo, information.MapType))
-                    {
-                        context.AddSource($"{name}.{++fileIndex}.g.cs", text);
-                    }
+                    sources.AddRange(GenerateMappings(information.MapInfo, information.MapType));
                 }
 
                 var injectables = distinctMappings.Where(x => x.MapInfo.ConfigurationValues.Customizations.GenerateInjectableMappers);
                 if (injectables.Any())
                 {
-                    var (name, text) = GenerateInjectableMappersServiceCollectionConfiguration(injectables.Select(x => x.MapInfo));
-
-                    context.AddSource($"{name}.{++fileIndex}.g.cs", text);
+                    sources.Add(GenerateInjectableMappersServiceCollectionConfiguration(injectables.Select(x => x.MapInfo)));
                 }
 
-                context.AddSource("MapExtensions.g.cs", new MapToExtensionsBuilder(foundMappings).GenerateSourceText());
-                context.AddSource("ProjectExtensions.g.cs", new ProjectToExtensionsBuilder(foundMappings).GenerateSourceText());
+                sources.AddRange(GenerateAutomaticMappings(foundMappings));
+
+                var uniqueSources = sources
+                    .GroupBy(x => x.name)
+                    .SelectMany(x => x.Select((source, index) => (uniqueName: $"{source.name}.{(index == 0 ? "" : $"{index}.")}g.cs", source.text)));
+
+                foreach (var (name, text) in uniqueSources)
+                {
+                    context.AddSource(name, text);
+                }
             }
             catch (Exception ex)
             {
@@ -338,6 +342,12 @@ namespace GeneratedMapper
         {
             var text = new InjectableMapperServiceCollectionRegistrationBuilder(informations).GenerateSourceText();
             return ("GeneratedMapperServiceCollectionRegistrations", text);
+        }
+
+        private static IEnumerable<(string name, SourceText text)> GenerateAutomaticMappings(IEnumerable<MappingInformation> informations)
+        {
+            yield return ("MapExtensions", new MapToExtensionsBuilder(informations).GenerateSourceText());
+            yield return ("ProjectExtensions", new ProjectToExtensionsBuilder(informations).GenerateSourceText());
         }
     }
 }
