@@ -30,10 +30,16 @@ namespace GeneratedMapper.Parsers
             _propertyParser = propertyParser ?? throw new ArgumentNullException(nameof(propertyParser));
         }
 
-        public MappingInformation ParseAttribute(ConfigurationValues configurationValues, ITypeSymbol attributedType,
-            MappingType mappingType, int? maxRecursion, int index, INamedTypeSymbol sourceType,
+        public MappingInformation ParseAttribute(
+            ConfigurationValues configurationValues, 
+            ITypeSymbol attributedType,
+            MappingType mappingType, 
+            int? maxRecursion, 
+            int index, 
+            INamedTypeSymbol sourceType,
             INamedTypeSymbol destinationType,
-            SyntaxNode syntaxNode, List<AfterMapInformation> afterMapInformations)
+            SyntaxNode syntaxNode, 
+            List<AfterMapInformation> afterMapInformations)
         {
             var mappingInformation = new MappingInformation(syntaxNode, maxRecursion, index, configurationValues);
             var targetType = mappingType.HasFlag(MappingType.To) ? destinationType : sourceType;

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using GeneratedMapper.Attributes;
 using GeneratedMapper.Builders;
@@ -45,7 +44,8 @@ namespace GeneratedMapper
 
                 var distinctMappings = foundMappings
                     .GroupBy(x => x, MappingInformation.SourceTypeDestinationTypeComparer)
-                    .Select(x => new { MapInfo = x.OrderBy(m => m.AttributeIndex).First(), MapType = x.Aggregate(x.Key.MappingType, (mt, y) => mt | y.MappingType)}).ToArray();
+                    .Select(x => new { MapInfo = x.OrderBy(m => m.AttributeIndex).First(), MapType = x.Aggregate(x.Key.MappingType, (mt, y) => mt | y.MappingType) })
+                    .ToArray();
                 ValidateMappings(context, distinctMappings.Select(x => x.MapInfo));
 
                 foreach (var information in distinctMappings)
@@ -80,7 +80,7 @@ namespace GeneratedMapper
             var customizations = FindMapperCustomizations(context);
 
             var parser = new MappingAttributeParser(context, new PropertyParser(context, new ParameterParser(context), extensionMethods));
-            
+
             var foundMappings = new List<MappingInformation>();
 
             if (context.SyntaxReceiver is MapAttributeReceiver attributeReceiver)
@@ -95,33 +95,72 @@ namespace GeneratedMapper
                     var configurationValues = new ConfigurationValues(context, candidateTypeNode.SyntaxTree, customizations);
 
                     var model = context.Compilation.GetSemanticModel(candidateTypeNode.SyntaxTree);
-                    if (model.GetDeclaredSymbol(candidateTypeNode) is ITypeSymbol candidateTypeSymbol)
+                    if (model.GetDeclaredSymbol(candidateTypeNode) is INamedTypeSymbol candidateType)
                     {
                         foreach (var match in attributeReceiver.ExtensionCandidates.Where(x => x.Source == candidateTypeNode))
                         {
                             var target = context.Compilation.GetSemanticModel(match.Destination.SyntaxTree).GetDeclaredSymbol(match.Destination);
-                           foundMappings.Add(parser.ParseAttribute(configurationValues, candidateTypeSymbol, MappingType.ExtensionMapTo, null, MappingInformation.MapToIndex, candidateTypeSymbol as INamedTypeSymbol, target as INamedTypeSymbol, match.Syntax, afterMapMethods));
+                            if (target is INamedTypeSymbol targetType)
+                            {
+                                foundMappings.Add(
+                                    parser.ParseAttribute(
+                                        configurationValues,
+                                        candidateType,
+                                        MappingType.ExtensionMapTo,
+                                        null,
+                                        MappingInformation.MapToIndex,
+                                        candidateType,
+                                        targetType,
+                                        match.Syntax,
+                                        afterMapMethods));
+                            }
                         }
+
                         foreach (var match in attributeReceiver.ProjectionCanidates.Where(x => x.Source == candidateTypeNode))
                         {
                             var target = context.Compilation.GetSemanticModel(match.Destination.SyntaxTree).GetDeclaredSymbol(match.Destination);
-                            foundMappings.Add(parser.ParseAttribute(configurationValues, candidateTypeSymbol, MappingType.ExtensionProjectTo, null, MappingInformation.ProjectToIndex, candidateTypeSymbol as INamedTypeSymbol, target as INamedTypeSymbol, match.Syntax, afterMapMethods));
+                            if (target is INamedTypeSymbol targetType)
+                            {
+                                foundMappings.Add(
+                                    parser.ParseAttribute(
+                                        configurationValues,
+                                        candidateType,
+                                        MappingType.ExtensionProjectTo,
+                                        null,
+                                        MappingInformation.ProjectToIndex,
+                                        candidateType,
+                                        targetType,
+                                        match.Syntax,
+                                        afterMapMethods));
+                            }
                         }
 
                         foundMappings.AddRange(
-                            candidateTypeSymbol.GetAttributes()
+                            candidateType.GetAttributes()
                                 .Where(attribute =>
                                     attribute.AttributeClass != null &&
+                                    attribute.ApplicationSyntaxReference != null &&
                                     (attribute.AttributeClass.Equals(mapToAttribute, SymbolEqualityComparer.Default) ||
                                      attribute.AttributeClass.Equals(mapFromAttribute, SymbolEqualityComparer.Default)))
                                 .Select(attribute =>
                                 {
-                                    var mapFrom = attribute.AttributeClass.Name.Contains("MapFrom");
-                                    var attributeType = attribute.ConstructorArgument<INamedTypeSymbol>(0);
-                                    return parser.ParseAttribute(configurationValues, candidateTypeSymbol,
+                                    var mapFrom = attribute.AttributeClass?.Name.Contains("MapFrom") ?? false;
+
+                                    if (attribute.ConstructorArgument<INamedTypeSymbol>(0) is not INamedTypeSymbol attributeType)
+                                    {
+                                        return null;
+                                    }
+
+                                    return parser.ParseAttribute(configurationValues,
+                                        candidateType,
                                         mapFrom ? MappingType.MapFrom : MappingType.MapTo, attribute.GetMaxRecursion(),
-                                        attribute.GetIndex(), mapFrom ? attributeType : candidateTypeSymbol as INamedTypeSymbol, mapFrom ? candidateTypeSymbol as INamedTypeSymbol : attributeType, attribute.ApplicationSyntaxReference.GetSyntax(), afterMapMethods);
-                                }));
+                                        attribute.GetIndex(),
+                                        mapFrom ? attributeType : candidateType,
+                                        mapFrom ? candidateType : attributeType,
+                                        attribute.ApplicationSyntaxReference!.GetSyntax(),
+                                        afterMapMethods);
+                                })
+                                .OfType<MappingInformation>());
                     }
                 }
             }
