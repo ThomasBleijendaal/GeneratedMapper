@@ -1,5 +1,4 @@
-﻿using System.CodeDom.Compiler;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -7,6 +6,7 @@ using GeneratedMapper.Builders.Base;
 using GeneratedMapper.Enums;
 using GeneratedMapper.Extensions;
 using GeneratedMapper.Information;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
 namespace GeneratedMapper.Builders
@@ -35,9 +35,11 @@ namespace GeneratedMapper.Builders
                         indentWriter.WriteLine("switch (source)");
                         using (indentWriter.Braces())
                         {
-                            foreach (var sourceMappingInformationGroup in _informations.Where(x => x.MappingType == MappingType.ExtensionProjectTo).GroupBy(x => x.SourceType))
+                            foreach (var sourceMappingInformationGroup in _informations
+                                .Where(x => x.MappingType == MappingType.ExtensionProjectTo && x.SourceType != null)
+                                .GroupBy(x => x.SourceType, SymbolEqualityComparer.Default))
                             {
-                                var sourceType = sourceMappingInformationGroup.Key.ToDisplayString();
+                                var sourceType = sourceMappingInformationGroup.Key!.ToDisplayString();
                                 var sourceField = sourceMappingInformationGroup.Key.Name.ToLower();
                                 indentWriter.WriteLine($"case IQueryable<{sourceType}> {sourceField}:");
                                 using (indentWriter.Indent())
@@ -45,9 +47,9 @@ namespace GeneratedMapper.Builders
                                     indentWriter.WriteLine("return typeof(TDestination).FullName switch");
                                     using (indentWriter.ClassSetters())
                                     {
-                                        foreach (var mappingInformation in sourceMappingInformationGroup)
+                                        foreach (var mappingInformation in sourceMappingInformationGroup.Where(x => x.DestinationType != null))
                                         {
-                                            var destinationType = mappingInformation.DestinationType.ToDisplayString();
+                                            var destinationType = mappingInformation.DestinationType!.ToDisplayString();
                                             var destinationField = mappingInformation.DestinationType.Name.ToLower();
                                             indentWriter.WriteLine($"\"{destinationType}\" =>");
                                             using (indentWriter.Indent())
@@ -55,14 +57,14 @@ namespace GeneratedMapper.Builders
                                                 indentWriter.WriteLine($"{sourceField}.Select({sourceMappingInformationGroup.Key.ContainingNamespace.ToDisplayString()}.Expressions.{sourceMappingInformationGroup.Key.Name}.To{mappingInformation.DestinationType.Name}()) is IQueryable<TDestination> {destinationField} ? {destinationField} : default,");
                                             }
                                         }
-                                        indentWriter.WriteLine("_ => throw new NotSupportedException($\"{typeof(TSource).FullName} -> {typeof(TDestination).FullName}: Project is not configured.\")");
+                                        indentWriter.WriteLine("_ => throw new NotSupportedException($\"{typeof(TSource).FullName} -> {typeof(TDestination).FullName}: Projection is not configured.\")");
                                     }
                                 }
                             }
                             indentWriter.WriteLine("default:");
                             using (indentWriter.Indent())
                             {
-                                indentWriter.WriteLine("throw new NotSupportedException($\"{typeof(TSource).FullName} -> {typeof(TDestination).FullName}: Project is not configured.\");");
+                                indentWriter.WriteLine("throw new NotSupportedException($\"{typeof(TSource).FullName} -> {typeof(TDestination).FullName}: Projection is not configured.\");");
                             }
                         }
                     }
