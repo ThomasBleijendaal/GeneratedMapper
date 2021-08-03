@@ -8,5 +8,6 @@
         public bool GenerateEnumerableMethods { get; set; } = true;
         public bool GenerateExpressions { get; set; }
         public bool GenerateInjectableMappers { get; set; }
+        public bool GenerateDocComments { get; set; } = true;
     }
 }

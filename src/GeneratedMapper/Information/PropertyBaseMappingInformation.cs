@@ -39,13 +39,15 @@ namespace GeneratedMapper.Information
         public bool DestinationIsNullable { get; protected set; }
         public bool DestinationIsValueType { get; protected set; }
 
+        public string SourcePropertyMethodType { get; private set; }
         public string? SourcePropertyMethodToCall { get; private set; }
         public IEnumerable<ParameterInformation>? SourcePropertyMethodParameters { get; private set; }
 
         public List<PropertyElementMappingInformation> CollectionElements { get; private set; } = new();
 
-        public void UsingMethod(string method, string? methodNamespace, IEnumerable<ParameterInformation> methodParameters)
+        public void UsingMethod(string methodType, string method, string? methodNamespace, IEnumerable<ParameterInformation> methodParameters)
         {
+            SourcePropertyMethodType = methodType;
             SourcePropertyMethodToCall = method;
             SourcePropertyMethodParameters = methodParameters;
 

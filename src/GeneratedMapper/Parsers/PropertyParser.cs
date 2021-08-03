@@ -208,19 +208,19 @@ namespace GeneratedMapper.Parsers
                         .OrderBy(x => x.Parameters.Length)
                         .FirstOrDefault() is IMethodSymbol sourcePropertyMethod)
                 {
-                    propertyMapping.UsingMethod(propertyMethodToCall, default, _parameterParser.ParseMethodParameters(sourcePropertyMethod.Parameters, ParameterSource.Method));
+                    propertyMapping.UsingMethod(namedSourcePropertyType.ToDisplayString(), propertyMethodToCall, default, _parameterParser.ParseMethodParameters(sourcePropertyMethod.Parameters, ParameterSource.Method));
                 }
                 else if (_extensionMethods.FirstOrDefault(extensionMethod => extensionMethod.MethodName == propertyMethodToCall &&
                     sourceType.Equals(extensionMethod.AcceptsType, SymbolEqualityComparer.Default) &&
                     destinationType.Equals(extensionMethod.ReturnsType, SymbolEqualityComparer.Default) &&
                     extensionMethod.IsAsync == propertyMapping.IsAsync) is ExtensionMethodInformation extensionMethod)
                 {
-                    propertyMapping.UsingMethod(propertyMethodToCall, extensionMethod.PartOfType.ContainingNamespace.ToDisplayString(), extensionMethod.Parameters);
+                    propertyMapping.UsingMethod(extensionMethod.PartOfType.ToDisplayString(), propertyMethodToCall, extensionMethod.PartOfType.ContainingNamespace.ToDisplayString(), extensionMethod.Parameters);
                 }
                 else
                 {
                     // probably an extension method beyond the vision of this generator -- the compiler will throw if it's invalid but we can't check it here
-                    propertyMapping.UsingMethod(propertyMethodToCall, default, Enumerable.Empty<ParameterInformation>());
+                    propertyMapping.UsingMethod("object", propertyMethodToCall, default, Enumerable.Empty<ParameterInformation>());
                 }
             }
             else if (destinationType.HasAttribute(_mapFromAttribute, default, 0, sourceType) ||
