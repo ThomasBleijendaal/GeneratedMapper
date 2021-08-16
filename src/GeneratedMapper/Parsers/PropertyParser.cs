@@ -215,7 +215,7 @@ namespace GeneratedMapper.Parsers
                     destinationType.Equals(extensionMethod.ReturnsType, SymbolEqualityComparer.Default) &&
                     extensionMethod.IsAsync == propertyMapping.IsAsync) is ExtensionMethodInformation extensionMethod)
                 {
-                    propertyMapping.UsingMethod(extensionMethod.PartOfType.ToDisplayString(), propertyMethodToCall, extensionMethod.PartOfType.ContainingNamespace.ToDisplayString(), extensionMethod.Parameters);
+                    propertyMapping.UsingMethod(extensionMethod.PartOfType.ToDisplayString(), propertyMethodToCall, extensionMethod.PartOfType.ContainingNamespace.ToDisplayString(), extensionMethod.Parameters, extensionMethod.TypeParameter);
                 }
                 else
                 {

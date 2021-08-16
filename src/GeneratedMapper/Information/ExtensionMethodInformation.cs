@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace GeneratedMapper.Information
@@ -34,11 +35,13 @@ namespace GeneratedMapper.Information
             return this;
         }
 
+        public ParameterInformation TypeParameter { get; private set; } = default!;
         public IEnumerable<ParameterInformation> Parameters { get; private set; } = default!;
 
         public ExtensionMethodInformation HasParameters(IEnumerable<ParameterInformation> parameters)
         {
-            Parameters = parameters;
+            TypeParameter = parameters.First();
+            Parameters = parameters.Skip(1);
 
             return this;
         }

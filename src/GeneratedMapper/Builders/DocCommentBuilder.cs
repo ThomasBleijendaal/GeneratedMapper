@@ -35,11 +35,37 @@ namespace GeneratedMapper.Builders
 
                     if (!string.IsNullOrEmpty(mapping.SourcePropertyMethodToCall))
                     {
+                        // TODO: this logic is weird (why loop and then set parameters on same variable?)
                         foreach (var parameter in mapping.MapParametersRequired)
                         {
-                            var reference = $"<see cref=\"{_information.SourceType?.ToDisplayString()}.{mapping.SourcePropertyName}\" /> <see cref=\"{mapping.SourcePropertyMethodType}.{mapping.SourcePropertyMethodToCall}({string.Join(", ", mapping.MapParametersRequired.Select(x => x.TypeName))})\" />";
+                            var parameters = mapping.MapParametersRequired.Select(x => x.TypeName).ToList();
+                            if (mapping.SourcePropertyExtensionMethodTypeParameter != null)
+                            {
+                                parameters.Insert(0, mapping.SourcePropertyExtensionMethodTypeParameter.TypeName);
+                            }
+
+                            var reference = $"<see cref=\"{_information.SourceType?.ToDisplayString()}.{mapping.SourcePropertyName}\" /> <see cref=\"{mapping.SourcePropertyMethodType}.{mapping.SourcePropertyMethodToCall}({string.Join(", ", parameters)})\" />";
                             paramRefs.Add($"/// - <paramref name=\"{parameter.ParameterName}\" /> is used by {reference}<br />");
                             @params.Add($"/// <param name=\"{parameter.ParameterName}\">Is used by {reference}</param>");
+                        }
+                    }
+
+                    if (mapping.MappingInformationOfMapperToUse != null)
+                    {
+                        // TODO: weird logic
+                        foreach (var parameter in mapping.MapParametersRequired)
+                        {
+                            foreach (var mappings in mapping.MappingInformationOfMapperToUse.Mappings)
+                            {
+                                var @namespace = $"{mapping.MappingInformationOfMapperToUse.SourceType?.ContainingNamespace.ToDisplayString()}." ?? "";
+                                var typename = $"{@namespace}{mapping.MappingInformationOfMapperToUse.SourceType?.Name}";
+
+                                var parameters = new[] { typename }.Union(mappings.MapParametersRequired.Select(x => x.TypeName));
+
+                                var reference = $"<see cref=\"{_information.SourceType?.ToDisplayString()}.{mapping.SourcePropertyName}\" /> <see cref=\"{typename}.MapTo{mapping.MappingInformationOfMapperToUse.DestinationType?.Name}({string.Join(", ", parameters)})\" />";
+                                paramRefs.Add($"/// - <paramref name=\"{parameter.ParameterName}\" /> is used by {reference}<br />");
+                                @params.Add($"/// <param name=\"{parameter.ParameterName}\">Is used by {reference}</param>");
+                            }
                         }
                     }
                 }
