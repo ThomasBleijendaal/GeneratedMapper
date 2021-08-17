@@ -11,7 +11,7 @@ namespace GeneratedMapper.Tests
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateExpressions = true)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateExpressions = true, GenerateDocComments = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { [MapWith(""Name"", ""ToString"")] public int Name { get; set; } }
@@ -67,7 +67,7 @@ namespace A.Expressions
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateExpressions = true)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateExpressions = true, GenerateDocComments = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { [MapWith(""Name"", ""ToString"")] public int? Name { get; set; } }
@@ -127,7 +127,7 @@ namespace A.Expressions
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateExpressions = true)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateExpressions = true, GenerateDocComments = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { [MapWith(""Name"", ""ToString"")] public int Name { get; set; } }
@@ -183,7 +183,7 @@ namespace A.Expressions
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateExpressions = true)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateExpressions = true, GenerateDocComments = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { [MapWith(""Name"", ""Substring"")] public string Name { get; set; } }

@@ -54,5 +54,10 @@ namespace GeneratedMapper.Attributes
         /// Instruct the code generator to also generate IMapper&lt;TFrom, TTo&gt; for each of the mappings. 
         /// </summary>
         public bool GenerateInjectableMappers { get; set; }
+
+        /// <summary>
+        /// Instruct the code generator to annotate all mappings with documentation comments.
+        /// </summary>
+        public bool GenerateDocComments { get; set; } = true;
     }
 }

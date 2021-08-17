@@ -54,7 +54,7 @@ namespace GeneratedMapper.Parsers
                     extensionMethods.Add(new ExtensionMethodInformation(type, method.Name)
                         .Accepts(acceptType)
                         .Returns(returnType, isAsyncMethod)
-                        .HasParameters(_argumentParser.ParseMethodParameters(method.Parameters.Skip(1), ParameterSource.ExtensionMethod)));
+                        .HasParameters(_argumentParser.ParseMethodParameters(method.Parameters, ParameterSource.ExtensionMethod)));
                 }
             }
 

@@ -274,6 +274,13 @@ namespace GeneratedMapper
                                     customizations.GenerateInjectableMappers = generateInjectableMappers;
                                 }
                                 break;
+
+                            case nameof(MapperGeneratorConfigurationAttribute.GenerateDocComments):
+                                if (argument.Value.Value is bool generateDocComments)
+                                {
+                                    customizations.GenerateDocComments = generateDocComments;
+                                }
+                                break;
                         }
                     }
                 }

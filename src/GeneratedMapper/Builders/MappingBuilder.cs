@@ -15,11 +15,13 @@ namespace GeneratedMapper.Builders
     internal sealed class MappingBuilder : BuilderBase
     {
         private readonly List<PropertyMappingBuilder> _propertyMappingBuilders;
+        private readonly DocCommentBuilder _docCommentBuilder;
         private readonly IEnumerable<ParameterInformation> _mapParameterInformations;
 
         public MappingBuilder(MappingInformation information) : base(information)
         {
             _propertyMappingBuilders = information.Mappings.Select(mapping => new PropertyMappingBuilder(mapping, SourceInstanceName)).ToList();
+            _docCommentBuilder = new DocCommentBuilder(information);
 
             var mapArgumentParameters = _propertyMappingBuilders.SelectMany(x => x.MapArgumentsRequired());
             var afterMapParameters = _information.AfterMaps.SelectMany(x => x.Parameters.Where(p => ParameterTypeMatch(p) == TypeMatch.None));
@@ -39,6 +41,11 @@ namespace GeneratedMapper.Builders
                 indentWriter.WriteLine($"public static partial class {_information.SourceType?.Name}MapToExtensions");
                 using (indentWriter.Braces())
                 {
+                    if (_information.ConfigurationValues.Customizations.GenerateDocComments)
+                    {
+                        _docCommentBuilder.WriteDocComment(indentWriter);
+                    }
+
                     WriteMapToExtensionMethod(indentWriter);
 
                     WriteEnumerableMapToExtensionMethod(indentWriter);
