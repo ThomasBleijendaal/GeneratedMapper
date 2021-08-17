@@ -60,15 +60,16 @@ using GeneratedMapper.Attributes;
 [assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
 namespace A {
     [MapTo(typeof(B.B))]
-    public class A { [MapWith(typeof(R.Resolver))] public string Name { get; set; } }
+    public class A { [MapWith(typeof(R.Resolver1))] public string Name1 { get; set; } [MapWith(typeof(R.Resolver2))] public string Name2 { get; set; } }
 }
 
 namespace R {
-    public class Resolver { public R(string parameter) { } public string Resolve(string input) { return input; } }
+    public class Resolver1 { public R(string parameter1, string parameter2) { } public string Resolve(string input) { return input; } }
+    public class Resolver2 { public R(string parameter1) { } public string Resolve(string input) { return input; } }
 }
 
 namespace B {
-    public class B { public string Name { get; set; } }
+    public class B { public string Name1 { get; set; } public string Name2 { get; set; } }
 }",
 @"using System;
 
@@ -81,23 +82,30 @@ namespace A
         /// <br />
         /// <br />
         /// Parameters<br />
-        /// - <paramref name=""resolverParameter"" /> is used by <see cref=""R.Resolver"" /><br />
+        /// - <paramref name=""resolver1Parameter1"" /> is used by <see cref=""R.Resolver1"" /><br />
+        /// - <paramref name=""resolver1Parameter2"" /> is used by <see cref=""R.Resolver1"" /><br />
+        /// - <paramref name=""resolver2Parameter1"" /> is used by <see cref=""R.Resolver2"" /><br />
         /// </summary>
         /// <param name=""self""></param>
-        /// <param name=""resolverParameter"">Is used by <see cref=""R.Resolver"" /></param>
+        /// <param name=""resolver1Parameter1"">Is used by <see cref=""R.Resolver1"" /></param>
+        /// <param name=""resolver1Parameter2"">Is used by <see cref=""R.Resolver1"" /></param>
+        /// <param name=""resolver2Parameter1"">Is used by <see cref=""R.Resolver2"" /></param>
         /// <returns><see cref=""B.B"" /></returns>
-        public static B.B MapToB(this A.A self, string resolverParameter)
+        public static B.B MapToB(this A.A self, string resolver1Parameter1, string resolver1Parameter2, string resolver2Parameter1)
         {
             if (self is null)
             {
                 throw new ArgumentNullException(nameof(self), ""A.A -> B.B: Source is null."");
             }
             
-            var resolver = new R.Resolver(resolverParameter);
+            var resolver1 = new R.Resolver1(resolver1Parameter1, resolver1Parameter2);
+            
+            var resolver2 = new R.Resolver2(resolver2Parameter1);
             
             var target = new B.B
             {
-                Name = resolver.Resolve((self.Name ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name is null.""))),
+                Name1 = resolver1.Resolve((self.Name1 ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name1 is null.""))),
+                Name2 = resolver2.Resolve((self.Name2 ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name2 is null.""))),
             };
             
             return target;
