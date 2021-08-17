@@ -11,7 +11,7 @@ namespace GeneratedMapper.Tests
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateDocComments = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { public string Prop { get; set; } }
@@ -52,7 +52,7 @@ namespace A
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateDocComments = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { [MapWith(""Prop"", ""Count"")] public string Prop { get; set; } }
@@ -93,7 +93,7 @@ namespace A
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateDocComments = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { [MapWith(""Prop"", ""ToString"")] public Guid Prop { get; set; } }
@@ -134,7 +134,7 @@ namespace A
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateDocComments = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { [MapWith(""Prop"", ""ToString"")] public Guid? Prop { get; set; } }

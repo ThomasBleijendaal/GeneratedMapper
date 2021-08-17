@@ -11,7 +11,7 @@ namespace GeneratedMapper.Tests
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateDocComments = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { [MapWith(""Name"", ""ToString"", IgnoreNullIncompatibility = true)] public string? Name { get; set; } }
@@ -54,7 +54,7 @@ namespace A
             GeneratorTestHelper.TestGeneratedCode(@"using System;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateDocComments = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     [MapFrom(typeof(B.B))]

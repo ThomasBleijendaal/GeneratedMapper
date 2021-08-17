@@ -13,7 +13,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateDocComments = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { [MapAsyncWith(""Names"", typeof(R.AsyncResolver))] public IEnumerable<string> Names { get; set; } }
@@ -67,7 +67,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateDocComments = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { [MapAsyncWith(""Names"", typeof(R.AsyncResolver), MapCompleteCollection = true)] public IEnumerable<string> Names { get; set; } }

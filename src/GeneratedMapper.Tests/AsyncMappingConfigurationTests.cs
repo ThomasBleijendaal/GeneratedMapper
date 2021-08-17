@@ -12,7 +12,7 @@ namespace GeneratedMapper.Tests
 using System.Threading.Tasks;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = true)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = true, GenerateDocComments = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { [MapAsyncWith(""Name"", typeof(R.AsyncResolver))] public string Name { get; set; } }
@@ -85,7 +85,7 @@ namespace A
 using System.Threading.Tasks;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateExpressions = true)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateExpressions = true, GenerateDocComments = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { [MapAsyncWith(""Name"", typeof(R.AsyncResolver))] public string Name { get; set; } }

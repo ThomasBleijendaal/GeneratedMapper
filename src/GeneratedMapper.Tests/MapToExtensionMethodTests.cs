@@ -13,7 +13,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = true, GenerateExpressions = true)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = true, GenerateExpressions = true, GenerateDocComments = false)]
 namespace Test
 {
     public class A { public int Id { get; set; }}

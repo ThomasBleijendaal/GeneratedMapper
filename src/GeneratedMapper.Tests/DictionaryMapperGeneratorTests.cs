@@ -12,7 +12,7 @@ namespace GeneratedMapper.Tests
 using System.Collections.Generic;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateDocComments = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 
@@ -59,7 +59,7 @@ namespace A
 using System.Collections.Generic;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateDocComments = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 
@@ -106,7 +106,7 @@ namespace A
 using System.Collections.Generic;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateDocComments = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 
@@ -153,7 +153,7 @@ namespace A
 using System.Collections.Generic;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateDocComments = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 
@@ -200,7 +200,7 @@ namespace A
 using System.Collections.Generic;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateDocComments = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 
@@ -247,7 +247,7 @@ namespace A
 using System.Collections.Generic;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateDocComments = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 
@@ -294,7 +294,7 @@ namespace A
 using System.Collections.Generic;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateDocComments = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 
@@ -341,7 +341,7 @@ namespace A
 using System.Collections.Generic;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateDocComments = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 
@@ -388,7 +388,7 @@ namespace A
 using System.Collections.Generic;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateDocComments = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 
@@ -435,7 +435,7 @@ namespace A
 using System.Collections.Generic;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateDocComments = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 
@@ -482,7 +482,7 @@ namespace A
 using System.Collections.Generic;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateDocComments = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 
@@ -529,7 +529,7 @@ namespace A
 using System.Collections.Generic;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateDocComments = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 
@@ -576,7 +576,7 @@ namespace A
 using System.Collections.Generic;
 using GeneratedMapper.Attributes;
 
-[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
+[assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false, GenerateDocComments = false)]
 namespace A {
     [MapTo(typeof(B.B))]
     public class A { 

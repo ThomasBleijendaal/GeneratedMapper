@@ -60,6 +60,16 @@ namespace A.B.C
 {
     public static partial class CMapToExtensions
     {
+        /// <summary>
+        /// Mapping for <see cref=""A.B.C.C"" /> to <see cref=""Z.Y.X.X"" />
+        /// <br />
+        /// <br />
+        /// Parameters<br />
+        /// - <paramref name=""resolverCultureInfo"" /> is used by <see cref=""R.Resolver"" /><br />
+        /// </summary>
+        /// <param name=""self""></param>
+        /// <param name=""resolverCultureInfo"">Is used by <see cref=""R.Resolver"" /></param>
+        /// <returns><see cref=""Z.Y.X.X"" /></returns>
         public static Z.Y.X.X MapToX(this A.B.C.C self, System.Globalization.CultureInfo? resolverCultureInfo)
         {
             if (self is null)
@@ -89,6 +99,16 @@ namespace A.B
 {
     public static partial class BMapToExtensions
     {
+        /// <summary>
+        /// Mapping for <see cref=""A.B.B"" /> to <see cref=""Z.Y.Y"" />
+        /// <br />
+        /// <br />
+        /// Parameters<br />
+        /// - <paramref name=""resolverCultureInfo"" /> is used by <see cref=""A.B.B.Obj"" /> <see cref=""A.B.C.C.MapToX(A.B.C.C, System.Globalization.CultureInfo?)"" /><br />
+        /// </summary>
+        /// <param name=""self""></param>
+        /// <param name=""resolverCultureInfo"">Is used by <see cref=""A.B.B.Obj"" /> <see cref=""A.B.C.C.MapToX(A.B.C.C, System.Globalization.CultureInfo?)"" /></param>
+        /// <returns><see cref=""Z.Y.Y"" /></returns>
         public static Z.Y.Y MapToY(this A.B.B self, System.Globalization.CultureInfo? resolverCultureInfo)
         {
             if (self is null)
@@ -117,6 +137,16 @@ namespace A
 {
     public static partial class AMapToExtensions
     {
+        /// <summary>
+        /// Mapping for <see cref=""A.A"" /> to <see cref=""Z.Z"" />
+        /// <br />
+        /// <br />
+        /// Parameters<br />
+        /// - <paramref name=""resolverCultureInfo"" /> is used by <see cref=""A.A.Obj"" /> <see cref=""A.B.B.MapToY(A.B.B, System.Globalization.CultureInfo?)"" /><br />
+        /// </summary>
+        /// <param name=""self""></param>
+        /// <param name=""resolverCultureInfo"">Is used by <see cref=""A.A.Obj"" /> <see cref=""A.B.B.MapToY(A.B.B, System.Globalization.CultureInfo?)"" /></param>
+        /// <returns><see cref=""Z.Z"" /></returns>
         public static Z.Z MapToZ(this A.A self, System.Globalization.CultureInfo? resolverCultureInfo)
         {
             if (self is null)
