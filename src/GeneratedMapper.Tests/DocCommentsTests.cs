@@ -124,11 +124,11 @@ using GeneratedMapper.Attributes;
 [assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
 namespace A {
     [MapTo(typeof(B.B))]
-    public class A { [MapWith(""Name1"", ""PadLeft"")] public string Name1 { get; set; } [MapWith(""Name2"", ""Insert"")] public string Name2 { get; set; } }
+    public class A { [MapWith(""Name1"", ""PadLeft"")] public string Name1 { get; set; } [MapWith(""Name2"", ""Substring"")] public string Name2 { get; set; } [MapWith(""Name3"", ""Insert"")] public string Name3 { get; set; } }
 }
 
 namespace B {
-    public class B { public string Name1 { get; set; } public string Name2 { get; set; } }
+    public class B { public string Name1 { get; set; } public string Name2 { get; set; } public string Name3 { get; set; } }
 }",
 @"using System;
 
@@ -144,13 +144,13 @@ namespace A
         /// <br />
         /// Parameters<br />
         /// - <paramref name=""totalWidth"" /> is used by <see cref=""A.A.Name1"" /> <see cref=""string.PadLeft(int)"" /><br />
-        /// - <paramref name=""startIndex"" /> is used by <see cref=""A.A.Name2"" /> <see cref=""string.Insert(int, string)"" /><br />
-        /// - <paramref name=""value"" /> is used by <see cref=""A.A.Name2"" /> <see cref=""string.Insert(int, string)"" /><br />
+        /// - <paramref name=""startIndex"" /> is used by <see cref=""A.A.Name2"" /> <see cref=""string.Substring(int)"" />, <see cref=""A.A.Name3"" /> <see cref=""string.Insert(int, string)"" /><br />
+        /// - <paramref name=""value"" /> is used by <see cref=""A.A.Name3"" /> <see cref=""string.Insert(int, string)"" /><br />
         /// </summary>
         /// <param name=""self""></param>
         /// <param name=""totalWidth"">Is used by <see cref=""A.A.Name1"" /> <see cref=""string.PadLeft(int)"" /></param>
-        /// <param name=""startIndex"">Is used by <see cref=""A.A.Name2"" /> <see cref=""string.Insert(int, string)"" /></param>
-        /// <param name=""value"">Is used by <see cref=""A.A.Name2"" /> <see cref=""string.Insert(int, string)"" /></param>
+        /// <param name=""startIndex"">Is used by <see cref=""A.A.Name2"" /> <see cref=""string.Substring(int)"" />, <see cref=""A.A.Name3"" /> <see cref=""string.Insert(int, string)"" /></param>
+        /// <param name=""value"">Is used by <see cref=""A.A.Name3"" /> <see cref=""string.Insert(int, string)"" /></param>
         /// <returns><see cref=""B.B"" /></returns>
         public static B.B MapToB(this A.A self, int totalWidth, int startIndex, string value)
         {
@@ -162,7 +162,8 @@ namespace A
             var target = new B.B
             {
                 Name1 = (self.Name1 ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name1 is null."")).PadLeft(totalWidth),
-                Name2 = (self.Name2 ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name2 is null."")).Insert(startIndex, value),
+                Name2 = (self.Name2 ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name2 is null."")).Substring(startIndex),
+                Name3 = (self.Name3 ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name3 is null."")).Insert(startIndex, value),
             };
             
             return target;
