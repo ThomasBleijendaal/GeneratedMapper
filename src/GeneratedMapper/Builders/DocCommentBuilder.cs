@@ -51,7 +51,6 @@ namespace GeneratedMapper.Builders
 
                     if (mapping.MappingInformationOfMapperToUse != null)
                     {
-                        // TODO: weird logic
                         foreach (var parameter in mapping.MapParametersRequired)
                         {
                             foreach (var mappings in mapping.MappingInformationOfMapperToUse.Mappings)
