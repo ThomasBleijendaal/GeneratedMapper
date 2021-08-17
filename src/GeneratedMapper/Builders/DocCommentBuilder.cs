@@ -58,7 +58,8 @@ namespace GeneratedMapper.Builders
                                 var @namespace = $"{mapping.MappingInformationOfMapperToUse.SourceType?.ContainingNamespace.ToDisplayString()}." ?? "";
                                 var typename = $"{@namespace}{mapping.MappingInformationOfMapperToUse.SourceType?.Name}";
 
-                                var parameters = new[] { typename }.Union(mappings.MapParametersRequired.Select(x => x.TypeName));
+                                var parameters = mappings.MapParametersRequired.Select(x => x.TypeName).ToList();
+                                parameters.Insert(0, typename);
 
                                 var reference = $"<see cref=\"{_information.SourceType?.ToDisplayString()}.{mapping.SourcePropertyName}\" /> <see cref=\"{typename}.MapTo{mapping.MappingInformationOfMapperToUse.DestinationType?.Name}({string.Join(", ", parameters)})\" />";
                                 paramRefs.Add($"/// - <paramref name=\"{parameter.ParameterName}\" /> is used by {reference}<br />");

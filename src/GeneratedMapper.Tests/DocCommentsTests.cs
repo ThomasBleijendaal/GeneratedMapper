@@ -114,7 +114,7 @@ namespace A
 }
 ");
         }
-        
+
         [Test]
         public void MethodParameterDocCommentsTest()
         {
@@ -239,7 +239,6 @@ namespace A
 ");
         }
 
-
         [Test]
         public void MapToParameterDocCommentsTest()
         {
@@ -249,21 +248,26 @@ using GeneratedMapper.Attributes;
 [assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
 namespace A {
     [MapTo(typeof(B.B1))]
-    public class A1 { public A2 Two { get; set; } }
+    public class A1 { public A2 Two { get; set; } public A3 Three { get; set; } }
 
     [MapTo(typeof(B.B2))]
-    public class A2 { [MapWith(""Name"", ""ExtensionMethod"")] public string Name { get; set; } }
+    public class A2 { [MapWith(""Name"", ""ExtensionMethod1"")] public string Name { get; set; } }
+
+    [MapTo(typeof(B.B3))]
+    public class A3 { [MapWith(""Name"", ""ExtensionMethod2"")] public string Name { get; set; } }
 }
 
 namespace Ex {
     public static class StringExtensions { 
-        public static string ExtensionMethod(this string subject, int startIndex) { } 
+        public static string ExtensionMethod1(this string subject, int startIndex) { } 
+        public static string ExtensionMethod2(this string subject, int startIndexA, int startIndexB) { } 
     }
 }
 
 namespace B {
-    public class B1 { public B2 Two { get; set; } }
+    public class B1 { public B2 Two { get; set; } public B3 Three { get; set; } }
     public class B2 { public string Name { get; set; } }
+    public class B3 { public string Name { get; set; } }
 }",
 @"using System;
 using A;
@@ -281,11 +285,15 @@ namespace A
         /// <br />
         /// Parameters<br />
         /// - <paramref name=""startIndex"" /> is used by <see cref=""A.A1.Two"" /> <see cref=""A.A2.MapToB2(A.A2, int)"" /><br />
+        /// - <paramref name=""startIndexA"" /> is used by <see cref=""A.A1.Three"" /> <see cref=""A.A3.MapToB3(A.A3, int, int)"" /><br />
+        /// - <paramref name=""startIndexB"" /> is used by <see cref=""A.A1.Three"" /> <see cref=""A.A3.MapToB3(A.A3, int, int)"" /><br />
         /// </summary>
         /// <param name=""self""></param>
         /// <param name=""startIndex"">Is used by <see cref=""A.A1.Two"" /> <see cref=""A.A2.MapToB2(A.A2, int)"" /></param>
+        /// <param name=""startIndexA"">Is used by <see cref=""A.A1.Three"" /> <see cref=""A.A3.MapToB3(A.A3, int, int)"" /></param>
+        /// <param name=""startIndexB"">Is used by <see cref=""A.A1.Three"" /> <see cref=""A.A3.MapToB3(A.A3, int, int)"" /></param>
         /// <returns><see cref=""B.B1"" /></returns>
-        public static B.B1 MapToB1(this A.A1 self, int startIndex)
+        public static B.B1 MapToB1(this A.A1 self, int startIndex, int startIndexA, int startIndexB)
         {
             if (self is null)
             {
@@ -295,6 +303,7 @@ namespace A
             var target = new B.B1
             {
                 Two = (self.Two ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A1 -> B.B1: Property Two is null."")).MapToB2(startIndex),
+                Three = (self.Three ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A1 -> B.B1: Property Three is null."")).MapToB3(startIndexA, startIndexB),
             };
             
             return target;
@@ -316,10 +325,10 @@ namespace A
         /// <br />
         /// <br />
         /// Parameters<br />
-        /// - <paramref name=""startIndex"" /> is used by <see cref=""A.A2.Name"" /> <see cref=""Ex.StringExtensions.ExtensionMethod(string, int)"" /><br />
+        /// - <paramref name=""startIndex"" /> is used by <see cref=""A.A2.Name"" /> <see cref=""Ex.StringExtensions.ExtensionMethod1(string, int)"" /><br />
         /// </summary>
         /// <param name=""self""></param>
-        /// <param name=""startIndex"">Is used by <see cref=""A.A2.Name"" /> <see cref=""Ex.StringExtensions.ExtensionMethod(string, int)"" /></param>
+        /// <param name=""startIndex"">Is used by <see cref=""A.A2.Name"" /> <see cref=""Ex.StringExtensions.ExtensionMethod1(string, int)"" /></param>
         /// <returns><see cref=""B.B2"" /></returns>
         public static B.B2 MapToB2(this A.A2 self, int startIndex)
         {
@@ -330,7 +339,45 @@ namespace A
             
             var target = new B.B2
             {
-                Name = (self.Name ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A2 -> B.B2: Property Name is null."")).ExtensionMethod(startIndex),
+                Name = (self.Name ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A2 -> B.B2: Property Name is null."")).ExtensionMethod1(startIndex),
+            };
+            
+            return target;
+        }
+    }
+}
+",
+@"using System;
+using Ex;
+
+#nullable enable
+
+namespace A
+{
+    public static partial class A3MapToExtensions
+    {
+        /// <summary>
+        /// Mapping for <see cref=""A.A3"" /> to <see cref=""B.B3"" />
+        /// <br />
+        /// <br />
+        /// Parameters<br />
+        /// - <paramref name=""startIndexA"" /> is used by <see cref=""A.A3.Name"" /> <see cref=""Ex.StringExtensions.ExtensionMethod2(string, int, int)"" /><br />
+        /// - <paramref name=""startIndexB"" /> is used by <see cref=""A.A3.Name"" /> <see cref=""Ex.StringExtensions.ExtensionMethod2(string, int, int)"" /><br />
+        /// </summary>
+        /// <param name=""self""></param>
+        /// <param name=""startIndexA"">Is used by <see cref=""A.A3.Name"" /> <see cref=""Ex.StringExtensions.ExtensionMethod2(string, int, int)"" /></param>
+        /// <param name=""startIndexB"">Is used by <see cref=""A.A3.Name"" /> <see cref=""Ex.StringExtensions.ExtensionMethod2(string, int, int)"" /></param>
+        /// <returns><see cref=""B.B3"" /></returns>
+        public static B.B3 MapToB3(this A.A3 self, int startIndexA, int startIndexB)
+        {
+            if (self is null)
+            {
+                throw new ArgumentNullException(nameof(self), ""A.A3 -> B.B3: Source is null."");
+            }
+            
+            var target = new B.B3
+            {
+                Name = (self.Name ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A3 -> B.B3: Property Name is null."")).ExtensionMethod2(startIndexA, startIndexB),
             };
             
             return target;
