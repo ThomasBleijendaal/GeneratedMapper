@@ -114,7 +114,7 @@ namespace A
 }
 ");
         }
-
+        
         [Test]
         public void MethodParameterDocCommentsTest()
         {
@@ -124,11 +124,11 @@ using GeneratedMapper.Attributes;
 [assembly: MapperGeneratorConfiguration(GenerateEnumerableMethods = false)]
 namespace A {
     [MapTo(typeof(B.B))]
-    public class A { [MapWith(""Name"", ""Substring"")] public string Name { get; set; } }
+    public class A { [MapWith(""Name1"", ""PadLeft"")] public string Name1 { get; set; } [MapWith(""Name2"", ""Insert"")] public string Name2 { get; set; } }
 }
 
 namespace B {
-    public class B { public string Name { get; set; } }
+    public class B { public string Name1 { get; set; } public string Name2 { get; set; } }
 }",
 @"using System;
 
@@ -143,12 +143,16 @@ namespace A
         /// <br />
         /// <br />
         /// Parameters<br />
-        /// - <paramref name=""startIndex"" /> is used by <see cref=""A.A.Name"" /> <see cref=""string.Substring(int)"" /><br />
+        /// - <paramref name=""totalWidth"" /> is used by <see cref=""A.A.Name1"" /> <see cref=""string.PadLeft(int)"" /><br />
+        /// - <paramref name=""startIndex"" /> is used by <see cref=""A.A.Name2"" /> <see cref=""string.Insert(int, string)"" /><br />
+        /// - <paramref name=""value"" /> is used by <see cref=""A.A.Name2"" /> <see cref=""string.Insert(int, string)"" /><br />
         /// </summary>
         /// <param name=""self""></param>
-        /// <param name=""startIndex"">Is used by <see cref=""A.A.Name"" /> <see cref=""string.Substring(int)"" /></param>
+        /// <param name=""totalWidth"">Is used by <see cref=""A.A.Name1"" /> <see cref=""string.PadLeft(int)"" /></param>
+        /// <param name=""startIndex"">Is used by <see cref=""A.A.Name2"" /> <see cref=""string.Insert(int, string)"" /></param>
+        /// <param name=""value"">Is used by <see cref=""A.A.Name2"" /> <see cref=""string.Insert(int, string)"" /></param>
         /// <returns><see cref=""B.B"" /></returns>
-        public static B.B MapToB(this A.A self, int startIndex)
+        public static B.B MapToB(this A.A self, int totalWidth, int startIndex, string value)
         {
             if (self is null)
             {
@@ -157,7 +161,8 @@ namespace A
             
             var target = new B.B
             {
-                Name = (self.Name ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name is null."")).Substring(startIndex),
+                Name1 = (self.Name1 ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name1 is null."")).PadLeft(totalWidth),
+                Name2 = (self.Name2 ?? throw new GeneratedMapper.Exceptions.PropertyNullException(""A.A -> B.B: Property Name2 is null."")).Insert(startIndex, value),
             };
             
             return target;

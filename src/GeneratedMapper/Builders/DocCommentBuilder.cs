@@ -35,7 +35,6 @@ namespace GeneratedMapper.Builders
 
                     if (!string.IsNullOrEmpty(mapping.SourcePropertyMethodToCall))
                     {
-                        // TODO: this logic is weird (why loop and then set parameters on same variable?)
                         foreach (var parameter in mapping.MapParametersRequired)
                         {
                             var parameters = mapping.MapParametersRequired.Select(x => x.TypeName).ToList();
